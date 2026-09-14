@@ -246,26 +246,26 @@ export default function Home() {
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands} />
 
-      {/* HoDoKu-style candidate filter row */}
-      <div className="bg-slate-200 border-b border-slate-300 flex items-center justify-center gap-0.5 px-2 py-1.5 overflow-x-auto">
+      {/* candidate filter: single inline strip, HoDoKu keyboard style */}
+      <div className="flex items-center justify-center gap-0.5 px-2 py-1">
         {ALL_DIGITS.map(d => {
           const on = digitFilter === d;
           const left = remaining(d);
           return (
             <button key={d} onClick={() => toggleFilter(d)}
               title={`Highlight candidate ${d} (${left} remaining)`}
-              className={cls("w-8 h-10 rounded flex items-center justify-center transition-colors",
+              className={cls("w-7 h-8 rounded flex items-center justify-center transition-colors",
                 on ? "bg-indigo-600 text-white"
                    : "text-slate-800 hover:bg-slate-200/70",
                 left === 0 && !on && "opacity-30")}>
-              <span className="text-lg font-semibold leading-none font-serif">{d}</span>
+              <span className="text-base font-semibold leading-none font-serif">{d}</span>
             </button>
           );
         })}
         <button onClick={() => toggleFilter("xy")} title="Highlight bivalue cells (exactly 2 candidates)"
-          className={cls("h-9 px-3 rounded-md border-2 text-base font-semibold shadow-sm",
-            digitFilter === "xy" ? "bg-purple-600 text-white border-purple-700 shadow-md"
-              : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100")}>
+          className={cls("w-9 h-8 rounded flex items-center justify-center transition-colors ml-1",
+            digitFilter === "xy" ? "bg-purple-600 text-white"
+              : "text-slate-800 hover:bg-slate-200/70")}>
           <span className="inline-flex items-baseline">
             <sup className="text-[13px] font-semibold mr-0.5">x</sup>
             <span className="text-base font-semibold">y</span>
@@ -273,7 +273,7 @@ export default function Home() {
         </button>
         {digitFilter !== null && (
           <button onClick={() => { setDigitFilter(null); setMsg("Highlight cleared."); }}
-            className="h-8 px-2 rounded border text-xs bg-white text-slate-600 border-slate-300 hover:bg-slate-100">
+            className="h-6 px-1.5 ml-1 rounded text-[11px] text-slate-500 hover:bg-slate-200/70">
             clear
           </button>
         )}
