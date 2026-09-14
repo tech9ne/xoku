@@ -123,7 +123,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, on
               <path d="M0,0 L5,2.5 L0,5 z" fill="#dc2626" />
             </marker>
             <marker id="xk-w" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
-              <path d="M0,0 L5,2.5 L0,5 z" fill="#475569" />
+              <path d="M0,0 L5,2.5 L0,5 z" fill="#dc2626" />
             </marker>
           </defs>
           {step.links
@@ -138,8 +138,8 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, on
                 <line key={k}
                   x1={a.x + dx * t1} y1={a.y + dy * t1}
                   x2={a.x + dx * t2} y2={a.y + dy * t2}
-                  stroke={l.strong ? "#dc2626" : "#475569"}
-                  strokeWidth={l.strong ? 0.55 : 0.5}
+                  stroke="#dc2626"
+                  strokeWidth={l.strong ? 0.55 : 0.45}
                   strokeDasharray={l.strong ? undefined : "1 0.9"}
                   markerEnd={`url(#${l.strong ? "xk-s" : "xk-w"})`} />
               );
