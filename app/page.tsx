@@ -222,13 +222,11 @@ export default function Home() {
           return (
             <button key={d} onClick={() => toggleFilter(d)}
               title={`Highlight candidate ${d} (${left} remaining)`}
-              className={cls("w-9 h-12 rounded-md flex flex-col items-center justify-center transition-colors",
+              className={cls("w-9 h-12 rounded-md flex items-center justify-center transition-colors",
                 on ? "bg-indigo-600 text-white"
                    : "text-slate-800 hover:bg-slate-200/70",
                 left === 0 && !on && "opacity-30")}>
-              <span className="text-xl font-medium leading-none">{d}</span>
-              <span className={cls("text-[10px] leading-none mt-1",
-                on ? "text-indigo-200" : "text-slate-400")}>{left}</span>
+              <span className="text-2xl font-medium leading-none">{d}</span>
             </button>
           );
         })}
