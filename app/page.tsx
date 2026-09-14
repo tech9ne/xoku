@@ -14,6 +14,7 @@ const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${St
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [history, setHistory] = useState<Game[]>([]);
+  const [future, setFuture] = useState<Game[]>([]);
   const [level, setLevel] = useState<Level>("Easy");
   const [sel, setSel] = useState(40);
   const [hint, setHint] = useState<Step | null>(null);
@@ -31,6 +32,7 @@ export default function Home() {
     const g = newGame(puzzle, solution);
     setGame(g);
     setHistory([]); setHint(null); setAllSteps(null); setDigitFilter(null);
+    setFuture([]);
         setManualColors(new Map());
     setSeconds(0); setGameId(id => id + 1);
     const r = rating ?? rateGame(g);
@@ -56,6 +58,7 @@ export default function Home() {
     const h = cloneGame(game);
     fn(h);
     setHistory(hist => [...hist.slice(-199), game]);
+    setFuture([]);
     setGame(h);
   };
 
@@ -97,10 +100,20 @@ export default function Home() {
     });
   };
 
+  const redo = () => {
+    if (!future.length || !game) return;
+    setHistory(h => [...h, game]);
+    setGame(future[future.length - 1]);
+    setFuture(future.slice(0, -1));
+    setHint(null);
+    setMsg("Redo.");
+  };
+
   const undo = () => {
 
 
     if (!history.length || !game) return;
+    setFuture(f => [...f, game]);
     setGame(history[history.length - 1]);
     setHistory(history.slice(0, -1));
     setHint(null);
@@ -212,6 +225,8 @@ export default function Home() {
           return r * 9 + (c + 1) % 9;
         });
       } else if (k === "Backspace" || k === "Delete") clearCell(sel);
+      else if (k.toLowerCase() === "y" && (e.ctrlKey || e.metaKey)) redo();
+      else if (k.toLowerCase() === "z" && e.shiftKey && (e.ctrlKey || e.metaKey)) redo();
       else if (k.toLowerCase() === "z" && (e.ctrlKey || e.metaKey)) undo();
     };
     window.addEventListener("keydown", onKey);
@@ -227,7 +242,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
-        onUndo={undo} onCheck={check} onAutoSolve={autoSolve}
+        onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands} />
 
@@ -243,7 +258,7 @@ export default function Home() {
                 on ? "bg-indigo-600 text-white"
                    : "text-slate-800 hover:bg-slate-200/70",
                 left === 0 && !on && "opacity-30")}>
-              <span className="text-xl font-semibold leading-none font-serif">{d}</span>
+              <span className="text-lg font-semibold leading-none font-serif">{d}</span>
             </button>
           );
         })}
