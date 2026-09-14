@@ -256,8 +256,8 @@ export const singleDigitChains: Finder = (g) => {
           }
           return mk({
             technique, category: "Single Digit Chain", score,
-            candColors: [x, y, fx, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
-            links: [{ from: { cell: a1, cand: d }, to: { cell: a2, cand: d }, strong: true }, { from: { cell: x, cand: d }, to: { cell: y, cand: d }, strong: false }, { from: { cell: b1, cand: d }, to: { cell: b2, cand: d }, strong: true }],
+            candColors: [a1, a2, y, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
+            links: [{ from: { cell: a1, cand: d }, to: { cell: a2, cand: d }, strong: true }, { from: { cell: a2, cand: d }, to: { cell: y, cand: d }, strong: false }, { from: { cell: y, cand: d }, to: { cell: fy, cand: d }, strong: true }],
             reason: `${technique} on ${d}: strong links ${cellName(a1)}–${cellName(a2)} (${unitName(ua)}) and ${cellName(b1)}–${cellName(b2)} (${unitName(ub)}) are joined by weak link ${cellName(x)}–${cellName(y)}; one of ${cellName(fx)}/${cellName(fy)} must be ${d}, so ${d} can be removed from cells seeing both.`,
             eliminations: elims, patternCells: [x, y, fx, fy],
             patternCands: [x, y, fx, fy].map(c => ({ cell: c, cand: d })),
