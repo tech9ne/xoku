@@ -1120,7 +1120,7 @@ export const deathBlossom: Finder = (g) => {
   return null;
 };
 
-// ---------- AIC engine: X-Chain (XR 5.8), AIC Type 1 (6.2), Type 2 (6.4) ----------
+// ---------- AIC engine: X-Chain (XR 5.8), AIC Types 1 and 2 (6.2-6.4) ----------
 // Nodes are candidates (cell + digit). Links:
 //   STRONG (at least one endpoint true): bivalue cells, or a digit with
 //   exactly two positions left in a unit (bilocation)
@@ -1128,10 +1128,13 @@ export const deathBlossom: Finder = (g) => {
 //   different candidates in the same cell
 // An alternating chain  strong - weak - strong - ... - strong  (even number
 // of nodes) proves that at least one of its two end nodes is true:
-//   ends are the same digit in different cells -> that digit is removed from
-//   every cell seeing both end cells (Type 1; X-Chain if single-digit)
-//   ends are different digits in the same cell -> all other candidates of
-//   that cell are removed (Type 2)
+//   Type 1: ends are the same digit in different cells -> that digit is
+//   removed from every cell seeing both end cells (X-Chain if single-digit)
+//   Type 2: ends are different candidates ->
+//     same cell: the cell holds one of them, all other candidates removed
+//     cells that see each other: neither can hold the other's digit (that
+//     would force both cells to the same digit), so each end digit is
+//     removed from the other end cell
 function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
   const empt = emptyCells(g);
   if (empt.length < 4) return null;
@@ -1216,14 +1219,24 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               });
             }
           }
-          if (mode === "type2" && sameCell && !sameDigit) {
-            const keep = new Set([d, nodeDigit(cur)]);
-            const elims = candsOf(g.cands[i]).filter(x => !keep.has(x))
-              .map(x => ({ cell: i, cand: x }));
+          if (mode === "type2" && !sameDigit) {
+            const B = nodeCell(cur), q = nodeDigit(cur);
+            let elims: Elimination[] = [];
+            let ending = "";
+            if (sameCell) {
+              const keep = new Set([d, q]);
+              elims = candsOf(g.cands[i]).filter(x => !keep.has(x))
+                .map(x => ({ cell: i, cand: x }));
+              ending = `${cellName(i)} is ${d} or ${q}, so all of its other candidates are removed`;
+            } else if (fastPeers(i, B)) {
+              if (g.cands[i] & candMask(q)) elims.push({ cell: i, cand: q });
+              if (g.cands[B] & candMask(d)) elims.push({ cell: B, cand: d });
+              ending = `the end cells see each other, so neither can hold the other's digit (that would force both cells to the same digit): removed ${elims.map(e => `${e.cand} from ${cellName(e.cell)}`).join(" and ")}`;
+            }
             if (elims.length) {
               return mk({
                 technique: "AIC Type 2", category: "Chain", score: 6.4,
-                reason: `AIC: ${chainStr(path)} — at least one end must be true, so ${cellName(i)} is ${d} or ${nodeDigit(cur)} and all its other candidates are removed.`,
+                reason: `AIC: ${chainStr(path)} — at least one end must be true (${cellName(i)} is ${d} or ${cellName(B)} is ${q}); ${ending}.`,
                 eliminations: elims,
                 patternCells: [...new Set(path.map(nodeCell))],
                 patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
@@ -1298,7 +1311,7 @@ export const FINDERS: Finder[] = [
   xChain,                  // XR 5.8
   xyChain,                 // XR 6.0
   aicType1,                // XR 6.2
-  aicType2,                // XR 6.4
+  aicType2,                // XR 6.4  (same-cell and cross endings)
   alsXZ,                   // XR 7.0
   alsXYWing,               // XR 7.2
   alsChain,                // XR 7.4
