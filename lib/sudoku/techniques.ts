@@ -909,6 +909,217 @@ export const bugLite: Finder = (g) => {
   return null;
 };
 
+// ---------- Shared ALS infrastructure ----------
+// (alsXZ keeps its own enumeration; the rest of the ALS family uses these.)
+function enumerateAls(g: Game): Als[] {
+  const alsList: Als[] = [];
+  const seenKeys = new Set<string>();
+  for (let u = 0; u < 27; u++) {
+    const cells = UNITS[u].filter(i => g.values[i] === 0);
+    const n = cells.length;
+    if (n === 0) continue;
+    for (let sub = 1; sub < 1 << n; sub++) {
+      let mask = 0, size = 0;
+      for (let k = 0; k < n; k++) if (sub & (1 << k)) { mask |= g.cands[cells[k]]; size++; }
+      if (countCands(mask) !== size + 1) continue;
+      const set = cells.filter((_, k) => sub & (1 << k));
+      const key = set.join(",");
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+      const byDigit: number[][] = [];
+      for (const d of candsOf(mask)) byDigit[d] = set.filter(c => g.cands[c] & candMask(d));
+      alsList.push({ cells: set, mask, byDigit });
+    }
+  }
+  return alsList;
+}
+
+function makeOverlap() {
+  const mark = new Uint8Array(81);
+  return (A: Als, B: Als): boolean => {
+    for (const c of B.cells) mark[c] = 1;
+    let hit = false;
+    for (const c of A.cells) if (mark[c]) { hit = true; break; }
+    for (const c of B.cells) mark[c] = 0;
+    return hit;
+  };
+}
+
+// graph of disjoint ALS pairs linked by restricted common candidates
+function alsGraph(als: Als[]): { j: number; d: number }[][] {
+  const overlap = makeOverlap();
+  const nb: { j: number; d: number }[][] = als.map(() => [] as { j: number; d: number }[]);
+  for (let i = 0; i < als.length; i++) {
+    for (let j = i + 1; j < als.length; j++) {
+      if (overlap(als[i], als[j])) continue;
+      const common = als[i].mask & als[j].mask;
+      if (!common) continue;
+      for (const d of candsOf(common)) {
+        if (restrictedCommon(als[i], als[j], d)) {
+          nb[i].push({ j, d });
+          nb[j].push({ j: i, d });
+        }
+      }
+    }
+  }
+  return nb;
+}
+
+// ---------- ALS-XY-Wing (XR 7.2) ----------
+// Three pairwise-disjoint ALSs: pivot A, pincers B and C.
+//   A and B share restricted candidate X, A and C share restricted
+//   candidate Y (Y <> X), B and C share candidate Z (Z not in {X, Y}).
+//   X true in A  -> X false in B -> B locks -> Z placed in B
+//   X false in A -> A locks -> Y placed in A -> Y false in C -> C locks -> Z placed in C
+// Either way Z is placed in a pincer -> Z is removed from cells seeing
+// every Z in B and every Z in C.
+export const alsXYWing: Finder = (g) => {
+  const als = enumerateAls(g);
+  if (als.length < 3) return null;
+  const empt = emptyCells(g);
+  const nb = alsGraph(als);
+  const overlap = makeOverlap();
+
+  for (let i = 0; i < als.length; i++) {
+    const A = als[i];
+    for (const nbB of nb[i]) {
+      const B = als[nbB.j];
+      const X = nbB.d;
+      for (const nbC of nb[i]) {
+        if (nbC.j === nbB.j) continue;
+        const C = als[nbC.j];
+        const Y = nbC.d;
+        if (Y === X) continue;
+        if (overlap(B, C)) continue;
+        const zs = B.mask & C.mask & ~(candMask(X) | candMask(Y));
+        if (!zs) continue;
+        for (const Z of candsOf(zs)) {
+          const elims = empt.filter(t =>
+            g.cands[t] & candMask(Z) &&
+            B.byDigit[Z].every(b => fastPeers(t, b)) &&
+            C.byDigit[Z].every(c => fastPeers(t, c)))
+            .map(t => ({ cell: t, cand: Z }));
+          if (!elims.length) continue;
+          const patternCells = [...A.cells, ...B.cells, ...C.cells];
+          return mk({
+            technique: "ALS-XY-Wing", category: "ALS", score: 7.2,
+            reason: `Pivot ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) is linked by restricted candidate ${X} to pincer ${B.cells.map(cellName).join("+")} and by restricted ${Y} to pincer ${C.cells.map(cellName).join("+")}. If ${X} is true in the pivot, the first pincer locks and must place ${Z}; if ${X} is false, the pivot locks, places ${Y}, and the second pincer must place ${Z}. Either way ${Z} is placed in one of the pincers — removed from cells seeing all of it in both.`,
+            eliminations: elims, patternCells,
+            patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+          });
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// ---------- ALS Chain (XR 7.4) ----------
+// Three or more pairwise-disjoint ALSs linked by restricted common
+// candidates: A1 -x1- A2 -x2- ... - An, consecutive links on different
+// digits. If Z (<> x1) were false throughout A1, A1 would lock and place
+// x1; that kills x1 in A2, which locks and places x2; ... until An locks
+// and places Z (Z <> x_{n-1}). So Z must be true in A1 or in An, and Z is
+// removed from cells seeing every Z in both end sets.
+export const alsChain: Finder = (g) => {
+  const als = enumerateAls(g);
+  if (als.length < 3) return null;
+  const empt = emptyCells(g);
+  const nb = alsGraph(als);
+  let budget = 120_000;
+
+  for (let s = 0; s < als.length; s++) {
+    const A1 = als[s];
+    for (const Z of candsOf(A1.mask)) {
+      const stack: { cur: number; via: number; path: number[]; cells: Set<number> }[] = [];
+      for (const e of nb[s]) {
+        if (e.d === Z) continue; // first link must differ from Z
+        const cells = new Set<number>([...A1.cells, ...als[e.j].cells]);
+        stack.push({ cur: e.j, via: e.d, path: [s, e.j], cells });
+      }
+      while (stack.length) {
+        if (--budget < 0) return null;
+        const { cur, via, path, cells } = stack.pop()!;
+        const curAls = als[cur];
+
+        // closed chain: current set holds Z and Z is not its entry digit
+        if (path.length >= 3 && (curAls.mask & candMask(Z)) && via !== Z) {
+          const elims = empt.filter(t =>
+            g.cands[t] & candMask(Z) &&
+            A1.byDigit[Z].every(a => fastPeers(t, a)) &&
+            curAls.byDigit[Z].every(a => fastPeers(t, a)))
+            .map(t => ({ cell: t, cand: Z }));
+          if (elims.length) {
+            const patternCells = path.flatMap(p => als[p].cells);
+            return mk({
+              technique: "ALS Chain", category: "ALS", score: 7.4,
+              reason: `ALS chain ${path.map(p => als[p].cells.map(cellName).join("+")).join(" -> ")}: if ${Z} were false throughout the first set it would lock, and the restricted links force each following set to lock in turn until the last set places ${Z} — so ${Z} must be true in one of the end sets and is removed from cells seeing all of it in both.`,
+              eliminations: elims, patternCells,
+              patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+            });
+          }
+        }
+
+        if (path.length >= 6) continue;
+        for (const e of nb[cur]) {
+          if (e.d === via) continue;        // consecutive links use different digits
+          if (path.includes(e.j)) continue; // no set repeated
+          if (als[e.j].cells.some(c => cells.has(c))) continue; // pairwise disjoint
+          const ncells = new Set(cells);
+          for (const c of als[e.j].cells) ncells.add(c);
+          stack.push({ cur: e.j, via: e.d, path: [...path, e.j], cells: ncells });
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// ---------- Death Blossom (XR 7.6) ----------
+// A bivalue stem cell {x, y} plus two petals: ALS A containing x such that
+// the stem sees every x in A, and ALS B containing y such that the stem
+// sees every y in B, plus a common petal digit Z (Z not in {x, y}):
+//   stem = x -> x false in A -> A locks -> Z placed in A
+//   stem = y -> y false in B -> B locks -> Z placed in B
+// Z must be true in one petal -> removed from cells seeing every Z in both.
+export const deathBlossom: Finder = (g) => {
+  const als = enumerateAls(g);
+  if (als.length < 2) return null;
+  const empt = emptyCells(g);
+
+  for (const S of empt) {
+    if (countCands(g.cands[S]) !== 2) continue;
+    const [x, y] = candsOf(g.cands[S]);
+    const petX = als.filter(a =>
+      a.mask & candMask(x) && !a.cells.includes(S) &&
+      a.byDigit[x].every(c => fastPeers(S, c)));
+    const petY = als.filter(a =>
+      a.mask & candMask(y) && !a.cells.includes(S) &&
+      a.byDigit[y].every(c => fastPeers(S, c)));
+    if (!petX.length || !petY.length) continue;
+    for (const A of petX) for (const B of petY) {
+      const zs = A.mask & B.mask & ~(candMask(x) | candMask(y));
+      if (!zs) continue;
+      for (const Z of candsOf(zs)) {
+        const elims = empt.filter(t =>
+          g.cands[t] & candMask(Z) &&
+          A.byDigit[Z].every(a => fastPeers(t, a)) &&
+          B.byDigit[Z].every(b => fastPeers(t, b)))
+          .map(t => ({ cell: t, cand: Z }));
+        if (!elims.length) continue;
+        const patternCells = [S, ...A.cells, ...B.cells];
+        return mk({
+          technique: "Death Blossom", category: "ALS", score: 7.6,
+          reason: `Stem ${cellName(S)} (${x}/${y}) with petals ${A.cells.map(cellName).join("+")} and ${B.cells.map(cellName).join("+")}: the stem is ${x} or ${y}; either way one petal loses its link digit, locks, and must place ${Z} — so ${Z} is removed from cells seeing all of it in both petals.`,
+          eliminations: elims, patternCells,
+          patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+        });
+      }
+    }
+  }
+  return null;
+};
+
 // ---------- Registry (ordered by XR, easiest first) ----------
 export const FINDERS: Finder[] = [
   fullHouse,               // XR 1.0
@@ -941,6 +1152,9 @@ export const FINDERS: Finder[] = [
   makeBasicFish(4),        // XR 5.4  Jellyfish
   xyChain,                 // XR 6.0
   alsXZ,                   // XR 7.0
+  alsXYWing,               // XR 7.2
+  alsChain,                // XR 7.4
+  deathBlossom,            // XR 7.6
 ];
 
 export function findNextStep(g: Game): Step | null {
@@ -961,5 +1175,5 @@ export const TECHNIQUE_NAMES = [
   "Skyscraper", "2-String Kite", "Turbot Fish", "Simple Colors", "Remote Pair",
   "XY-Wing", "XYZ-Wing", "W-Wing",
   "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
-  "XY-Chain", "ALS-XZ",
+  "XY-Chain", "ALS-XZ", "ALS-XY-Wing", "ALS Chain", "Death Blossom",
 ];
