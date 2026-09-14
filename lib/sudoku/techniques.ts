@@ -687,6 +687,228 @@ export const alsXZ: Finder = (g) => {
   return null;
 };
 
+// ---------- Unique Rectangle Types 2, 3, 4, 5 (XR 3.4 - 3.7) ----------
+// Shared geometry: four cells on two rows and two columns spanning exactly
+// two boxes. If all four took values only from the pair {x,y} the pattern is
+// deadly (swapping x<->y gives a second solution), so at least one cell must
+// break it. UR Type 1 is implemented above (uniqueRectangle1).
+
+// Type 2 / Type 5: two cells are exactly {x,y,z} with the same single extra
+// z, the other two exactly {x,y}. If neither z-cell held z the rectangle
+// would be deadly -> at least one z-cell is z -> z is removed from every
+// cell seeing both. z-cells in one row/column = Type 2, diagonal = Type 5.
+export const urType2: Finder = (g) => {
+  for (let r1 = 0; r1 < 9; r1++) for (let r2 = r1 + 1; r2 < 9; r2++) {
+    for (let c1 = 0; c1 < 9; c1++) for (let c2 = c1 + 1; c2 < 9; c2++) {
+      if (Math.floor(r1 / 3) !== Math.floor(r2 / 3) && Math.floor(c1 / 3) !== Math.floor(c2 / 3)) continue;
+      const cells = [r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2];
+      if (!cells.every(i => g.values[i] === 0)) continue;
+      for (let x = 1; x <= 9; x++) for (let y = x + 1; y <= 9; y++) {
+        const pairMask = candMask(x) | candMask(y);
+        const biv = cells.filter(i => g.cands[i] === pairMask);
+        if (biv.length !== 2) continue;
+        const rest = cells.filter(i => g.cands[i] !== pairMask);
+        if (g.cands[rest[0]] !== g.cands[rest[1]]) continue;
+        if (countCands(g.cands[rest[0]]) !== 3 || (g.cands[rest[0]] & pairMask) !== pairMask) continue;
+        const z = candsOf(g.cands[rest[0]] & ~pairMask)[0];
+        const sameLine = rowOf(rest[0]) === rowOf(rest[1]) || colOf(rest[0]) === colOf(rest[1]);
+        const elims = commonPeers(rest[0], rest[1])
+          .filter(i => g.values[i] === 0 && g.cands[i] & candMask(z))
+          .map(i => ({ cell: i, cand: z }));
+        if (!elims.length) continue;
+        return mk({
+          technique: sameLine ? "Unique Rectangle Type 2" : "Unique Rectangle Type 5",
+          category: "Uniqueness", score: sameLine ? 3.4 : 3.5,
+          reason: `${cellName(rest[0])} and ${cellName(rest[1])} are ${x}/${y}/${z} while the other two cells of the rectangle are ${x}/${y} only — if neither were ${z} the rectangle would allow two solutions, so at least one is ${z}; remove ${z} from cells seeing both.`,
+          eliminations: elims, patternCells: cells,
+          patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
+        });
+      }
+    }
+  }
+  return null;
+};
+
+// Type 3: floor = two cells exactly {x,y} in one line; the two roof cells
+// hold {x,y} plus extras. One roof must use an extra digit (deadly
+// avoidance), so the roof pair acts as a virtual cell with candidates
+// E = union of extras. E plus (|E|-1) outside cells with candidates
+// inside E, all in a unit shared by the roofs, form a naked subset.
+export const urType3: Finder = (g) => {
+  for (let r1 = 0; r1 < 9; r1++) for (let r2 = r1 + 1; r2 < 9; r2++) {
+    for (let c1 = 0; c1 < 9; c1++) for (let c2 = c1 + 1; c2 < 9; c2++) {
+      if (Math.floor(r1 / 3) !== Math.floor(r2 / 3) && Math.floor(c1 / 3) !== Math.floor(c2 / 3)) continue;
+      const cells = [r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2];
+      if (!cells.every(i => g.values[i] === 0)) continue;
+      for (let x = 1; x <= 9; x++) for (let y = x + 1; y <= 9; y++) {
+        const pairMask = candMask(x) | candMask(y);
+        const orientations: [number, number, number, number][] = [
+          [cells[0], cells[1], cells[2], cells[3]],
+          [cells[0], cells[2], cells[1], cells[3]],
+        ];
+        for (const [f1, f2, roofA, roofB] of orientations) {
+          if (g.cands[f1] !== pairMask || g.cands[f2] !== pairMask) continue;
+          if ((g.cands[roofA] & pairMask) !== pairMask || (g.cands[roofB] & pairMask) !== pairMask) continue;
+          const E = (g.cands[roofA] | g.cands[roofB]) & ~pairMask;
+          const eSize = countCands(E);
+          if (eSize < 2 || eSize > 3) continue;
+          const shared = UNITS_OF[roofA].filter(u => UNITS_OF[roofB].includes(u));
+          for (const u of shared) {
+            const cand = UNITS[u].filter(i =>
+              g.values[i] === 0 && i !== roofA && i !== roofB &&
+              g.cands[i] !== 0 && (g.cands[i] & ~E) === 0);
+            if (cand.length < eSize - 1) continue;
+            for (const combo of combinations(cand, eSize - 1)) {
+              const elims: Elimination[] = [];
+              for (const i of UNITS[u]) {
+                if (i === roofA || i === roofB || combo.includes(i)) continue;
+                if (g.values[i] === 0)
+                  for (const d of candsOf(g.cands[i] & E)) elims.push({ cell: i, cand: d });
+              }
+              if (!elims.length) continue;
+              return mk({
+                technique: "Unique Rectangle Type 3", category: "Uniqueness", score: 3.6,
+                reason: `Roofs ${cellName(roofA)} and ${cellName(roofB)} must use a digit beyond ${x}/${y} (else the rectangle is deadly); their extras ${candsOf(E).join("/")} plus ${combo.map(cellName).join(", ")} form a naked subset in ${unitName(u)} — remove ${candsOf(E).join("/")} from the rest of ${unitName(u)}.`,
+                eliminations: elims, patternCells: cells,
+                patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// Type 4: floor = two cells exactly {x,y} in one line; roofs hold {x,y} plus
+// extras. If one pair digit d appears nowhere else in a unit shared by the
+// roofs (strong link), one roof must be d; to avoid the deadly rectangle the
+// other roof must be an extra digit — so the other pair digit falls in both.
+export const urType4: Finder = (g) => {
+  for (let r1 = 0; r1 < 9; r1++) for (let r2 = r1 + 1; r2 < 9; r2++) {
+    for (let c1 = 0; c1 < 9; c1++) for (let c2 = c1 + 1; c2 < 9; c2++) {
+      if (Math.floor(r1 / 3) !== Math.floor(r2 / 3) && Math.floor(c1 / 3) !== Math.floor(c2 / 3)) continue;
+      const cells = [r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2];
+      if (!cells.every(i => g.values[i] === 0)) continue;
+      for (let x = 1; x <= 9; x++) for (let y = x + 1; y <= 9; y++) {
+        const pairMask = candMask(x) | candMask(y);
+        const orientations: [number, number, number, number][] = [
+          [cells[0], cells[1], cells[2], cells[3]],
+          [cells[0], cells[2], cells[1], cells[3]],
+        ];
+        for (const [f1, f2, roofA, roofB] of orientations) {
+          if (g.cands[f1] !== pairMask || g.cands[f2] !== pairMask) continue;
+          if ((g.cands[roofA] & pairMask) !== pairMask || (g.cands[roofB] & pairMask) !== pairMask) continue;
+          if (g.cands[roofA] === pairMask && g.cands[roofB] === pairMask) continue;
+          const shared = UNITS_OF[roofA].filter(u => UNITS_OF[roofB].includes(u));
+          for (const u of shared) {
+            for (const d of [x, y]) {
+              const other = d === x ? y : x;
+              const blocked = UNITS[u].some(i =>
+                i !== roofA && i !== roofB && g.values[i] === 0 && g.cands[i] & candMask(d));
+              if (blocked) continue;
+              const elims = [roofA, roofB]
+                .filter(i => g.cands[i] & candMask(other))
+                .map(i => ({ cell: i, cand: other }));
+              if (!elims.length) continue;
+              return mk({
+                technique: "Unique Rectangle Type 4", category: "Uniqueness", score: 3.7,
+                reason: `In ${unitName(u)}, ${d} appears only in the roof cells ${cellName(roofA)} and ${cellName(roofB)}: one must be ${d}, and to avoid the deadly rectangle the other must be an extra digit — so ${other} can be removed from both roofs.`,
+                eliminations: elims, patternCells: cells,
+                patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(dd => ({ cell: i, cand: dd }))),
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
+
+// ---------- BUG Lite (XR 4.0) ----------
+// The UR generalized: a set of cells all containing the pair {x,y} where
+// every house holds 0 or 2 of them. If all cells were bivalue {x,y} the
+// whole set could be x<->y swapped for a second solution (deadly), so at
+// least one cell must use an extra candidate:
+//   one extra cell with a single extra z  -> z is placed there
+//   two extra cells, same single extra z  -> z removed from cells seeing both
+export const bugLite: Finder = (g) => {
+  for (let x = 1; x <= 9; x++) for (let y = x + 1; y <= 9; y++) {
+    const pairMask = candMask(x) | candMask(y);
+    const pool = emptyCells(g).filter(i => (g.cands[i] & pairMask) === pairMask);
+    if (pool.length < 6) continue;
+
+    const visited = new Set<string>();
+    let budget = 120_000;
+    const stack: number[][] = pool.map(c => [c]);
+
+    while (stack.length) {
+      if (--budget < 0) break;
+      const S = stack.pop()!;
+      const key = S.slice().sort((a, b) => a - b).join(",");
+      if (visited.has(key)) continue;
+      visited.add(key);
+
+      const inS = new Set(S);
+      const counts = new Map<number, number>();
+      for (const c of S) for (const u of UNITS_OF[c]) counts.set(u, (counts.get(u) ?? 0) + 1);
+
+      let open = -1;
+      for (const [u, n] of counts) if (n === 1) { open = u; break; }
+
+      if (open === -1) {
+        // closed structure: every house holds 0 or 2 cells of S
+        if (S.length >= 6 && S.length <= 10) {
+          const extras = S.filter(c => g.cands[c] !== pairMask);
+          if (extras.length === 1 &&
+              countCands(g.cands[extras[0]]) === 3 &&
+              (g.cands[extras[0]] & pairMask) === pairMask) {
+            const w = extras[0];
+            const z = candsOf(g.cands[w] & ~pairMask)[0];
+            return mk({
+              technique: "BUG Lite (single extra)", category: "Uniqueness", score: 4.0,
+              reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so ${cellName(w)} must break the pattern: it is ${z}.`,
+              placements: [{ cell: w, value: z }],
+              patternCells: S,
+              patternCands: S.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+            });
+          }
+          if (extras.length === 2 &&
+              g.cands[extras[0]] === g.cands[extras[1]] &&
+              countCands(g.cands[extras[0]]) === 3) {
+            const z = candsOf(g.cands[extras[0]] & ~pairMask)[0];
+            const elims = commonPeers(extras[0], extras[1])
+              .filter(i => g.values[i] === 0 && g.cands[i] & candMask(z))
+              .map(i => ({ cell: i, cand: z }));
+            if (elims.length) {
+              return mk({
+                technique: "BUG Lite (two extras)", category: "Uniqueness", score: 4.0,
+                reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so at least one of ${cellName(extras[0])}, ${cellName(extras[1])} is ${z}, which is removed from cells seeing both.`,
+                eliminations: elims, patternCells: S,
+                patternCands: S.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+              });
+            }
+          }
+        }
+        continue;
+      }
+
+      // grow: close the open unit by adding one more {x,y} cell from it
+      if (S.length >= 10) continue;
+      for (const c of UNITS[open]) {
+        if (inS.has(c) || g.values[c] !== 0 || (g.cands[c] & pairMask) !== pairMask) continue;
+        let ok = true;
+        for (const u of UNITS_OF[c]) if ((counts.get(u) ?? 0) >= 2) { ok = false; break; }
+        if (!ok) continue;
+        stack.push([...S, c]);
+      }
+    }
+  }
+  return null;
+};
+
 // ---------- Registry (ordered by XR, easiest first) ----------
 export const FINDERS: Finder[] = [
   fullHouse,               // XR 1.0
@@ -702,8 +924,12 @@ export const FINDERS: Finder[] = [
   makeHiddenSubset(4),     // XR 3.0
   makeBasicFish(2),        // XR 3.0  X-Wing
   bugPlus1,                // XR 3.2  BUG+1
-  uniqueRectangle1,        // XR 3.3
+  uniqueRectangle1,        // XR 3.3  UR Type 1
+  urType2,                 // XR 3.4 / 3.5  UR Types 2 and 5
+  urType3,                 // XR 3.6
+  urType4,                 // XR 3.7
   singleDigitChains,       // XR 3.8 / 4.0 / 4.2
+  bugLite,                 // XR 4.0
   remotePairs,             // XR 4.0
   simpleColors,            // XR 4.2
   xyWing,                  // XR 4.6
@@ -733,6 +959,7 @@ export const TECHNIQUE_NAMES = [
   "Naked Pair/Triple/Quad", "Hidden Pair/Triple/Quad",
   "X-Wing", "Swordfish", "Jellyfish",
   "Skyscraper", "2-String Kite", "Turbot Fish", "Simple Colors", "Remote Pair",
-  "XY-Wing", "XYZ-Wing", "W-Wing", "Unique Rectangle Type 1",
-  "BUG+1", "BUG+2", "BUG+3", "XY-Chain", "ALS-XZ",
+  "XY-Wing", "XYZ-Wing", "W-Wing",
+  "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
+  "XY-Chain", "ALS-XZ",
 ];
