@@ -7,7 +7,6 @@ export type DigitFilter = number | "xy" | null;
 
 const FILTER_BG = "bg-[#B9FFB9]";
 
-// palette: chain-node circles + matching cell tints for ALS sets
 const PALETTE = [
   { node: "bg-blue-500 text-white", cell: "bg-blue-100" },
   { node: "bg-green-500 text-white", cell: "bg-green-100" },
@@ -16,13 +15,29 @@ const PALETTE = [
   { node: "bg-teal-500 text-white", cell: "bg-teal-100" },
 ];
 
+const RING = [
+  "ring-2 ring-inset ring-blue-400",
+  "ring-2 ring-inset ring-green-500",
+  "ring-2 ring-inset ring-orange-300",
+  "ring-2 ring-inset ring-purple-400",
+  "ring-2 ring-inset ring-teal-400",
+];
+
 interface Props {
   game: Game; sel: number; step: Step | null; showCands: boolean;
   digitFilter: DigitFilter;
+  manualColors: Map<number, number>;
+  onPaint: (cell: number) => void;
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, onSelect, onCandClick }: Props) {
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, manualColors, onPaint, onSelect, onCandClick }: Props) {
+  let pressTimer: ReturnType<typeof setTimeout> | undefined;
+  const startPress = (i: number) => {
+    pressTimer = setTimeout(() => { pressTimer = undefined; onPaint(i); }, 500);
+  };
+  const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = undefined; } };
+
   const groupOf = new Map<number, number>();
   if (step?.cellGroups)
     for (const grp of step.cellGroups) for (const c of grp.cells) groupOf.set(c, grp.color % 5);
@@ -58,11 +73,15 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, on
             if (game.cands[i] & candMask(digitFilter)) filterBg = FILTER_BG;
           }
 
+          const manual = manualColors.get(i);
+          const manualCell = manual !== undefined ? PALETTE[manual % 5].cell : undefined;
+
+          // priority: selection > hint placement > hint sets > hint pattern > manual > filter
           const bg = selected ? "bg-yellow-200"
             : placing ? "bg-green-200"
             : groupOf.has(i) ? PALETTE[groupOf.get(i)!].cell
             : pattern ? "bg-sky-100"
-            : filterBg;
+            : manualCell ?? filterBg;
 
           const valueCls = wrong ? "text-red-600"
             : game.given[i] ? "text-slate-900"
@@ -73,11 +92,18 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, on
               className={cls("relative border border-slate-200 flex items-center justify-center cursor-pointer",
                 (c === 2 || c === 5) && "border-r-2 border-r-slate-500",
                 (r === 2 || r === 5) && "border-b-2 border-b-slate-500",
+                manual !== undefined && RING[manual % 5],
                 bg)}
-              onClick={() => onSelect(selected ? -1 : i)}
-              title={value !== 0 ? undefined : "tap to select (tap again to deselect); long-press or right-click a digit to exclude it"}>
+              onClick={() => { cancelPress(); onSelect(selected ? -1 : i); }}
+              onTouchStart={() => startPress(i)}
+              onTouchEnd={cancelPress}
+              onTouchMove={cancelPress}
+              onContextMenu={e => { e.preventDefault(); onPaint(i); }}
+              title={value !== 0 ? undefined : "tap to select; long-press paints the active color; right-click a pencil digit excludes it"}>
               {value !== 0 ? (
-                <span className={cls("text-2xl sm:text-3xl font-medium", valueCls)}>{value}</span>
+                <span className={cls("text-2xl sm:text-3xl font-medium", valueCls)}>
+                  {value}
+                </span>
               ) : showCands ? (
                 <div className="grid grid-cols-3 grid-rows-3 w-full h-full text-[9px] sm:text-[11px] leading-none">
                   {ALL_DIGITS.map(d => {

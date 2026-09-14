@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import MenuBar from "@/components/MenuBar";
 import SudokuGrid from "@/components/SudokuGrid";
+import ColorPalette from "@/components/ColorPalette";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
 import { Level, countSolutions, generatePuzzle, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
 import { TECHNIQUE_NAMES, findAllSteps, findNextStep } from "@/lib/sudoku/techniques";
@@ -19,6 +20,8 @@ export default function Home() {
   const [allSteps, setAllSteps] = useState<Step[] | null>(null);
   const [showCands, setShowCands] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
+  const [manualColors, setManualColors] = useState<Map<number, number>>(new Map());
+  const [activeColor, setActiveColor] = useState<number | null>(null);
   const [msg, setMsg] = useState("Generating puzzle…");
   const [seconds, setSeconds] = useState(0);
   const [gameId, setGameId] = useState(0);
@@ -28,6 +31,7 @@ export default function Home() {
     const g = newGame(puzzle, solution);
     setGame(g);
     setHistory([]); setHint(null); setAllSteps(null); setDigitFilter(null);
+        setManualColors(new Map());
     setSeconds(0); setGameId(id => id + 1);
     const r = rating ?? rateGame(g);
     setMsg(`${label ?? "New game"} — XR ${r.hardest.toFixed(1)} · ${levelOfRating(r)} · hardest: ${r.hardestTechnique}`);
@@ -82,7 +86,19 @@ export default function Home() {
     withUndo(g => { g.values[cell] = 0; g.cands = computeCands(g.values); });
   };
 
+  const paintCell = (cell: number) => {
+    if (activeColor === null) return;
+    setManualColors(m => {
+      const next = new Map(m);
+      if (next.get(cell) === activeColor) next.delete(cell);
+      else next.set(cell, activeColor);
+      return next;
+    });
+  };
+
   const undo = () => {
+
+
     if (!history.length || !game) return;
     setGame(history[history.length - 1]);
     setHistory(history.slice(0, -1));
@@ -249,7 +265,8 @@ export default function Home() {
 
       <div className="flex flex-1 items-start justify-center gap-6 p-4 flex-wrap">
         <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
-          digitFilter={digitFilter} onSelect={setSel} onCandClick={toggleCand} />
+          digitFilter={digitFilter} onSelect={setSel} onCandClick={toggleCand}
+          manualColors={manualColors} onPaint={paintCell} />
 
         <aside className="w-72 flex flex-col gap-4">
           <section className="bg-white rounded shadow p-3">
@@ -282,6 +299,15 @@ export default function Home() {
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className="bg-white rounded shadow p-3">
+            <h2 className="font-semibold text-sm mb-2">Coloring</h2>
+            <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
+              onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
+            <p className="text-[11px] text-slate-500 mt-2">
+              Pick a color, then long-press (or right-click) cells to mark them. Tap the color again to put the brush away.
+            </p>
           </section>
 
           <section className="bg-white rounded shadow p-3 text-sm">
