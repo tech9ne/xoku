@@ -235,7 +235,7 @@ export default function Home() {
             digitFilter === "xy" ? "bg-purple-600 text-white border-purple-700 shadow-md"
               : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100")}>
           <span className="inline-flex items-baseline">
-            <sup className="text-[10px] font-semibold -mr-0.5">x</sup>
+            <sup className="text-[13px] font-semibold mr-0.5">x</sup>
             <span className="text-base font-semibold">y</span>
           </span>
         </button>
