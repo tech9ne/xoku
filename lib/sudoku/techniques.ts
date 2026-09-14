@@ -1120,6 +1120,151 @@ export const deathBlossom: Finder = (g) => {
   return null;
 };
 
+// ---------- AIC engine: X-Chain (XR 5.8), AIC Type 1 (6.2), Type 2 (6.4) ----------
+// Nodes are candidates (cell + digit). Links:
+//   STRONG (at least one endpoint true): bivalue cells, or a digit with
+//   exactly two positions left in a unit (bilocation)
+//   WEAK (not both true): same digit in cells that see each other, or two
+//   different candidates in the same cell
+// An alternating chain  strong - weak - strong - ... - strong  (even number
+// of nodes) proves that at least one of its two end nodes is true:
+//   ends are the same digit in different cells -> that digit is removed from
+//   every cell seeing both end cells (Type 1; X-Chain if single-digit)
+//   ends are different digits in the same cell -> all other candidates of
+//   that cell are removed (Type 2)
+function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
+  const empt = emptyCells(g);
+  if (empt.length < 4) return null;
+
+  const nodeCell = (n: number) => Math.floor(n / 10);
+  const nodeDigit = (n: number) => n % 10;
+  const nodeName = (n: number) => `${cellName(nodeCell(n))}:${nodeDigit(n)}`;
+  const chainStr = (path: number[]) =>
+    path.map((n, k) => (k === 0 ? nodeName(n) : `${k % 2 === 1 ? " = " : " - "}${nodeName(n)}`)).join("");
+
+  // strong-link adjacency: bivalue cells + bilocation pairs
+  const strong = new Map<number, number[]>();
+  const addStrong = (a: number, b: number) => {
+    if (!strong.has(a)) strong.set(a, []);
+    if (!strong.has(b)) strong.set(b, []);
+    const la = strong.get(a)!, lb = strong.get(b)!;
+    if (!la.includes(b)) la.push(b);
+    if (!lb.includes(a)) lb.push(a);
+  };
+  for (const i of empt) {
+    const cs = candsOf(g.cands[i]);
+    if (cs.length === 2) addStrong(i * 10 + cs[0], i * 10 + cs[1]);
+  }
+  for (let u = 0; u < 27; u++)
+    for (let d = 1; d <= 9; d++) {
+      const spots = UNITS[u].filter(i => g.values[i] === 0 && g.cands[i] & candMask(d));
+      if (spots.length === 2) addStrong(spots[0] * 10 + d, spots[1] * 10 + d);
+    }
+  if (strong.size === 0) return null;
+
+  let budget = 100_000;
+
+  for (const i of empt) {
+    for (const d of candsOf(g.cands[i])) {
+      const start = i * 10 + d;
+      const stack: { cur: number; path: number[] }[] = [];
+      for (const n2 of strong.get(start) ?? []) {
+        if (mode === "xchain" && nodeDigit(n2) !== d) continue;
+        stack.push({ cur: n2, path: [start, n2] });
+      }
+      while (stack.length) {
+        if (--budget < 0) return null;
+        const { cur, path } = stack.pop()!;
+        const strongArrived = path.length % 2 === 0;
+
+        // ---- endings: only on strong arrivals, chains of 6+ nodes ----
+        if (strongArrived && path.length >= 6) {
+          const allSameDigit = path.every(n => nodeDigit(n) === d);
+          const sameDigit = nodeDigit(cur) === d;
+          const sameCell = nodeCell(cur) === i;
+          // true when every strong link is within one cell (XY-Chain shape)
+          const allBivalue = path.every((n, k) =>
+            k % 2 === 1 || nodeCell(path[k + 1]) === nodeCell(n));
+
+          if (mode === "xchain" && allSameDigit && sameDigit) {
+            const B = nodeCell(cur);
+            const elims = commonPeers(i, B)
+              .filter(t => g.values[t] === 0 && g.cands[t] & candMask(d))
+              .map(t => ({ cell: t, cand: d }));
+            if (elims.length) {
+              return mk({
+                technique: "X-Chain", category: "Single Digit Chain", score: 5.8,
+                reason: `X-Chain on ${d}: ${chainStr(path)} — the alternating links prove that ${cellName(i)} or ${cellName(B)} must hold ${d}, so ${d} is removed from cells seeing both.`,
+                eliminations: elims,
+                patternCells: [...new Set(path.map(nodeCell))],
+                patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
+              });
+            }
+          }
+          if (mode === "type1" && sameDigit && !sameCell && !allSameDigit && !allBivalue) {
+            const B = nodeCell(cur);
+            const elims = commonPeers(i, B)
+              .filter(t => g.values[t] === 0 && g.cands[t] & candMask(d))
+              .map(t => ({ cell: t, cand: d }));
+            if (elims.length) {
+              return mk({
+                technique: "AIC Type 1", category: "Chain", score: 6.2,
+                reason: `AIC: ${chainStr(path)} — at least one end must be true (${cellName(i)} or ${cellName(B)} holds ${d}), so ${d} is removed from cells seeing both.`,
+                eliminations: elims,
+                patternCells: [...new Set(path.map(nodeCell))],
+                patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
+              });
+            }
+          }
+          if (mode === "type2" && sameCell && !sameDigit) {
+            const keep = new Set([d, nodeDigit(cur)]);
+            const elims = candsOf(g.cands[i]).filter(x => !keep.has(x))
+              .map(x => ({ cell: i, cand: x }));
+            if (elims.length) {
+              return mk({
+                technique: "AIC Type 2", category: "Chain", score: 6.4,
+                reason: `AIC: ${chainStr(path)} — at least one end must be true, so ${cellName(i)} is ${d} or ${nodeDigit(cur)} and all its other candidates are removed.`,
+                eliminations: elims,
+                patternCells: [...new Set(path.map(nodeCell))],
+                patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
+              });
+            }
+          }
+        }
+
+        // ---- extension: alternate the link type ----
+        if (path.length >= 14) continue;
+        if (strongArrived) {
+          const c = nodeCell(cur), cd = nodeDigit(cur);
+          if (mode !== "xchain") {
+            for (const e of candsOf(g.cands[c])) {
+              if (e === cd) continue;
+              const n = c * 10 + e;
+              if (!path.includes(n)) stack.push({ cur: n, path: [...path, n] });
+            }
+          }
+          for (const t of PEERS[c]) {
+            if (g.values[t] !== 0 || !(g.cands[t] & candMask(cd))) continue;
+            const n = t * 10 + cd;
+            if (!path.includes(n)) stack.push({ cur: n, path: [...path, n] });
+          }
+        } else {
+          for (const s of strong.get(cur) ?? []) {
+            if (path.includes(s)) continue;
+            if (mode === "xchain" && nodeDigit(s) !== d) continue;
+            stack.push({ cur: s, path: [...path, s] });
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+export const xChain: Finder = (g) => findAic(g, "xchain");
+export const aicType1: Finder = (g) => findAic(g, "type1");
+export const aicType2: Finder = (g) => findAic(g, "type2");
+
 // ---------- Registry (ordered by XR, easiest first) ----------
 export const FINDERS: Finder[] = [
   fullHouse,               // XR 1.0
@@ -1150,7 +1295,10 @@ export const FINDERS: Finder[] = [
   wWing,                   // XR 5.2
   bugPlus3,                // XR 5.2
   makeBasicFish(4),        // XR 5.4  Jellyfish
+  xChain,                  // XR 5.8
   xyChain,                 // XR 6.0
+  aicType1,                // XR 6.2
+  aicType2,                // XR 6.4
   alsXZ,                   // XR 7.0
   alsXYWing,               // XR 7.2
   alsChain,                // XR 7.4
@@ -1175,5 +1323,6 @@ export const TECHNIQUE_NAMES = [
   "Skyscraper", "2-String Kite", "Turbot Fish", "Simple Colors", "Remote Pair",
   "XY-Wing", "XYZ-Wing", "W-Wing",
   "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
-  "XY-Chain", "ALS-XZ", "ALS-XY-Wing", "ALS Chain", "Death Blossom",
+  "X-Chain", "XY-Chain", "AIC Type 1", "AIC Type 2",
+  "ALS-XZ", "ALS-XY-Wing", "ALS Chain", "Death Blossom",
 ];
