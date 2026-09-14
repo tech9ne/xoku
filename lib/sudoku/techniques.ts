@@ -349,10 +349,9 @@ export const remotePairs: Finder = (g) => {
       chain.unshift(start);
       return mk({
         technique: "Remote Pair", category: "Chain", score: 4.0,
+        candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
         reason: `${p}/${q} chain ${chain.map(cellName).join("–")}: the ends hold opposite values, so cells seeing both ends lose ${p} and ${q}.`,
         eliminations: elims, patternCells: chain,
-            candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
-            links: chainLinks,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
       });
     }
@@ -494,19 +493,23 @@ export const xyChain: Finder = (g) => {
               .map((i): Elimination => ({ cell: i, cand: z }));
             if (elims.length) {
               const chain = [...path, j];
-      const chainLinks: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
-      let prev = z;
-      for (let k = 0; k + 1 < chain.length; k++) {
-        const a = chain[k], b = chain[k + 1];
-        const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
-        if (!sh.length) break;
-        chainLinks.push({ from: { cell: a, cand: prev }, to: { cell: a, cand: sh[0] }, strong: true });
-        chainLinks.push({ from: { cell: a, cand: sh[0] }, to: { cell: b, cand: sh[0] }, strong: false });
-        prev = sh[0];
-      }
-      chainLinks.push({ from: { cell: chain[chain.length - 1], cand: prev }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
+              const chainLinks: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
+              {
+                let prev = z === candsOf(g.cands[start])[0] ? candsOf(g.cands[start])[1] : candsOf(g.cands[start])[0];
+                for (let k = 0; k + 1 < chain.length; k++) {
+                  const a = chain[k], b = chain[k + 1];
+                  const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
+                  if (!sh.length) break;
+                  chainLinks.push({ from: { cell: a, cand: prev }, to: { cell: a, cand: sh[0] }, strong: true });
+                  chainLinks.push({ from: { cell: a, cand: sh[0] }, to: { cell: b, cand: sh[0] }, strong: false });
+                  prev = sh[0];
+                }
+                chainLinks.push({ from: { cell: chain[chain.length - 1], cand: prev }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
+              }
               return mk({
                 technique: "XY-Chain", category: "Chain", score: 6.0,
+                candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
+                links: chainLinks,
                 reason: `XY-Chain ${chain.map(cellName).join(" → ")}: one end must be ${z}, so ${z} can be removed from cells seeing both ends.`,
                 eliminations: elims, patternCells: chain,
                 patternCands: chain.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
