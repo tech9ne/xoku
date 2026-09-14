@@ -10,7 +10,7 @@ const FILTER_BG = "bg-[#B9FFB9]";
 const PALETTE = [
   { node: "bg-blue-500 text-white", cell: "bg-blue-100" },
   { node: "bg-green-500 text-white", cell: "bg-green-100" },
-  { node: "bg-amber-400 text-slate-900", cell: "bg-amber-100" },
+  { node: "bg-red-600 text-white ring-2 ring-white/70", cell: "bg-red-100" },
   { node: "bg-purple-500 text-white", cell: "bg-purple-100" },
   { node: "bg-teal-500 text-white", cell: "bg-teal-100" },
 ];

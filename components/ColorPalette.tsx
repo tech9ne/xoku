@@ -2,7 +2,7 @@
 const PALETTE = [
   { id: 0, cls: "bg-blue-500", ring: "ring-blue-700", name: "blue" },
   { id: 1, cls: "bg-green-500", ring: "ring-green-700", name: "green" },
-  { id: 2, cls: "bg-amber-400", ring: "ring-amber-600", name: "amber" },
+  { id: 2, cls: "bg-red-600", ring: "ring-red-800", name: "red" },
   { id: 3, cls: "bg-purple-500", ring: "ring-purple-700", name: "purple" },
   { id: 4, cls: "bg-teal-500", ring: "ring-teal-700", name: "teal" },
 ];
