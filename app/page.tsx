@@ -242,42 +242,13 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
-        onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
+        onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check}
+        digitFilter={digitFilter}
+        onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
+        digitRemaining={remaining} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands} />
 
-      {/* candidate filter: single inline strip, HoDoKu keyboard style */}
-      <div className="flex items-center justify-center gap-0.5 px-2 py-1">
-        {ALL_DIGITS.map(d => {
-          const on = digitFilter === d;
-          const left = remaining(d);
-          return (
-            <button key={d} onClick={() => toggleFilter(d)}
-              title={`Highlight candidate ${d} (${left} remaining)`}
-              className={cls("w-7 h-8 rounded flex items-center justify-center transition-colors",
-                on ? "bg-indigo-600 text-white"
-                   : "text-slate-800 hover:bg-slate-200/70",
-                left === 0 && !on && "opacity-30")}>
-              <span className="text-base font-semibold leading-none font-serif">{d}</span>
-            </button>
-          );
-        })}
-        <button onClick={() => toggleFilter("xy")} title="Highlight bivalue cells (exactly 2 candidates)"
-          className={cls("w-9 h-8 rounded flex items-center justify-center transition-colors ml-1",
-            digitFilter === "xy" ? "bg-purple-600 text-white"
-              : "text-slate-800 hover:bg-slate-200/70")}>
-          <span className="inline-flex items-baseline">
-            <sup className="text-[13px] font-semibold mr-0.5">x</sup>
-            <span className="text-base font-semibold">y</span>
-          </span>
-        </button>
-        {digitFilter !== null && (
-          <button onClick={() => { setDigitFilter(null); setMsg("Highlight cleared."); }}
-            className="h-6 px-1.5 ml-1 rounded text-[11px] text-slate-500 hover:bg-slate-200/70">
-            clear
-          </button>
-        )}
-      </div>
 
       <div className="flex flex-1 items-start justify-center gap-6 p-4 flex-wrap">
         <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
