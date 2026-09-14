@@ -498,7 +498,7 @@ export const xyChain: Finder = (g) => {
                 candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
                 links: (() => {
                   const L: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
-                  const startDigit = z === firstOut ? d1 : d2;
+                  const startDigit = firstOut;
                   let prev = startDigit;
                   for (let k = 0; k + 1 < chain.length; k++) {
                     const a = chain[k], b = chain[k + 1];

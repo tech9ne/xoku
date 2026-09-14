@@ -139,8 +139,9 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, on
                   x1={a.x + dx * t1} y1={a.y + dy * t1}
                   x2={a.x + dx * t2} y2={a.y + dy * t2}
                   stroke="#dc2626"
-                  strokeWidth={l.strong ? 0.55 : 0.45}
-                  strokeDasharray={l.strong ? undefined : "1 0.9"}
+                  strokeWidth={l.strong ? 0.8 : 0.42}
+                  strokeDasharray={l.strong ? undefined : "1.1 1.3"}
+                  strokeLinecap="round"
                   markerEnd={`url(#${l.strong ? "xk-s" : "xk-w"})`} />
               );
             })}

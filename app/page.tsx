@@ -5,6 +5,7 @@ import SudokuGrid from "@/components/SudokuGrid";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
 import { Level, countSolutions, generatePuzzle, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
 import { TECHNIQUE_NAMES, findAllSteps, findNextStep } from "@/lib/sudoku/techniques";
+import { BUILD_TAG } from "@/lib/version";
 
 const cls = (...xs: (string | false | undefined)[]) => xs.filter(Boolean).join(" ");
 const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -91,10 +92,14 @@ export default function Home() {
 
   const getHint = () => {
     if (!game || solved) return;
-    const s = findNextStep(game);
-    setAllSteps(null);
-    setHint(s);
-    setMsg(s ? `${s.technique} — ${s.reason}` : "No step found with the implemented techniques.");
+    try {
+      const s = findNextStep(game);
+      setAllSteps(null);
+      setHint(s);
+      setMsg(s ? `${s.technique} — ${s.reason}` : "No step found with the implemented techniques.");
+    } catch (e) {
+      setMsg(`Hint error: ${String((e as Error).message).slice(0, 120)}`);
+    }
   };
 
   const applyHint = () => {
@@ -105,9 +110,13 @@ export default function Home() {
   const showAll = () => {
     if (!game) return;
     if (allSteps) { setAllSteps(null); return; }
-    setHint(null);
-    setAllSteps(findAllSteps(game));
-    setMsg("All steps found — click one to highlight it.");
+    try {
+      setHint(null);
+      setAllSteps(findAllSteps(game));
+      setMsg("All steps found — click one to highlight it.");
+    } catch (e) {
+      setMsg(`Show-all error: ${String((e as Error).message).slice(0, 120)}`);
+    }
   };
 
   const autoSolve = () => {
@@ -320,6 +329,7 @@ export default function Home() {
 
       <footer className="bg-slate-800 text-slate-200 text-xs px-4 py-2 flex gap-4 flex-wrap">
         <span>Level: {level}</span>
+        <span>Build: {BUILD_TAG}</span>
         <span>Time: {mmss(seconds)}</span>
         <span>Progress: {81 - game.values.filter(v => v === 0).length}/81</span>
         {solved && <span className="text-green-400 font-bold">Solved!</span>}
