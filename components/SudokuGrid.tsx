@@ -27,17 +27,12 @@ interface Props {
   game: Game; sel: number; step: Step | null; showCands: boolean;
   digitFilter: DigitFilter;
   manualColors: Map<number, number>;
-  onPaint: (cell: number) => void;
+  brush: number | null;
+  onPaintCand: (cell: number, d: number) => void;
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, manualColors, onPaint, onSelect, onCandClick }: Props) {
-  let pressTimer: ReturnType<typeof setTimeout> | undefined;
-  const startPress = (i: number) => {
-    pressTimer = setTimeout(() => { pressTimer = undefined; onPaint(i); }, 500);
-  };
-  const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = undefined; } };
-
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, manualColors, brush, onPaintCand, onSelect, onCandClick }: Props) {
   const groupOf = new Map<number, number>();
   if (step?.cellGroups)
     for (const grp of step.cellGroups) for (const c of grp.cells) groupOf.set(c, grp.color % 5);
@@ -94,11 +89,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
                 (r === 2 || r === 5) && "border-b-2 border-b-slate-500",
                 manual !== undefined && RING[manual % 5],
                 bg)}
-              onClick={() => { cancelPress(); onSelect(selected ? -1 : i); }}
-              onTouchStart={() => startPress(i)}
-              onTouchEnd={cancelPress}
-              onTouchMove={cancelPress}
-              onContextMenu={e => { e.preventDefault(); onPaint(i); }}
+              onClick={() => onSelect(selected ? -1 : i)}
               title={value !== 0 ? undefined : "tap to select; long-press paints the active color; right-click a pencil digit excludes it"}>
               {value !== 0 ? (
                 <span className={cls("text-2xl sm:text-3xl font-medium", valueCls)}>
@@ -115,17 +106,25 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
                       (digitFilter === "xy" && bi) ||
                       (typeof digitFilter === "number" && d === digitFilter)
                     );
+                    const manualNode = manualColors.get(i * 10 + d);
                     const candCls = elim
                       ? "bg-red-500 text-white rounded-full font-bold line-through"
                       : nc !== undefined
                         ? cls(PALETTE[nc].node, "rounded-full font-bold")
-                        : hasRich ? "opacity-30"
-                        : pat ? "text-green-700 font-bold"
-                        : hl ? "text-green-900 font-bold"
-                        : undefined;
+                        : manualNode !== undefined
+                          ? cls(PALETTE[manualNode % 5].node, "rounded-full font-bold")
+                          : hasRich ? "opacity-30"
+                          : pat ? "text-green-700 font-bold"
+                          : hl ? "text-green-900 font-bold"
+                          : undefined;
                     return (
                       <span key={d}
-                        className={cls("flex items-center justify-center z-10", !on && "invisible", candCls)}
+                        className={cls("flex items-center justify-center z-10", !on && "invisible", candCls,
+                          brush !== null && on && "cursor-pointer")}
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (brush !== null && on) onPaintCand(i, d);
+                        }}
                         onContextMenu={e => {
                           e.preventDefault(); e.stopPropagation();
                           if (on) onCandClick(i, d);

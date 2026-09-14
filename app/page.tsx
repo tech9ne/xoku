@@ -86,12 +86,13 @@ export default function Home() {
     withUndo(g => { g.values[cell] = 0; g.cands = computeCands(g.values); });
   };
 
-  const paintCell = (cell: number) => {
+  const paintCand = (cell: number, d: number) => {
     if (activeColor === null) return;
     setManualColors(m => {
       const next = new Map(m);
-      if (next.get(cell) === activeColor) next.delete(cell);
-      else next.set(cell, activeColor);
+      const key = cell * 10 + d;
+      if (next.get(key) === activeColor) next.delete(key);
+      else next.set(key, activeColor);
       return next;
     });
   };
@@ -231,18 +232,18 @@ export default function Home() {
         showCands={showCands} setShowCands={setShowCands} />
 
       {/* HoDoKu-style candidate filter row */}
-      <div className="bg-slate-200 border-b border-slate-300 flex flex-wrap items-center justify-center gap-1 px-2 py-1.5">
+      <div className="bg-slate-200 border-b border-slate-300 flex items-center justify-center gap-0.5 px-2 py-1.5 overflow-x-auto">
         {ALL_DIGITS.map(d => {
           const on = digitFilter === d;
           const left = remaining(d);
           return (
             <button key={d} onClick={() => toggleFilter(d)}
               title={`Highlight candidate ${d} (${left} remaining)`}
-              className={cls("w-9 h-12 rounded-md flex items-center justify-center transition-colors",
+              className={cls("w-8 h-10 rounded flex items-center justify-center transition-colors",
                 on ? "bg-indigo-600 text-white"
                    : "text-slate-800 hover:bg-slate-200/70",
                 left === 0 && !on && "opacity-30")}>
-              <span className="text-2xl font-medium leading-none">{d}</span>
+              <span className="text-xl font-semibold leading-none font-serif">{d}</span>
             </button>
           );
         })}
@@ -266,7 +267,7 @@ export default function Home() {
       <div className="flex flex-1 items-start justify-center gap-6 p-4 flex-wrap">
         <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
           digitFilter={digitFilter} onSelect={setSel} onCandClick={toggleCand}
-          manualColors={manualColors} onPaint={paintCell} />
+          manualColors={manualColors} brush={activeColor} onPaintCand={paintCand} />
 
         <aside className="w-72 flex flex-col gap-4">
           <section className="bg-white rounded shadow p-3">
@@ -306,7 +307,7 @@ export default function Home() {
             <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
               onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
             <p className="text-[11px] text-slate-500 mt-2">
-              Pick a color, then long-press (or right-click) cells to mark them. Tap the color again to put the brush away.
+              Pick a color, then tap pencil digits to circle them. Tap a circled digit again to erase. Tap the color again to put the brush away.
             </p>
           </section>
 
