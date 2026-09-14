@@ -18,6 +18,9 @@ export interface Step {
   eliminations: Elimination[];
   patternCells: number[];
   patternCands: Elimination[];
+  cellGroups?: { cells: number[]; color: number }[];
+  candColors?: { cell: number; cand: Digit; color: number }[];
+  links?: { from: { cell: number; cand: Digit }; to: { cell: number; cand: Digit }; strong: boolean }[];
 }
 
 export interface Game {

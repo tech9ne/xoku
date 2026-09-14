@@ -151,7 +151,7 @@ export default function Home() {
     startGame(puzzle, undefined, "Imported puzzle");
   };
 
-  // ---- 1-9 / x/y highlight row ----
+  // ---- 1-9 / x^y highlight row ----
   const toggleFilter = (f: number | "xy") => {
     if (!game) return;
     const next = digitFilter === f ? null : f;
@@ -159,7 +159,7 @@ export default function Home() {
     if (next === null) { setMsg("Highlight cleared."); return; }
     if (next === "xy") {
       const n = game.values.reduce((a, v, i) => a + (v === 0 && countCands(game.cands[i]) === 2 ? 1 : 0), 0);
-      setMsg(`x/y — ${n} bivalue cells highlighted`);
+      setMsg(`x^y — ${n} bivalue cells highlighted`);
     } else {
       const placed = game.values.filter(v => v === next).length;
       const n = game.values.reduce((a, v, i) => a + (v === 0 && game.cands[i] & candMask(next) ? 1 : 0), 0);
@@ -207,15 +207,14 @@ export default function Home() {
 
       {/* HoDoKu-style candidate filter row */}
       <div className="bg-slate-200 border-b border-slate-300 flex flex-wrap items-center justify-center gap-1 px-2 py-1.5">
-        <span className="text-xs font-semibold text-slate-600 mr-1">Highlight:</span>
         {ALL_DIGITS.map(d => {
           const on = digitFilter === d;
           const left = remaining(d);
           return (
             <button key={d} onClick={() => toggleFilter(d)}
               title={`Highlight candidate ${d} (${left} remaining)`}
-              className={cls("w-8 h-8 rounded border text-sm font-medium",
-                on ? "bg-indigo-600 text-white border-indigo-800"
+              className={cls("w-9 h-9 rounded-md border-2 text-base font-semibold shadow-sm",
+                on ? "bg-indigo-600 text-white border-indigo-700 shadow-md"
                    : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100",
                 left === 0 && !on && "opacity-40")}>
               {d}
@@ -223,10 +222,10 @@ export default function Home() {
           );
         })}
         <button onClick={() => toggleFilter("xy")} title="Highlight bivalue cells (exactly 2 candidates)"
-          className={cls("h-8 px-3 rounded border text-sm font-medium",
-            digitFilter === "xy" ? "bg-purple-600 text-white border-purple-800"
+          className={cls("h-9 px-3 rounded-md border-2 text-base font-semibold shadow-sm",
+            digitFilter === "xy" ? "bg-purple-600 text-white border-purple-700 shadow-md"
               : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100")}>
-          x/y
+          x^y
         </button>
         {digitFilter !== null && (
           <button onClick={() => { setDigitFilter(null); setMsg("Highlight cleared."); }}
