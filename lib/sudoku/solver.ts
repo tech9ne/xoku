@@ -103,7 +103,7 @@ export type Level = "Easy" | "Medium" | "Hard" | "Diabolical" | "Extreme";
 //   Medium     2.0 - 4.9   locked candidates, subsets, X-Wing, UR, BUG+1,
 //                          skyscraper/kite/turbot, colors, remote pairs, XY/XYZ-wings
 //   Hard       5.0 - 6.9   swordfish, W-wing, BUG+2/+3, jellyfish, XY-chains
-//   Diabolical 7.0 - 8.4   ALS family, death blossom, kraken fish (phase 2)
+//   Diabolical 7.0 - 8.4   ALS family, death blossom, kraken fish
 //   Extreme    8.5+ / not solvable with the current engine
 const XR_BAND: Record<Exclude<Level, "Extreme">, [number, number]> = {
   Easy: [1.0, 2.0],
@@ -123,13 +123,13 @@ export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): L
 
 export function generatePuzzle(level: Level = "Easy") {
   const cluesTarget: Record<Level, number> = { Easy: 40, Medium: 32, Hard: 24, Diabolical: 22, Extreme: 22 };
-  const maxAttempts: Record<Level, number> = { Easy: 30, Medium: 30, Hard: 50, Diabolical: 8, Extreme: 50 };
+  const maxAttempts: Record<Level, number> = { Easy: 30, Medium: 30, Hard: 50, Diabolical: 50, Extreme: 50 };
   const band = level === "Extreme" ? null : XR_BAND[level];
   const t0 = Date.now();
 
-  // distance from the requested band (0 = exact match). Diabolical cannot be
-  // reached yet (engine tops out at XR 6.0) — the search returns the hardest
-  // Hard it can find and the status bar reports the truth.
+  // distance from the requested band (0 = exact match).
+  // With ALS-XZ (XR 7.0) Diabolical is reachable; fallback reports honestly.
+  //
   const dist = (r: Rating): number => {
     if (!band) return r.solvedByLogic ? 1000 - Math.min(r.hardest, 999) : 0;
     if (!r.solvedByLogic) return 500;

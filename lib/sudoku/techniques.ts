@@ -591,6 +591,102 @@ export const bugPlus1: Finder = (g) => findBug(g, 1);
 export const bugPlus2: Finder = (g) => findBug(g, 2);
 export const bugPlus3: Finder = (g) => findBug(g, 3);
 
+// ---------- ALS-XZ (XR 7.0) ----------
+// An ALS (Almost Locked Set) is a group of n cells inside one unit whose
+// candidates together hold exactly n+1 digits — delete any one digit and the
+// set collapses into a naked subset (locked set).
+// ALS-XZ: two disjoint ALSs A and B with common candidates X and Z, where X
+// is RESTRICTED (every X in A sees every X in B). Then:
+//   X true in A   -> X false in B -> B locks -> Z is placed in B
+//   X false in A  -> A locks                 -> Z is placed in A
+// Either way Z must be true in A or in B, so Z can be removed from any cell
+// that sees every Z in A and every Z in B. When Z is restricted too (doubly
+// linked), the mirrored argument also removes X from cells seeing every X
+// in both sets.
+
+// fast 81x81 peer lookup (arePeers in core is a linear scan; pair loops here
+// need it O(1))
+const PEER2 = new Uint8Array(81 * 81);
+for (let a = 0; a < 81; a++) for (const p of PEERS[a]) PEER2[a * 81 + p] = 1;
+const fastPeers = (a: number, b: number) => PEER2[a * 81 + b] === 1;
+
+interface Als { cells: number[]; mask: number; byDigit: number[][]; }
+
+function restrictedCommon(A: Als, B: Als, d: number): boolean {
+  return A.byDigit[d].every(a => B.byDigit[d].every(b => fastPeers(a, b)));
+}
+
+export const alsXZ: Finder = (g) => {
+  const empt = emptyCells(g);
+  if (empt.length < 4) return null;
+
+  // 1) enumerate ALSs: subsets of each unit's empty cells with |cands| = |cells| + 1
+  //    (a single bivalue cell is the size-1 case; duplicates across units are deduped)
+  const alsList: Als[] = [];
+  const seenKeys = new Set<string>();
+  for (let u = 0; u < 27; u++) {
+    const cells = UNITS[u].filter(i => g.values[i] === 0);
+    const n = cells.length;
+    if (n === 0) continue;
+    for (let sub = 1; sub < 1 << n; sub++) {
+      let mask = 0, size = 0;
+      for (let k = 0; k < n; k++) if (sub & (1 << k)) { mask |= g.cands[cells[k]]; size++; }
+      if (countCands(mask) !== size + 1) continue;
+      const set = cells.filter((_, k) => sub & (1 << k));
+      const key = set.join(",");
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+      const byDigit: number[][] = [];
+      for (const d of candsOf(mask)) byDigit[d] = set.filter(c => g.cands[c] & candMask(d));
+      alsList.push({ cells: set, mask, byDigit });
+    }
+  }
+  if (alsList.length < 2) return null;
+
+  const mark = new Uint8Array(81); // scratch for the disjointness test
+
+  for (let i = 0; i < alsList.length; i++) {
+    const A = alsList[i];
+    for (let j = i + 1; j < alsList.length; j++) {
+      const B = alsList[j];
+      for (const c of B.cells) mark[c] = 1;
+      let overlap = false;
+      for (const c of A.cells) if (mark[c]) { overlap = true; break; }
+      for (const c of B.cells) mark[c] = 0;
+      if (overlap) continue;
+      if (countCands(A.mask & B.mask) < 2) continue;
+      const common = candsOf(A.mask & B.mask);
+
+      for (let xi = 0; xi < common.length; xi++) {
+        const x = common[xi];
+        if (!restrictedCommon(A, B, x)) continue;
+        for (let zi = 0; zi < common.length; zi++) {
+          if (zi === xi) continue;
+          const z = common[zi];
+          const targets = (d: number) =>
+            empt.filter(t =>
+              g.cands[t] & candMask(d) &&
+              A.byDigit[d].every(a => fastPeers(t, a)) &&
+              B.byDigit[d].every(b => fastPeers(t, b)))
+            .map(t => ({ cell: t, cand: d }));
+          const zRestr = restrictedCommon(A, B, z);
+          const elims = [...targets(z), ...(zRestr ? targets(x) : [])];
+          if (!elims.length) continue;
+          const patternCells = [...A.cells, ...B.cells];
+          return mk({
+            technique: zRestr ? "ALS-XZ (doubly linked)" : "ALS-XZ",
+            category: "ALS", score: 7.0,
+            reason: `ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) and ALS ${B.cells.map(cellName).join("+")} (${candsOf(B.mask).join("/")}) share restricted candidate ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets${zRestr ? `, and ${x} likewise (doubly linked)` : ""}.`,
+            eliminations: elims, patternCells,
+            patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+          });
+        }
+      }
+    }
+  }
+  return null;
+};
+
 // ---------- Registry (ordered by XR, easiest first) ----------
 export const FINDERS: Finder[] = [
   fullHouse,               // XR 1.0
@@ -618,6 +714,7 @@ export const FINDERS: Finder[] = [
   bugPlus3,                // XR 5.2
   makeBasicFish(4),        // XR 5.4  Jellyfish
   xyChain,                 // XR 6.0
+  alsXZ,                   // XR 7.0
 ];
 
 export function findNextStep(g: Game): Step | null {
@@ -637,5 +734,5 @@ export const TECHNIQUE_NAMES = [
   "X-Wing", "Swordfish", "Jellyfish",
   "Skyscraper", "2-String Kite", "Turbot Fish", "Simple Colors", "Remote Pair",
   "XY-Wing", "XYZ-Wing", "W-Wing", "Unique Rectangle Type 1",
-  "BUG+1", "BUG+2", "BUG+3", "XY-Chain",
+  "BUG+1", "BUG+2", "BUG+3", "XY-Chain", "ALS-XZ",
 ];
