@@ -234,7 +234,10 @@ export default function Home() {
           className={cls("h-9 px-3 rounded-md border-2 text-base font-semibold shadow-sm",
             digitFilter === "xy" ? "bg-purple-600 text-white border-purple-700 shadow-md"
               : "bg-white text-slate-800 border-slate-300 hover:bg-slate-100")}>
-          x^y
+          <span className="inline-flex items-baseline">
+            <sup className="text-[10px] font-semibold -mr-0.5">x</sup>
+            <span className="text-base font-semibold">y</span>
+          </span>
         </button>
         {digitFilter !== null && (
           <button onClick={() => { setDigitFilter(null); setMsg("Highlight cleared."); }}
