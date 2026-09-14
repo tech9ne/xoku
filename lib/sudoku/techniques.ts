@@ -7,7 +7,8 @@ import {
 export type Finder = (g: Game) => Step | null;
 
 const mk = (
-  s: Partial<Step> & Pick<Step, "technique" | "category" | "score" | "reason">
+  s: Omit<Step, "placements" | "eliminations" | "patternCells" | "patternCands"> &
+    Partial<Pick<Step, "placements" | "eliminations" | "patternCells" | "patternCands">>
 ): Step => ({ placements: [], eliminations: [], patternCells: [], patternCands: [], ...s });
 
 // ---------- Singles ----------
@@ -255,6 +256,8 @@ export const singleDigitChains: Finder = (g) => {
           }
           return mk({
             technique, category: "Single Digit Chain", score,
+            candColors: [x, y, fx, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
+            links: [{ from: { cell: a1, cand: d }, to: { cell: a2, cand: d }, strong: true }, { from: { cell: x, cand: d }, to: { cell: y, cand: d }, strong: false }, { from: { cell: b1, cand: d }, to: { cell: b2, cand: d }, strong: true }],
             reason: `${technique} on ${d}: strong links ${cellName(a1)}–${cellName(a2)} (${unitName(ua)}) and ${cellName(b1)}–${cellName(b2)} (${unitName(ub)}) are joined by weak link ${cellName(x)}–${cellName(y)}; one of ${cellName(fx)}/${cellName(fy)} must be ${d}, so ${d} can be removed from cells seeing both.`,
             eliminations: elims, patternCells: [x, y, fx, fy],
             patternCands: [x, y, fx, fy].map(c => ({ cell: c, cand: d })),
@@ -295,7 +298,6 @@ export const simpleColors: Finder = (g) => {
       if (wrap !== -1) {
         return mk({
           technique: "Simple Colors (Rule 2)", category: "Coloring", score: 4.2,
-            candColors: comp.map(c => ({ cell: c, cand: d, color: color.get(c) ?? 0 })),
           reason: `Coloring ${d}: two cells of the same color see each other, so that color is false — remove ${d} from all its cells.`,
           eliminations: comp.filter(i => color.get(i) === wrap).map(i => ({ cell: i, cand: d })),
           patternCells: comp, patternCands: comp.map(i => ({ cell: i, cand: d })),
@@ -308,7 +310,6 @@ export const simpleColors: Finder = (g) => {
         if (zeros.some(z => arePeers(z, i)) && ones.some(o => arePeers(o, i))) {
           return mk({
             technique: "Simple Colors (Rule 4)", category: "Coloring", score: 4.2,
-            candColors: comp.map(c => ({ cell: c, cand: d, color: color.get(c) ?? 0 })),
             reason: `Coloring ${d}: ${cellName(i)} sees both colors of the chain — remove ${d} from ${cellName(i)}.`,
             eliminations: [{ cell: i, cand: d }],
             patternCells: comp, patternCands: comp.map(c => ({ cell: c, cand: d })),
@@ -349,7 +350,6 @@ export const remotePairs: Finder = (g) => {
       chain.unshift(start);
       return mk({
         technique: "Remote Pair", category: "Chain", score: 4.0,
-        candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
         reason: `${p}/${q} chain ${chain.map(cellName).join("–")}: the ends hold opposite values, so cells seeing both ends lose ${p} and ${q}.`,
         eliminations: elims, patternCells: chain,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
@@ -493,23 +493,24 @@ export const xyChain: Finder = (g) => {
               .map((i): Elimination => ({ cell: i, cand: z }));
             if (elims.length) {
               const chain = [...path, j];
-              const chainLinks: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
-              {
-                let prev = z === candsOf(g.cands[start])[0] ? candsOf(g.cands[start])[1] : candsOf(g.cands[start])[0];
-                for (let k = 0; k + 1 < chain.length; k++) {
-                  const a = chain[k], b = chain[k + 1];
-                  const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
-                  if (!sh.length) break;
-                  chainLinks.push({ from: { cell: a, cand: prev }, to: { cell: a, cand: sh[0] }, strong: true });
-                  chainLinks.push({ from: { cell: a, cand: sh[0] }, to: { cell: b, cand: sh[0] }, strong: false });
-                  prev = sh[0];
-                }
-                chainLinks.push({ from: { cell: chain[chain.length - 1], cand: prev }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
-              }
               return mk({
                 technique: "XY-Chain", category: "Chain", score: 6.0,
                 candColors: chain.flatMap((c2, k) => candsOf(g.cands[c2]).map(x => ({ cell: c2, cand: x, color: k % 2 }))),
-                links: chainLinks,
+                links: (() => {
+                  const L: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
+                  const startDigit = z === firstOut ? d1 : d2;
+                  let prev = startDigit;
+                  for (let k = 0; k + 1 < chain.length; k++) {
+                    const a = chain[k], b = chain[k + 1];
+                    const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
+                    if (!sh.length) break;
+                    L.push({ from: { cell: a, cand: prev }, to: { cell: a, cand: sh[0] }, strong: true });
+                    L.push({ from: { cell: a, cand: sh[0] }, to: { cell: b, cand: sh[0] }, strong: false });
+                    prev = sh[0];
+                  }
+                  L.push({ from: { cell: chain[chain.length - 1], cand: prev }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
+                  return L;
+                })(),
                 reason: `XY-Chain ${chain.map(cellName).join(" → ")}: one end must be ${z}, so ${z} can be removed from cells seeing both ends.`,
                 eliminations: elims, patternCells: chain,
                 patternCands: chain.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
@@ -1072,7 +1073,7 @@ export const alsChain: Finder = (g) => {
             const patternCells = path.flatMap(p => als[p].cells);
             return mk({
               technique: "ALS Chain", category: "ALS", score: 7.4,
-            cellGroups: path.map((p, k) => ({ cells: als[p].cells, color: k % 5 })),
+              cellGroups: path.map((p, k) => ({ cells: als[p].cells, color: k % 5 })),
               reason: `ALS chain ${path.map(p => als[p].cells.map(cellName).join("+")).join(" -> ")}: if ${Z} were false throughout the first set it would lock, and the restricted links force each following set to lock in turn until the last set places ${Z} — so ${Z} must be true in one of the end sets and is removed from cells seeing all of it in both.`,
               eliminations: elims, patternCells,
               patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1130,7 +1131,7 @@ export const deathBlossom: Finder = (g) => {
         const patternCells = [S, ...A.cells, ...B.cells];
         return mk({
           technique: "Death Blossom", category: "ALS", score: 7.6,
-            cellGroups: [{ cells: [S], color: 0 }, { cells: A.cells, color: 1 }, { cells: B.cells, color: 2 }],
+          cellGroups: [{ cells: [S], color: 0 }, { cells: A.cells, color: 1 }, { cells: B.cells, color: 2 }],
           reason: `Stem ${cellName(S)} (${x}/${y}) with petals ${A.cells.map(cellName).join("+")} and ${B.cells.map(cellName).join("+")}: the stem is ${x} or ${y}; either way one petal loses its link digit, locks, and must place ${Z} — so ${Z} is removed from cells seeing all of it in both petals.`,
           eliminations: elims, patternCells,
           patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1218,8 +1219,8 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             if (elims.length) {
               return mk({
                 technique: "X-Chain", category: "Single Digit Chain", score: 5.8,
-            candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
-            links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
+                candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
+                links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `X-Chain on ${d}: ${chainStr(path)} — the alternating links prove that ${cellName(i)} or ${cellName(B)} must hold ${d}, so ${d} is removed from cells seeing both.`,
                 eliminations: elims,
                 patternCells: [...new Set(path.map(nodeCell))],
@@ -1235,8 +1236,8 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             if (elims.length) {
               return mk({
                 technique: "AIC Type 1", category: "Chain", score: 6.2,
-            candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
-            links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
+                candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
+                links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} — at least one end must be true (${cellName(i)} or ${cellName(B)} holds ${d}), so ${d} is removed from cells seeing both.`,
                 eliminations: elims,
                 patternCells: [...new Set(path.map(nodeCell))],
@@ -1261,8 +1262,8 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             if (elims.length) {
               return mk({
                 technique: "AIC Type 2", category: "Chain", score: 6.4,
-            candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
-            links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
+                candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
+                links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} — at least one end must be true (${cellName(i)} is ${d} or ${cellName(B)} is ${q}); ${ending}.`,
                 eliminations: elims,
                 patternCells: [...new Set(path.map(nodeCell))],
@@ -1404,8 +1405,6 @@ export const aicAls: Finder = (g) => {
               const pat = patternOf(path, used);
               return mk({
                 technique: "AIC with ALS nodes (Type 1)", category: "ALS", score: 7.6,
-            cellGroups: used.map((u, k) => ({ cells: als[u].cells, color: (k + 1) % 5 })),
-            candColors: path.flatMap((n, k) => n < 1000 ? [{ cell: Math.floor(n / 10), cand: n % 10, color: k % 2 }] : []),
                 reason: `AIC: ${chainStr(path)} — at least one end must be true: ${cellName(i)} holds ${d}, or ${d} is placed in ALS ${A.cells.map(cellName).join("+")}; either way ${d} is removed from cells seeing both.`,
                 eliminations: elims, patternCells: pat.cells, patternCands: pat.cands,
               });
@@ -1435,8 +1434,6 @@ export const aicAls: Finder = (g) => {
               const pat = patternOf(path, used);
               return mk({
                 technique: `AIC with ALS nodes (Type ${q === d ? 1 : 2})`, category: "ALS", score: 7.6,
-            cellGroups: used.map((u, k) => ({ cells: als[u].cells, color: (k + 1) % 5 })),
-            candColors: path.flatMap((n, k) => n < 1000 ? [{ cell: Math.floor(n / 10), cand: n % 10, color: k % 2 }] : []),
                 reason: `AIC: ${chainStr(path)} — at least one end must be true; ${why}.`,
                 eliminations: elims, patternCells: pat.cells, patternCands: pat.cands,
               });
