@@ -10,7 +10,7 @@ const FILTER_BG = "bg-[#B9FFB9]";
 const PALETTE = [
   { node: "bg-blue-500 text-white", cell: "bg-blue-100" },
   { node: "bg-green-500 text-white", cell: "bg-green-100" },
-  { node: "bg-orange-400 text-white", cell: "bg-orange-100" },
+  { node: "bg-amber-400 text-slate-900", cell: "bg-amber-100" },
   { node: "bg-purple-500 text-white", cell: "bg-purple-100" },
   { node: "bg-teal-500 text-white", cell: "bg-teal-100" },
 ];
@@ -122,8 +122,10 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
                         className={cls("flex items-center justify-center z-10", !on && "invisible", candCls,
                           brush !== null && on && "cursor-pointer")}
                         onClick={e => {
-                          e.stopPropagation();
-                          if (brush !== null && on) onPaintCand(i, d);
+                          if (brush !== null && on) {
+                            e.stopPropagation();
+                            onPaintCand(i, d);
+                          }
                         }}
                         onContextMenu={e => {
                           e.preventDefault(); e.stopPropagation();
