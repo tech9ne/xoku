@@ -1,3 +1,4 @@
+import { nodeStr, setNodeStr } from "./notation";
 import {
   ALL_DIGITS, Elimination, Game, PEERS, Step, UNITS, UNITS_OF,
   arePeers, boxOf, candMask, candsOf, cellName, colOf, combinations,
@@ -1223,7 +1224,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
 
   const nodeCell = (n: number) => Math.floor(n / 10);
   const nodeDigit = (n: number) => n % 10;
-  const nodeName = (n: number) => `${cellName(nodeCell(n))}:${nodeDigit(n)}`;
+  const nodeName = (n: number) => nodeStr(nodeDigit(n), nodeCell(n));
   const chainStr = (path: number[]) =>
     path.map((n, k) => (k === 0 ? nodeName(n) : `${k % 2 === 1 ? " = " : " - "}${nodeName(n)}`)).join("");
 
@@ -1389,8 +1390,8 @@ export const aicAls: Finder = (g) => {
   const nodeDigit = (n: number) => n % 10;
   const alsSet = (n: number) => als[Math.floor((n - 1000) / 10)];
   const nameOf = (n: number) => isAls(n)
-    ? `[${alsSet(n).cells.map(cellName).join("+")}]:${n % 10}`
-    : `${cellName(nodeCell(n))}:${nodeDigit(n)}`;
+    ? setNodeStr(n % 10, alsSet(n).cells)
+    : nodeStr(nodeDigit(n), nodeCell(n));
   const chainStr = (p: number[]) =>
     p.map((n, k) => (k === 0 ? nameOf(n) : `${k % 2 === 1 ? " = " : " - "}${nameOf(n)}`)).join("");
 
