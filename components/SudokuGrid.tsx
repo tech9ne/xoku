@@ -8,11 +8,11 @@ export type DigitFilter = number | "xy" | null;
 const FILTER_BG = "bg-[#B9FFB9]";
 
 const PALETTE = [
-  { node: "bg-blue-500 text-white", cell: "bg-blue-100" },
-  { node: "bg-green-500 text-white", cell: "bg-green-100" },
-  { node: "bg-red-600 text-white ring-2 ring-white/70", cell: "bg-red-100" },
-  { node: "bg-purple-500 text-white", cell: "bg-purple-100" },
-  { node: "bg-teal-500 text-white", cell: "bg-teal-100" },
+  { node: "bg-blue-600 text-white ring-2 ring-white/90", cell: "bg-blue-100" },
+  { node: "bg-green-600 text-white ring-2 ring-white/90", cell: "bg-green-100" },
+  { node: "bg-red-600 text-white ring-2 ring-white/90", cell: "bg-red-100" },
+  { node: "bg-purple-600 text-white ring-2 ring-white/90", cell: "bg-purple-100" },
+  { node: "bg-teal-600 text-white ring-2 ring-white/90", cell: "bg-teal-100" },
 ];
 
 const RING = [
@@ -145,14 +145,6 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
       {step?.links && step.links.length > 0 && (
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-20"
           viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <marker id="xk-s" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
-              <path d="M0,0 L5,2.5 L0,5 z" fill="#dc2626" />
-            </marker>
-            <marker id="xk-w" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
-              <path d="M0,0 L5,2.5 L0,5 z" fill="#dc2626" />
-            </marker>
-          </defs>
           {step.links
             .filter(l => !(l.from.cell === l.to.cell && l.from.cand === l.to.cand))
             .map((l, k) => {
@@ -160,16 +152,25 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
               const b = candPos(l.to.cell, l.to.cand);
               const dx = b.x - a.x, dy = b.y - a.y;
               const len = Math.hypot(dx, dy) || 1;
-              const t1 = Math.min(2.2 / len, 0.4), t2 = 1 - t1;
+              const same = l.from.cell === l.to.cell;
+              const trim = same ? 0.28 : Math.min(2.2 / len, 0.4);
+              const t1 = trim, t2 = 1 - trim;
+              const x1 = a.x + dx * t1, y1 = a.y + dy * t1;
+              const x2 = a.x + dx * t2, y2 = a.y + dy * t2;
+              // perpendicular bow: alternating direction per link fans
+              // overlapping/parallel links apart; in-cell links bow wider
+              const px = -dy / len, py = dx / len;
+              const bow = same ? 1.1 : (k % 2 === 0 ? 0.9 : -0.9);
+              const cx = (x1 + x2) / 2 + px * bow;
+              const cy = (y1 + y2) / 2 + py * bow;
               return (
-                <line key={k}
-                  x1={a.x + dx * t1} y1={a.y + dy * t1}
-                  x2={a.x + dx * t2} y2={a.y + dy * t2}
+                <path key={k}
+                  d={`M ${x1.toFixed(2)} ${y1.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${x2.toFixed(2)} ${y2.toFixed(2)}`}
+                  fill="none"
                   stroke="#dc2626"
                   strokeWidth={l.strong ? 0.8 : 0.42}
                   strokeDasharray={l.strong ? undefined : "1.1 1.3"}
-                  strokeLinecap="round"
-                  markerEnd={`url(#${l.strong ? "xk-s" : "xk-w"})`} />
+                  strokeLinecap="round" />
               );
             })}
         </svg>
