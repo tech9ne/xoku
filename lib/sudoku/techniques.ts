@@ -376,21 +376,21 @@ export const xyWing: Finder = (g) => {
         return mk({
           technique: "XY-Wing", category: "Wing", score: 4.6,
           candColors: [
-            { cell: p, cand: x, color: 1 },
-            { cell: p, cand: y, color: 0 },
-            { cell: a, cand: x, color: 0 },
-            { cell: a, cand: z, color: 1 },
+            { cell: a, cand: z, color: 0 },
+            { cell: a, cand: x, color: 1 },
+            { cell: p, cand: x, color: 0 },
+            { cell: p, cand: y, color: 1 },
             { cell: b, cand: y, color: 0 },
             { cell: b, cand: z, color: 1 },
           ],
           links: [
-            { from: { cell: p, cand: y }, to: { cell: p, cand: x }, strong: true },
-            { from: { cell: p, cand: x }, to: { cell: a, cand: x }, strong: false },
-            { from: { cell: a, cand: x }, to: { cell: a, cand: z }, strong: true },
+            { from: { cell: a, cand: z }, to: { cell: a, cand: x }, strong: true },
+            { from: { cell: a, cand: x }, to: { cell: p, cand: x }, strong: false },
+            { from: { cell: p, cand: x }, to: { cell: p, cand: y }, strong: true },
             { from: { cell: p, cand: y }, to: { cell: b, cand: y }, strong: false },
             { from: { cell: b, cand: y }, to: { cell: b, cand: z }, strong: true },
           ],
-                              reason: `XY-Wing: pivot ${cellName(p)} (${x}/${y}), pincers ${cellName(a)} (${x}/${z}) and ${cellName(b)} (${y}/${z}) — one pincer must be ${z}.`,
+                                                  reason: `XY-Wing: pivot ${cellName(p)} (${x}/${y}), pincers ${cellName(a)} (${x}/${z}) and ${cellName(b)} (${y}/${z}) — one pincer must be ${z}.`,
           eliminations: elims, patternCells: [p, a, b],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
         });
@@ -416,10 +416,10 @@ export const xyzWing: Finder = (g) => {
         return mk({
           technique: "XYZ-Wing", category: "Wing", score: 4.8,
           cellGroups: [
-            { cells: [p], color: 3 },
-            { cells: [a, b], color: 4 },
+            { cells: [p, a], color: 3 },
+            { cells: [b], color: 4 },
           ],
-                    reason: `XYZ-Wing: pivot ${cellName(p)} (${x}/${y}/${z}) with pincers ${cellName(a)} and ${cellName(b)} — ${z} must be in the pivot or a pincer.`,
+                              reason: `XYZ-Wing: pivot ${cellName(p)} (${x}/${y}/${z}) with pincers ${cellName(a)} and ${cellName(b)} — ${z} must be in the pivot or a pincer.`,
           eliminations: elims, patternCells: [p, a, b],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: p, cand: z }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
         });
@@ -450,22 +450,32 @@ export const wWing: Finder = (g) => {
         if (!elims.length) continue;
         return mk({
           technique: "W-Wing", category: "Wing", score: 5.2,
-          candColors: [
-            { cell: A, cand: x, color: 1 },
-            { cell: A, cand: y, color: 0 },
-            { cell: s1, cand: d, color: 0 },
-            { cell: s1, cand: d, color: 1 },
-            { cell: B, cand: x, color: 1 },
-            { cell: B, cand: y, color: 0 },
-          ].filter((c, i, arr) => arr.findIndex(t => t.cell === c.cell && t.cand === c.cand) === i),
-          links: [
-            { from: { cell: A, cand: y }, to: { cell: A, cand: x }, strong: true },
-            { from: { cell: A, cand: x }, to: { cell: s1, cand: d }, strong: false },
-            { from: { cell: s1, cand: d }, to: { cell: s2, cand: d }, strong: true },
-            { from: { cell: s2, cand: d }, to: { cell: B, cand: x }, strong: false },
-            { from: { cell: B, cand: x }, to: { cell: B, cand: y }, strong: true },
-          ],
-                              reason: `W-Wing: ${cellName(A)} and ${cellName(B)} both hold ${x}/${y}; the strong link ${d} (${cellName(s1)}–${cellName(s2)}) forces one of them to be ${o}.`,
+          candColors: (() => {
+            const o1 = arePeers(s1, A) && arePeers(s2, B);
+            const t1 = o1 ? s1 : s2;
+            const t2 = o1 ? s2 : s1;
+            return [
+              { cell: A, cand: o, color: 0 },
+              { cell: A, cand: d, color: 1 },
+              { cell: t1, cand: d, color: 0 },
+              { cell: t2, cand: d, color: 1 },
+              { cell: B, cand: d, color: 0 },
+              { cell: B, cand: o, color: 1 },
+            ];
+          })(),
+          links: (() => {
+            const o1 = arePeers(s1, A) && arePeers(s2, B);
+            const t1 = o1 ? s1 : s2;
+            const t2 = o1 ? s2 : s1;
+            return [
+              { from: { cell: A, cand: o }, to: { cell: A, cand: d }, strong: true },
+              { from: { cell: A, cand: d }, to: { cell: t1, cand: d }, strong: false },
+              { from: { cell: t1, cand: d }, to: { cell: t2, cand: d }, strong: true },
+              { from: { cell: t2, cand: d }, to: { cell: B, cand: d }, strong: false },
+              { from: { cell: B, cand: d }, to: { cell: B, cand: o }, strong: true },
+            ];
+          })(),
+                                                  reason: `W-Wing: ${cellName(A)} and ${cellName(B)} both hold ${x}/${y}; the strong link ${d} (${cellName(s1)}–${cellName(s2)}) forces one of them to be ${o}.`,
           eliminations: elims, patternCells: [A, B, s1, s2],
           patternCands: [{ cell: A, cand: x }, { cell: A, cand: y }, { cell: B, cand: x }, { cell: B, cand: y }, { cell: s1, cand: d }, { cell: s2, cand: d }],
         });
