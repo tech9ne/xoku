@@ -72,3 +72,20 @@ export function alsChainStr(
       );
   return nodes.map(n => alsStrong(n.in, n.out, n.cells)).join(" - ");
 }
+
+// StrmCkr compression rulings: shared-digit victims compress
+// (r5c1,r6c4 <> 4); single-digit chains hoist the digit once.
+export function compressedConclusion(elims: { cell: number; cand: number }[]): string {
+  const byDigit = new Map<number, number[]>();
+  for (const e of elims) {
+    if (!byDigit.has(e.cand)) byDigit.set(e.cand, []);
+    byDigit.get(e.cand)!.push(e.cell);
+  }
+  return [...byDigit.entries()]
+    .map(([d, cells]) => `${cells.map(c => cellName(c)).join(",")} <> ${d}`)
+    .join(", ");
+}
+
+export function hoistedXChain(d: number, tokens: string[]): string {
+  return `(${d})(${tokens.join(" ")})`;
+}
