@@ -257,6 +257,7 @@ export const singleDigitChains: Finder = (g) => {
           return mk({
             technique, category: "Single Digit Chain", score,
             candColors: [a1, a2, y, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
+            // endpoints of the OR are a1 and fy (blue start, green end)
             links: [{ from: { cell: a1, cand: d }, to: { cell: a2, cand: d }, strong: true }, { from: { cell: a2, cand: d }, to: { cell: y, cand: d }, strong: false }, { from: { cell: y, cand: d }, to: { cell: fy, cand: d }, strong: true }],
             reason: `${technique} on ${d}: strong links ${cellName(a1)}–${cellName(a2)} (${unitName(ua)}) and ${cellName(b1)}–${cellName(b2)} (${unitName(ub)}) are joined by weak link ${cellName(x)}–${cellName(y)}; one of ${cellName(fx)}/${cellName(fy)} must be ${d}, so ${d} can be removed from cells seeing both.`,
             eliminations: elims, patternCells: [x, y, fx, fy],
@@ -495,28 +496,35 @@ export const xyChain: Finder = (g) => {
               const chain = [...path, j];
               return mk({
                 technique: "XY-Chain", category: "Chain", score: 6.0,
-                candColors: (() => {
-              // walk the chain: in-digit and strong-link partner get opposite colors,
-              // alternating along the path (each cell holds one blue + one green node)
-              const startDigit = firstOut;
-              let prev = startDigit;
+candColors: (() => {
+              // blue-first convention: start assumption = start cell is OFF
+              // in its outgoing digit. Alternation: in-digit = parity,
+              // strong-link partner = 1 - parity, shared digit carries
+              // 1 - parity into the next cell where it is the in-digit.
               const out: { cell: number; cand: number; color: number }[] = [];
-              out.push({ cell: chain[0], cand: startDigit, color: 0 });
+              let parity = 0;                    // 0 = blue
+              let prev = firstOut;               // digit leaving the start
+              out.push({ cell: chain[0], cand: firstOut, color: 0 });
+              const other0 = candsOf(g.cands[chain[0]]).find(x => x !== firstOut)!;
+              out.push({ cell: chain[0], cand: other0, color: 1 });
+              parity = 1;
               for (let k = 0; k + 1 < chain.length; k++) {
                 const a = chain[k], b = chain[k + 1];
                 const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
                 if (!sh.length) break;
-                out.push({ cell: a, cand: sh[0], color: (k + 1) % 2 });
-                out.push({ cell: b, cand: sh[0], color: (k + 1) % 2 });
+                // sh[0] arrives in cell b as the OFF side -> blue
+                out.push({ cell: b, cand: sh[0], color: 0 });
+                const partner = candsOf(g.cands[b]).find(x => x !== sh[0])!;
+                if (partner !== undefined) out.push({ cell: b, cand: partner, color: 1 });
                 prev = sh[0];
+                parity = 1 - parity;
               }
-              out.push({ cell: chain[chain.length - 1], cand: z, color: chain.length % 2 });
+              out.push({ cell: chain[chain.length - 1], cand: z, color: chain.length % 2 === 1 ? 0 : 1 });
               return out;
             })(),
             links: (() => {
               const L: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
-              const startDigit = firstOut;
-              let prev = startDigit;
+              let prev = firstOut;
               for (let k = 0; k + 1 < chain.length; k++) {
                 const a = chain[k], b = chain[k + 1];
                 const sh = candsOf(g.cands[a] & g.cands[b]).filter(x => x !== prev);
@@ -528,7 +536,7 @@ export const xyChain: Finder = (g) => {
               L.push({ from: { cell: chain[chain.length - 1], cand: prev }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
               return L;
             })(),
-                
+                                            
                 reason: `XY-Chain ${chain.map(cellName).join(" → ")}: one end must be ${z}, so ${z} can be removed from cells seeing both ends.`,
                 eliminations: elims, patternCells: chain,
                 patternCands: chain.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
