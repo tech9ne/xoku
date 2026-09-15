@@ -259,7 +259,7 @@ export const singleDigitChains: Finder = (g) => {
             technique, category: "Single Digit Chain", score,
             candColors: [fx, x, y, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
             links: [{ from: { cell: fx, cand: d }, to: { cell: x, cand: d }, strong: true }, { from: { cell: x, cand: d }, to: { cell: y, cand: d }, strong: false }, { from: { cell: y, cand: d }, to: { cell: fy, cand: d }, strong: true }],
-            reason: `${technique} on ${d}: strong links ${cellName(a1)}–${cellName(a2)} (${unitName(ua)}) and ${cellName(b1)}–${cellName(b2)} (${unitName(ub)}) are joined by weak link ${cellName(x)}–${cellName(y)}; one of ${cellName(fx)}/${cellName(fy)} must be ${d}, so ${d} can be removed from cells seeing both.`,
+            reason: `${technique}: ${nodeStr(d, fx)} = ${nodeStr(d, x)} - ${nodeStr(d, y)} = ${nodeStr(d, fy)} => ${conclusionStr(elims)}.`,
             eliminations: elims, patternCells: [x, y, fx, fy],
             patternCands: [x, y, fx, fy].map(c => ({ cell: c, cand: d })),
           });
@@ -351,7 +351,7 @@ export const remotePairs: Finder = (g) => {
       chain.unshift(start);
       return mk({
         technique: "Remote Pair", category: "Chain", score: 4.0,
-        reason: `${p}/${q} chain ${chain.map(cellName).join("–")}: the ends hold opposite values, so cells seeing both ends lose ${p} and ${q}.`,
+        reason: `Remote Pair: ${chain.map((c, k) => bivStr(k % 2 === 0 ? p : q, k % 2 === 0 ? q : p, c)).join(" - ")} => ${conclusionStr(elims)}.`,
         eliminations: elims, patternCells: chain,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
       });
@@ -391,7 +391,7 @@ export const xyWing: Finder = (g) => {
             { from: { cell: p, cand: y }, to: { cell: b, cand: y }, strong: false },
             { from: { cell: b, cand: y }, to: { cell: b, cand: z }, strong: true },
           ],
-                                                  reason: `XY-Wing: pivot ${cellName(p)} (${x}/${y}), pincers ${cellName(a)} (${x}/${z}) and ${cellName(b)} (${y}/${z}) — one pincer must be ${z}.`,
+                                                  reason: `XY-Wing: ${bivStr(z, x, a)} - ${bivStr(x, y, p)} - ${bivStr(y, z, b)} => ${conclusionStr(elims)}.`,
           eliminations: elims, patternCells: [p, a, b],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
         });
@@ -476,7 +476,7 @@ export const wWing: Finder = (g) => {
               { from: { cell: B, cand: d }, to: { cell: B, cand: o }, strong: true },
             ];
           })(),
-                                                  reason: `W-Wing: ${cellName(A)} and ${cellName(B)} both hold ${x}/${y}; the strong link ${d} (${cellName(s1)}–${cellName(s2)}) forces one of them to be ${o}.`,
+                                                  reason: `W-Wing: ${bivStr(o, d, A)} - ${nodeStr(d, arePeers(s1, A) && arePeers(s2, B) ? s1 : s2)} = ${nodeStr(d, arePeers(s1, A) && arePeers(s2, B) ? s2 : s1)} - ${bivStr(d, o, B)} => ${conclusionStr(elims)}.`,
           eliminations: elims, patternCells: [A, B, s1, s2],
           patternCands: [{ cell: A, cand: x }, { cell: A, cand: y }, { cell: B, cand: x }, { cell: B, cand: y }, { cell: s1, cand: d }, { cell: s2, cand: d }],
         });
