@@ -54,7 +54,7 @@ export default function MenuBar(p: Props) {
   };
   return (
     <nav className="bg-slate-200 text-slate-800 border-b border-slate-300">
-      <div className="flex items-center flex-nowrap gap-1 px-1 h-9 overflow-x-auto">
+      <div className="flex items-center flex-nowrap gap-1 px-1 h-9">
         {Object.entries(menus).map(([title, entries]) => (
           <div key={title} className="relative shrink-0">
             <button className="px-2 h-7 text-xs hover:bg-slate-300 rounded-sm whitespace-nowrap"
@@ -79,7 +79,7 @@ export default function MenuBar(p: Props) {
             <RedoIcon />
           </button>
         </div>
-        <div className="flex items-center gap-0.5 shrink-0 ml-2">
+        <div className="flex items-center gap-0.5 ml-2 min-w-0 flex-1 overflow-x-auto">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;
             const left = p.digitRemaining(d);
