@@ -26,6 +26,8 @@ export default function Home() {
   const [msg, setMsg] = useState("Generating puzzle…");
   const [seconds, setSeconds] = useState(0);
   const [gameId, setGameId] = useState(0);
+  const [generating, setGenerating] = useState(false);
+  const workerRef = useRef<Worker | null>(null);
   const inited = useRef(false);
 
   const startGame = useCallback((puzzle: number[], solution?: number[], label?: string, rating?: ReturnType<typeof rateGame>) => {
@@ -34,6 +36,9 @@ export default function Home() {
     setHistory([]); setHint(null); setAllSteps(null); setDigitFilter(null);
     setFuture([]);
         setManualColors(new Map());
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setGenerating(false);
     setSeconds(0); setGameId(id => id + 1);
     const r = rating ?? rateGame(g);
     setMsg(`${label ?? "New game"} — XR ${r.hardest.toFixed(1)} · ${levelOfRating(r)} · hardest: ${r.hardestTechnique}`);
@@ -53,6 +58,18 @@ export default function Home() {
     return () => clearInterval(t);
   }, [gameId, solved]);
 
+  useEffect(() => () => { workerRef.current?.terminate(); }, []);
+
+  useEffect(() => {
+    if (!generating) return;
+    let n = 0;
+    const t = setInterval(() => {
+      n++;
+      setMsg(`Generating ${level} puzzle… ${n}s (deep levels can take up to ~30 s)`);
+    }, 1000);
+    return () => clearInterval(t);
+  }, [generating, level]);
+
   const withUndo = (fn: (g: Game) => void) => {
     if (!game) return;
     const h = cloneGame(game);
@@ -62,13 +79,39 @@ export default function Home() {
     setGame(h);
   };
 
+  const finishGeneration = (lvl: Level, res: { puzzle: number[]; solution: number[]; rating: ReturnType<typeof rateGame> }, how: string) => {
+    setGenerating(false);
+    startGame(res.puzzle, res.solution, `${lvl} puzzle · ${how}`, res.rating);
+  };
+
+  const generateOnMainThread = (lvl: Level) => {
+    setTimeout(() => {
+      finishGeneration(lvl, generatePuzzle(lvl), "main thread");
+    }, 30);
+  };
+
   const newPuzzle = (lvl: Level) => {
     setLevel(lvl);
+    setGenerating(true);
     setMsg(`Generating ${lvl} puzzle…`);
-    setTimeout(() => {
-      const { puzzle, solution, rating } = generatePuzzle(lvl);
-      startGame(puzzle, solution, `${lvl} puzzle`, rating);
-    }, 30);
+    workerRef.current?.terminate(); // latest request wins
+    try {
+      const w = new Worker(new URL("../lib/sudoku/generate.worker.ts", import.meta.url));
+      workerRef.current = w;
+      w.onmessage = (e: MessageEvent) => {
+        workerRef.current = null;
+        w.terminate();
+        finishGeneration(lvl, e.data, "background");
+      };
+      w.onerror = () => {
+        workerRef.current = null;
+        w.terminate();
+        generateOnMainThread(lvl);
+      };
+      w.postMessage({ level: lvl });
+    } catch {
+      generateOnMainThread(lvl);
+    }
   };
 
   const setValue = (cell: number, value: number) => {
