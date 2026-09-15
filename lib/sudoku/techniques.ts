@@ -1243,7 +1243,14 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
     let k = 0;
     while (k < path.length) {
       if (k % 2 === 0 && k + 1 < path.length && nodeCell(path[k + 1]) === nodeCell(path[k])) {
-        tokens.push({ text: bivStr(nodeDigit(path[k]), nodeDigit(path[k + 1]), nodeCell(path[k])), endIdx: k + 1 });
+        // connector truth: '=' only when the pair IS the cell's bivalue
+        // strong link; '-' when the cell merely serves as the passage
+        // (trivalue+ cell, or a non-strong same-cell restriction)
+        const c = nodeCell(path[k]);
+        const d1 = nodeDigit(path[k]), d2 = nodeDigit(path[k + 1]);
+        const isStrong = countCands(g.cands[c]) === 2 &&
+          g.cands[c] === (candMask(d1) | candMask(d2));
+        tokens.push({ text: `(${d1} ${isStrong ? "=" : "-"} ${d2})${cellName(c)}`, endIdx: k + 1 });
         k += 2;
       } else {
         tokens.push({ text: nodeName(path[k]), endIdx: k });
