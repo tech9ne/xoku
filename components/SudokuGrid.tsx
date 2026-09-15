@@ -108,7 +108,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
                     );
                     const manualNode = manualColors.get(i * 10 + d);
                     const candCls = elim
-                      ? "bg-red-500 text-white rounded-full font-bold line-through"
+                      ? "bg-red-500 text-white rounded-full font-bold"
                       : nc !== undefined
                         ? cls(PALETTE[nc].node, "rounded-full font-bold")
                         : manualNode !== undefined
