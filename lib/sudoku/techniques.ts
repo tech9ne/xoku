@@ -1243,15 +1243,21 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
     let k = 0;
     while (k < path.length) {
       if (k + 1 < path.length && nodeCell(path[k + 1]) === nodeCell(path[k])) {
-        // A bivalue pair is dual-natured: "at least one true" (strong) AND
-        // "not both true" (weak) hold at once. The connector mirrors the
-        // role THIS chain gives the pair - its position parity:
-        //   even k: the pair carries the strong link   "(4 = 5)r3c5"
-        //   odd  k: the cell serves as the weak passage "(4 - 5)r3c5"
-        //           (enters strong, crosses weak, exits strong)
+        // Pair-truth test (the hierarchy):
+        //   trivalue+ cell: every internal pair is WEAK-only (a pair can
+        //     never guarantee "at least one true")
+        //   bivalue cell: the pair is DUAL-NATURED - strong ("at least one
+        //     true") and weak ("not both true") - and the chain's parity
+        //     decides which face it serves in THIS chain
+        // Connector = parity role if the pair can bear it, else weak.
         const c = nodeCell(path[k]);
         const d1 = nodeDigit(path[k]), d2 = nodeDigit(path[k + 1]);
-        tokens.push({ text: `(${d1} ${k % 2 === 0 ? "=" : "-"} ${d2})${cellName(c)}`, endIdx: k + 1 });
+        const pairIsBivalue = countCands(g.cands[c]) === 2 &&
+          g.cands[c] === (candMask(d1) | candMask(d2));
+        const connector = k % 2 === 0 && pairIsBivalue ? "=" : "-";
+        if (k % 2 === 0 && !pairIsBivalue)
+          throw new Error(`strong-position fold on non-bivalue pair at ${cellName(c)} - invalid chain`);
+        tokens.push({ text: `(${d1} ${connector} ${d2})${cellName(c)}`, endIdx: k + 1 });
         k += 2;
       } else {
         tokens.push({ text: nodeName(path[k]), endIdx: k });
