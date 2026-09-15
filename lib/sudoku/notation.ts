@@ -1,14 +1,23 @@
 // Chain notation - the single grammar for all link-based techniques.
-//   single node:  digit + cell        "7r7c4"
-//   set node:     digit + (cells)      "4(r7c456, r8c5, r9c5)"
-//   strong link:  " = "    weak link:  " - "
-//   ALS internal: "x=y(cells)"         "7=4(r7c456, r8c5, r9c5)"
+//   candidate node:  (4)r5c2            digit in parens, then cell
+//   bivalue cell:    (4 = 5)r3c5        internal strong link, folded
+//   ALS set node:    7=4(r7c456, ...)   in=out(cells)      [ALS chains]
+//   strong link " = "   weak link " - "
+//   conclusion:      " => r5c8 <> 4"     comma-separated for multiples
 // Compression: 3+ cells in a row fuse (r7c456), 3+ in a column fuse
 // (r1678c1); smaller groups list individually.
 import { cellName } from "./core";
 
 export function nodeStr(digit: number, cell: number): string {
-  return `${digit}${cellName(cell)}`;
+  return `(${digit})${cellName(cell)}`;
+}
+
+export function bivStr(d1: number, d2: number, cell: number): string {
+  return `(${d1} = ${d2})${cellName(cell)}`;
+}
+
+export function conclusionStr(elims: { cell: number; cand: number }[]): string {
+  return elims.map(e => `${cellName(e.cell)} <> ${e.cand}`).join(", ");
 }
 
 export function compressCells(cells: number[]): string {
