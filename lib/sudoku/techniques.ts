@@ -1242,15 +1242,16 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
     const tokens: { text: string; endIdx: number }[] = [];
     let k = 0;
     while (k < path.length) {
-      if (k % 2 === 0 && k + 1 < path.length && nodeCell(path[k + 1]) === nodeCell(path[k])) {
-        // connector truth: '=' only when the pair IS the cell's bivalue
-        // strong link; '-' when the cell merely serves as the passage
-        // (trivalue+ cell, or a non-strong same-cell restriction)
+      if (k + 1 < path.length && nodeCell(path[k + 1]) === nodeCell(path[k])) {
+        // A bivalue pair is dual-natured: "at least one true" (strong) AND
+        // "not both true" (weak) hold at once. The connector mirrors the
+        // role THIS chain gives the pair - its position parity:
+        //   even k: the pair carries the strong link   "(4 = 5)r3c5"
+        //   odd  k: the cell serves as the weak passage "(4 - 5)r3c5"
+        //           (enters strong, crosses weak, exits strong)
         const c = nodeCell(path[k]);
         const d1 = nodeDigit(path[k]), d2 = nodeDigit(path[k + 1]);
-        const isStrong = countCands(g.cands[c]) === 2 &&
-          g.cands[c] === (candMask(d1) | candMask(d2));
-        tokens.push({ text: `(${d1} ${isStrong ? "=" : "-"} ${d2})${cellName(c)}`, endIdx: k + 1 });
+        tokens.push({ text: `(${d1} ${k % 2 === 0 ? "=" : "-"} ${d2})${cellName(c)}`, endIdx: k + 1 });
         k += 2;
       } else {
         tokens.push({ text: nodeName(path[k]), endIdx: k });
