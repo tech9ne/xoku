@@ -375,7 +375,21 @@ export const xyWing: Finder = (g) => {
         if (!elims.length) continue;
         return mk({
           technique: "XY-Wing", category: "Wing", score: 4.6,
-          cellGroups: [{ cells: [p], color: 0 }, { cells: [a], color: 1 }, { cells: [b], color: 2 }],
+          candColors: [
+            { cell: p, cand: y, color: 0 },
+            { cell: p, cand: x, color: 1 },
+            { cell: a, cand: x, color: 0 },
+            { cell: a, cand: z, color: 1 },
+            { cell: b, cand: y, color: 0 },
+            { cell: b, cand: z, color: 1 },
+          ],
+          links: [
+            { from: { cell: p, cand: y }, to: { cell: p, cand: x }, strong: true },
+            { from: { cell: p, cand: x }, to: { cell: a, cand: x }, strong: false },
+            { from: { cell: a, cand: x }, to: { cell: a, cand: z }, strong: true },
+            { from: { cell: p, cand: y }, to: { cell: b, cand: y }, strong: false },
+            { from: { cell: b, cand: y }, to: { cell: b, cand: z }, strong: true },
+          ],
           reason: `XY-Wing: pivot ${cellName(p)} (${x}/${y}), pincers ${cellName(a)} (${x}/${z}) and ${cellName(b)} (${y}/${z}) — one pincer must be ${z}.`,
           eliminations: elims, patternCells: [p, a, b],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
