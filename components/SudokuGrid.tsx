@@ -73,7 +73,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
 
           // selection is an OUTLINE (yellow, thick) - never a background -
           // so digit highlights, hint tints and pattern colors stay visible
-          const outline = selected ? "ring-[3px] ring-inset ring-yellow-400 z-10" : "";
+          const outline = selected ? "bg-[#FFFF96] ring-[4px] ring-inset ring-[#FFFF00] z-10" : "";
           // priority: hint placement > hint sets > hint pattern > manual > filter
           const bg = placing ? "bg-green-200"
             : groupOf.has(i) ? PALETTE[groupOf.get(i)!].cell
@@ -99,7 +99,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
                   {value}
                 </span>
               ) : showCands ? (
-                <div className="grid grid-cols-3 grid-rows-3 w-full h-full text-[9px] sm:text-[11px] leading-none">
+                <div className="grid grid-cols-3 grid-rows-3 w-full h-full text-[#646464] text-[9px] sm:text-[11px] leading-none">
                   {ALL_DIGITS.map(d => {
                     const on = (game.cands[i] & candMask(d)) !== 0;
                     const elim = step?.eliminations.some(e => e.cell === i && e.cand === d);
