@@ -71,9 +71,11 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
           const manual = manualColors.get(i);
           const manualCell = manual !== undefined ? PALETTE[manual % 5].cell : undefined;
 
-          // priority: selection > hint placement > hint sets > hint pattern > manual > filter
-          const bg = selected ? "ring-[3px] ring-inset ring-slate-900 z-10"
-            : placing ? "bg-green-200"
+          // selection is an OUTLINE (yellow, thick) - never a background -
+          // so digit highlights, hint tints and pattern colors stay visible
+          const outline = selected ? "ring-[3px] ring-inset ring-yellow-400 z-10" : "";
+          // priority: hint placement > hint sets > hint pattern > manual > filter
+          const bg = placing ? "bg-green-200"
             : groupOf.has(i) ? PALETTE[groupOf.get(i)!].cell
             : pattern ? "bg-sky-100"
             : manualCell ?? filterBg;
@@ -87,6 +89,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
               className={cls("relative border border-slate-200 flex items-center justify-center cursor-pointer",
                 (c === 2 || c === 5) && "border-r-2 border-r-slate-500",
                 (r === 2 || r === 5) && "border-b-2 border-b-slate-500",
+                outline,
                 manual !== undefined && RING[manual % 5],
                 bg)}
               onClick={() => onSelect(selected ? -1 : i)}
