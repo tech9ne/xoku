@@ -15,14 +15,15 @@ export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [history, setHistory] = useState<Game[]>([]);
   const [future, setFuture] = useState<Game[]>([]);
+  const [solutionPath, setSolutionPath] = useState<string[]>([]);
   const [level, setLevel] = useState<Level>("Easy");
   const [sel, setSel] = useState(40);
   const [hint, setHint] = useState<Step | null>(null);
   const [allSteps, setAllSteps] = useState<Step[] | null>(null);
   const [showCands, setShowCands] = useState(true);
-  const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [manualColors, setManualColors] = useState<Map<number, number>>(new Map());
   const [activeColor, setActiveColor] = useState<number | null>(null);
+  const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Generating puzzle…");
   const [seconds, setSeconds] = useState(0);
   const [gameId, setGameId] = useState(0);
@@ -34,12 +35,13 @@ export default function Home() {
     const g = newGame(puzzle, solution);
     setGame(g);
     setHistory([]); setHint(null); setAllSteps(null); setDigitFilter(null);
+    setManualColors(new Map());
     setFuture([]);
-        setManualColors(new Map());
+    setSolutionPath([]);
+    setSeconds(0); setGameId(id => id + 1);
     workerRef.current?.terminate();
     workerRef.current = null;
     setGenerating(false);
-    setSeconds(0); setGameId(id => id + 1);
     const r = rating ?? rateGame(g);
     setMsg(`${label ?? "New game"} — XR ${r.hardest.toFixed(1)} · ${levelOfRating(r)} · hardest: ${r.hardestTechnique}`);
   }, []);
@@ -58,59 +60,49 @@ export default function Home() {
     return () => clearInterval(t);
   }, [gameId, solved]);
 
-  useEffect(() => () => { workerRef.current?.terminate(); }, []);
-
-  useEffect(() => {
-    if (!generating) return;
-    let n = 0;
-    const t = setInterval(() => {
-      n++;
-      setMsg(`Generating ${level} puzzle… ${n}s (deep levels can take up to ~30 s)`);
-    }, 1000);
-    return () => clearInterval(t);
-  }, [generating, level]);
-
   const withUndo = (fn: (g: Game) => void) => {
     if (!game) return;
     const h = cloneGame(game);
     fn(h);
-    setHistory(hist => [...hist.slice(-199), game]);
     setFuture([]);
+    setHistory(hist => [...hist.slice(-199), game]);
     setGame(h);
   };
 
-  const finishGeneration = (lvl: Level, res: { puzzle: number[]; solution: number[]; rating: ReturnType<typeof rateGame> }, how: string) => {
-    setGenerating(false);
-    startGame(res.puzzle, res.solution, `${lvl} puzzle · ${how}`, res.rating);
-  };
-
-  const generateOnMainThread = (lvl: Level) => {
-    setTimeout(() => {
-      finishGeneration(lvl, generatePuzzle(lvl), "main thread");
-    }, 30);
+  const recordStep = (s: Step) => {
+    setSolutionPath(p => [...p, s.technique]);
   };
 
   const newPuzzle = (lvl: Level) => {
     setLevel(lvl);
     setGenerating(true);
     setMsg(`Generating ${lvl} puzzle…`);
-    workerRef.current?.terminate(); // latest request wins
+    workerRef.current?.terminate();
     try {
       const w = new Worker(new URL("../lib/sudoku/generate.worker.ts", import.meta.url));
       workerRef.current = w;
       w.onmessage = (e: MessageEvent) => {
         workerRef.current = null;
         w.terminate();
-        finishGeneration(lvl, e.data, "background");
+        setGenerating(false);
+        startGame(e.data.puzzle, e.data.solution, `${lvl} puzzle`, e.data.rating);
       };
       w.onerror = () => {
         workerRef.current = null;
         w.terminate();
-        generateOnMainThread(lvl);
+        setTimeout(() => {
+          setGenerating(false);
+          const res = generatePuzzle(lvl);
+          startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+        }, 30);
       };
       w.postMessage({ level: lvl });
     } catch {
-      generateOnMainThread(lvl);
+      setTimeout(() => {
+        setGenerating(false);
+        const res = generatePuzzle(lvl);
+        startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+      }, 30);
     }
   };
 
@@ -119,17 +111,13 @@ export default function Home() {
     withUndo(g => placeValue(g, cell, value));
     setHint(null);
     setMsg(`${cellName(cell)} set to ${value}`);
+    setSolutionPath(p => [...p, `Direct: ${cellName(cell)} = ${value}`]);
   };
 
   const toggleCand = (cell: number, d: number) => {
     if (!game || cell < 0 || game.given[cell] || game.values[cell] !== 0) return;
     withUndo(g => { g.cands[cell] ^= candMask(d); });
     setMsg(`${cellName(cell)}: candidate ${d} ${game.cands[cell] & candMask(d) ? "excluded" : "restored"}`);
-  };
-
-  const clearCell = (cell: number) => {
-    if (!game || cell < 0 || game.given[cell]) return;
-    withUndo(g => { g.values[cell] = 0; g.cands = computeCands(g.values); });
   };
 
   const paintCand = (cell: number, d: number) => {
@@ -143,6 +131,11 @@ export default function Home() {
     });
   };
 
+  const clearCell = (cell: number) => {
+    if (!game || cell < 0 || game.given[cell]) return;
+    withUndo(g => { g.values[cell] = 0; g.cands = computeCands(g.values); });
+  };
+
   const redo = () => {
     if (!future.length || !game) return;
     setHistory(h => [...h, game]);
@@ -153,8 +146,6 @@ export default function Home() {
   };
 
   const undo = () => {
-
-
     if (!history.length || !game) return;
     setFuture(f => [...f, game]);
     setGame(history[history.length - 1]);
@@ -176,31 +167,33 @@ export default function Home() {
   };
 
   const applyHint = () => {
-    if (game && hint) withUndo(g => applyStep(g, hint));
+    if (game && hint) {
+      withUndo(g => applyStep(g, hint));
+      recordStep(hint);
+    }
     setHint(null);
   };
 
   const showAll = () => {
     if (!game) return;
     if (allSteps) { setAllSteps(null); return; }
-    try {
-      setHint(null);
-      setAllSteps(findAllSteps(game));
-      setMsg("All steps found — click one to highlight it.");
-    } catch (e) {
-      setMsg(`Show-all error: ${String((e as Error).message).slice(0, 120)}`);
-    }
+    setHint(null);
+    setAllSteps(findAllSteps(game));
+    setMsg("All steps found — click one to highlight it.");
   };
 
   const autoSolve = () => {
     if (!game) return;
+    const taken: string[] = [];
     withUndo(g => {
       for (let guard = 0; guard < 500 && !isSolved(g); guard++) {
         const s = findNextStep(g);
         if (!s) break;
         applyStep(g, s);
+        taken.push(s.technique);
       }
     });
+    setSolutionPath(p => [...p, ...taken]);
     setMsg("Auto-solved as far as the implemented techniques allow.");
   };
 
@@ -233,7 +226,6 @@ export default function Home() {
     startGame(puzzle, undefined, "Imported puzzle");
   };
 
-  // ---- 1-9 / x^y highlight row ----
   const toggleFilter = (f: number | "xy") => {
     if (!game) return;
     const next = digitFilter === f ? null : f;
@@ -275,125 +267,159 @@ export default function Home() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
-
   if (!game) return <main className="p-8 text-slate-700">Loading…</main>;
 
   const remaining = (d: number) => 9 - game.values.filter(v => v === d).length;
   const hasSel = sel >= 0;
   const cellLocked = !hasSel || game.given[sel] || game.values[sel] !== 0;
+  const progress = Math.round((81 - game.values.filter(v => v === 0).length) / 81 * 100);
 
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
+    <main className="min-h-screen bg-[#F2F2F2] text-slate-900 flex flex-col">
+      {/* ZONE 1: menu + toolbar (MenuBar already carries both) */}
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
-        onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check}
-        digitFilter={digitFilter}
-        onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
-        digitRemaining={remaining} onAutoSolve={autoSolve}
+        onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
-        showCands={showCands} setShowCands={setShowCands} />
+        showCands={showCands} setShowCands={setShowCands}
+        digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
+        digitRemaining={remaining} />
 
-
-      <div className="flex flex-1 items-start justify-center gap-6 p-4 flex-wrap">
+      {/* ZONE 2+3: grid left, panel right */}
+      <div className="flex flex-1 items-start justify-center gap-4 p-3 flex-wrap">
         <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
-          digitFilter={digitFilter} onSelect={setSel} onCandClick={toggleCand}
-          manualColors={manualColors} brush={activeColor} onPaintCand={paintCand} />
+          digitFilter={digitFilter}
+          manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
+          onSelect={setSel} onCandClick={toggleCand} />
 
-        <aside className="w-72 flex flex-col gap-4">
-          <section className="bg-white rounded shadow p-3">
-            <h2 className="font-semibold text-sm mb-2">Set value:</h2>
-            <div className="grid grid-cols-3 gap-1">
-              {ALL_DIGITS.map(d => (
-                <button key={d} disabled={cellLocked}
-                  className="h-12 rounded-md flex flex-col items-center justify-center transition-colors hover:bg-slate-200/70 disabled:opacity-30"
-                  onClick={() => setValue(sel, d)}>
-                  <span className="text-xl font-medium leading-none">{d}</span>
-                  <span className="text-[10px] leading-none mt-1 text-slate-400">{remaining(d)}</span>
-                </button>
-              ))}
+        {/* HoDoKu right panel: Summary, Active Cell, Set Value, Exclude, buttons, Solution path */}
+        <aside className="w-64 flex flex-col gap-1.5 text-sm">
+          {/* Summary */}
+          <section className="bg-white border border-[#B0B0B0]">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Summary</div>
+            <div className="px-2 py-1 text-xs space-y-0.5">
+              <div className="flex justify-between"><span>Level</span><span>{level}</span></div>
+              <div className="flex justify-between"><span>Time</span><span>{mmss(seconds)}</span></div>
+              <div className="flex justify-between"><span>Progress</span><span>{progress}%</span></div>
+              <div className="flex justify-between"><span>Build</span><span>{BUILD_TAG}</span></div>
             </div>
           </section>
 
-          <section className="bg-white rounded shadow p-3">
-            <h2 className="font-semibold text-sm mb-1">Exclude candidate:</h2>
-            <p className="text-[11px] text-slate-500 mb-2">
-              Tinted = candidate present. Tap to exclude, tap again to restore.
-              Or long-press / right-click a pencil mark in the grid.
-            </p>
-            <div className="grid grid-cols-3 gap-1">
-              {ALL_DIGITS.map(d => (
-                <button key={d} disabled={cellLocked}
-                  className={cls("h-11 rounded-md flex items-center justify-center transition-colors text-slate-800 hover:bg-red-100/60 disabled:opacity-30",
-                    hasSel && game.cands[sel] & candMask(d) ? "bg-red-100" : "")}
-                  onClick={() => toggleCand(sel, d)}>
-                  <span className="text-xl font-medium leading-none">{d}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-white rounded shadow p-3">
-            <h2 className="font-semibold text-sm mb-2">Coloring</h2>
-            <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
-              onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
-            <p className="text-[11px] text-slate-500 mt-2">
-              Pick a color, then tap pencil digits to circle them. Tap a circled digit again to erase. Tap the color again to put the brush away.
-            </p>
-          </section>
-
-          <section className="bg-white rounded shadow p-3 text-sm">
-            <h2 className="font-semibold mb-2">Hints</h2>
-            <div className="flex flex-wrap gap-1 mb-2">
-              <button className="px-2 py-1 border rounded hover:bg-slate-100" onClick={getHint}>Get next hint</button>
-              <button className="px-2 py-1 border rounded hover:bg-slate-100 disabled:opacity-40"
-                disabled={!hint} onClick={applyHint}>Apply</button>
-              <button className="px-2 py-1 border rounded hover:bg-slate-100" onClick={showAll}>
-                {allSteps ? "Hide" : "Show"} all possible steps
-              </button>
-            </div>
-            {hint && (
-              <div className="mb-2 p-2 bg-yellow-50 border rounded">
-                <b>{hint.technique}</b> <span className="text-xs text-slate-500">(XR {hint.score})</span>
-                <p>{hint.reason}</p>
-              </div>
-            )}
-            {allSteps && (
-              <ul className="max-h-56 overflow-auto">
-                {allSteps.map((s, idx) => (
-                  <li key={idx}>
-                    <button className="text-left w-full px-1 py-0.5 hover:bg-slate-100 flex justify-between"
-                      onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
-                      <span>{s.technique}</span>
-                      <span className="text-xs text-slate-400">{s.score}</span>
-                    </button>
-                  </li>
-                ))}
-                {!allSteps.length && <li className="text-slate-500">No steps found.</li>}
-              </ul>
-            )}
-          </section>
-
-          <section className="bg-white rounded shadow p-3 text-sm">
-            <h2 className="font-semibold mb-1">Active cell</h2>
-            {hasSel ? (
-              <p>{cellName(sel)} — {game.values[sel] !== 0
+          {/* Active Cell */}
+          <section className="bg-white border border-[#B0B0B0]">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Active Cell</div>
+            <div className="px-2 py-1 text-xs">
+              {hasSel ? `${cellName(sel)} — ${game.values[sel] !== 0
                 ? `value ${game.values[sel]}${game.given[sel] ? " (given)" : ""}`
-                : `candidates: ${candsOf(game.cands[sel]).join(" ") || "none"}`}
-                <span className="block text-[11px] text-slate-400">tap the cell again to deselect</span>
-              </p>
-            ) : (
-              <p className="text-slate-500">none — tap a cell to select it</p>
-            )}
+                : `candidates: ${candsOf(game.cands[sel]).join(" ") || "none"}`}`
+                : "none"}
+            </div>
+          </section>
+
+          {/* Set Value */}
+          <section className="bg-white border border-[#B0B0B0]">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Set Value</div>
+            <div className="grid grid-cols-9 gap-px p-1">
+              {ALL_DIGITS.map(d => (
+                <button key={d} disabled={cellLocked}
+                  className="h-7 border border-[#C0C0C0] bg-white text-xs hover:bg-[#E0E0E0] disabled:opacity-40"
+                  onClick={() => setValue(sel, d)}>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Exclude Candidates */}
+          <section className="bg-white border border-[#B0B0B0]">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Exclude Candidates</div>
+            <div className="grid grid-cols-9 gap-px p-1">
+              {ALL_DIGITS.map(d => (
+                <button key={d} disabled={cellLocked}
+                  className={cls("h-7 border text-xs disabled:opacity-40",
+                    hasSel && game.cands[sel] & candMask(d)
+                      ? "border-[#C0C0C0] bg-[#F8D0D0]" : "border-[#C0C0C0] bg-white",
+                    !hasSel && "opacity-40")}
+                  onClick={() => toggleCand(sel, d)}>
+                  {d}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Coloring */}
+          <section className="bg-white border border-[#B0B0B0]">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Coloring</div>
+            <div className="px-2 py-1.5">
+              <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
+                onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
+            </div>
+          </section>
+
+          {/* Action buttons */}
+          <section className="flex flex-col gap-1">
+            <button className="h-7 border border-[#B0B0B0] bg-white text-xs hover:bg-[#E0E0E0]"
+              onClick={showAll}>{allSteps ? "Hide" : "Show"} all possible steps</button>
+            <button className="h-7 border border-[#B0B0B0] bg-white text-xs hover:bg-[#E0E0E0]"
+              onClick={autoSolve}>Solve puzzle automatically</button>
+          </section>
+
+          {/* Solution path */}
+          <section className="bg-white border border-[#B0B0B0] flex-1 min-h-0 flex flex-col">
+            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Solution path</div>
+            <ol className="overflow-y-auto text-[11px] px-2 py-1 max-h-64 flex-1">
+              {solutionPath.map((t, i) => (
+                <li key={i} className="py-px border-b border-[#F0F0F0] last:border-0">
+                  <span className="text-slate-400 mr-1">{i + 1}.</span>{t}
+                </li>
+              ))}
+              {!solutionPath.length && <li className="text-slate-400 italic">no steps yet — solve or hint to begin</li>}
+            </ol>
           </section>
         </aside>
       </div>
 
-      <footer className="bg-slate-800 text-slate-200 text-xs px-4 py-2 flex gap-4 flex-wrap">
-        <span>Level: {level}</span>
-        <span>Build: {BUILD_TAG}</span>
-        <span>Time: {mmss(seconds)}</span>
-        <span>Progress: {81 - game.values.filter(v => v === 0).length}/81</span>
-        {solved && <span className="text-green-400 font-bold">Solved!</span>}
-        <span className="flex-1">{msg}</span>
+      {/* All-steps list (toggleable, above the hints block) */}
+      {allSteps && (
+        <div className="px-3 pb-1">
+          <div className="bg-white border border-[#B0B0B0] max-h-40 overflow-y-auto">
+            {allSteps.map((s, idx) => (
+              <button key={idx} className="block w-full text-left px-2 py-0.5 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
+                onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
+                <span>{s.technique}</span>
+                <span className="text-slate-400">XR {s.score}</span>
+              </button>
+            ))}
+            {!allSteps.length && <div className="px-2 py-1 text-xs text-slate-400">No steps found.</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ZONE 4: Hints block — full width, bottom, HoDoKu signature */}
+      <div className="bg-white border-t border-[#B0B0B0] px-3 py-2 mt-auto">
+        <div className="flex items-start gap-2">
+          <div className="flex flex-col gap-1 shrink-0">
+            <button className="h-7 px-3 border border-[#B0B0B0] bg-[#E8E8E8] text-xs hover:bg-[#D8D8D8]"
+              onClick={getHint}>Next Hint</button>
+            <button className="h-7 px-3 border border-[#B0B0B0] bg-[#E8E8E8] text-xs hover:bg-[#D8D8D8] disabled:opacity-40"
+              disabled={!hint} onClick={applyHint}>Execute</button>
+          </div>
+          <div className="flex-1 bg-[#FAFAFA] border border-[#D0D0D0] px-2 py-1 text-xs min-h-10 overflow-y-auto max-h-20">
+            {hint ? (
+              <p><b className="text-[#1a5276]">{hint.technique}:</b> {hint.reason}</p>
+            ) : (
+              <p className="text-slate-500">{msg}</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Status bar — their format: coloring · level · progress · mode · cell */}
+      <footer className="bg-[#404040] text-[#E8E8E8] text-[11px] px-3 py-0.5 flex gap-3 flex-wrap">
+        <span>Coloring: {activeColor === null ? "none" : "active"}</span>
+        <span>{level} · {progress}%</span>
+        <span>{solved ? "Solved" : "Playing"} {hasSel ? cellName(sel) : ""}</span>
+        <span className="flex-1 truncate">{msg}</span>
+        <span>{mmss(seconds)}</span>
       </footer>
     </main>
   );
