@@ -2,6 +2,8 @@
 import { useState } from "react";
 import type { Level } from "@/lib/sudoku/solver";
 import { ALL_DIGITS } from "@/lib/sudoku/core";
+import { UNDO_PNG } from "../lib/undoPng";
+import { REDO_PNG } from "../lib/redoPng";
 
 const LEVELS: Level[] = ["Easy", "Medium", "Hard", "Diabolical", "Extreme"];
 
@@ -107,59 +109,11 @@ export default function MenuBar(p: Props) {
       <div className="flex items-center gap-2 px-2 h-11 bg-[#E8E8E8] border-b border-[#A0A0A0]">
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
           className="w-8 h-8 flex items-center justify-center">
-          <svg viewBox="0 0 32 32" className="w-8 h-8" fill={p.canUndo ? "#5588CC" : "#A8A8A8"}>
-            <rect x="2" y="6" width="2" height="1"/>
-            <rect x="2" y="7" width="3" height="1"/>
-            <rect x="15" y="7" width="5" height="1"/>
-            <rect x="2" y="8" width="4" height="1"/>
-            <rect x="10" y="8" width="11" height="1"/>
-            <rect x="2" y="9" width="5" height="1"/>
-            <rect x="10" y="9" width="15" height="1"/>
-            <rect x="2" y="10" width="24" height="1"/>
-            <rect x="2" y="11" width="25" height="1"/>
-            <rect x="2" y="12" width="26" height="1"/>
-            <rect x="2" y="13" width="27" height="1"/>
-            <rect x="2" y="14" width="28" height="2"/>
-            <rect x="2" y="16" width="18" height="1"/>
-            <rect x="25" y="16" width="5" height="1"/>
-            <rect x="2" y="17" width="16" height="1"/>
-            <rect x="27" y="17" width="4" height="1"/>
-            <rect x="2" y="18" width="15" height="2"/>
-            <rect x="28" y="18" width="3" height="1"/>
-            <rect x="29" y="19" width="2" height="1"/>
-            <rect x="2" y="20" width="16" height="1"/>
-            <rect x="2" y="21" width="17" height="1"/>
-            <rect x="2" y="22" width="18" height="1"/>
-            <rect x="2" y="23" width="19" height="2"/>
-          </svg>
+          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canUndo ? "#5588CC" : "#A8A8A8", WebkitMaskImage: `url(${UNDO_PNG})`, maskImage: `url(${UNDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
         <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
           className="w-8 h-8 flex items-center justify-center">
-          <svg viewBox="0 0 32 32" className="w-8 h-8" fill={p.canRedo ? "#55BB55" : "#A8A8A8"}>
-            <rect x="28" y="6" width="2" height="1"/>
-            <rect x="12" y="7" width="5" height="1"/>
-            <rect x="27" y="7" width="3" height="1"/>
-            <rect x="9" y="8" width="11" height="1"/>
-            <rect x="26" y="8" width="4" height="1"/>
-            <rect x="7" y="9" width="15" height="1"/>
-            <rect x="25" y="9" width="5" height="1"/>
-            <rect x="6" y="10" width="24" height="1"/>
-            <rect x="5" y="11" width="25" height="1"/>
-            <rect x="4" y="12" width="26" height="1"/>
-            <rect x="3" y="13" width="27" height="1"/>
-            <rect x="2" y="14" width="28" height="2"/>
-            <rect x="2" y="16" width="5" height="1"/>
-            <rect x="12" y="16" width="18" height="1"/>
-            <rect x="1" y="17" width="4" height="1"/>
-            <rect x="14" y="17" width="16" height="1"/>
-            <rect x="1" y="18" width="3" height="1"/>
-            <rect x="15" y="18" width="15" height="2"/>
-            <rect x="1" y="19" width="2" height="1"/>
-            <rect x="14" y="20" width="16" height="1"/>
-            <rect x="13" y="21" width="17" height="1"/>
-            <rect x="12" y="22" width="18" height="1"/>
-            <rect x="11" y="23" width="19" height="2"/>
-          </svg>
+          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
         <select
