@@ -1,4 +1,5 @@
 import { nodeStr, setNodeStr, bivStr, conclusionStr } from "./notation";
+import { chainLens } from "./chain-engine";
 import {
   ALL_DIGITS, Elimination, Game, PEERS, Step, UNITS, UNITS_OF,
   arePeers, boxOf, candMask, candsOf, cellName, colOf, combinations,
@@ -1629,6 +1630,7 @@ export const FINDERS: Finder[] = [
   alsChain,                // XR 7.4
   deathBlossom,            // XR 7.6
   aicAls,                  // XR 7.6  AICs with ALS nodes
+  chainLens,               // Stage 1a: master chain engine (runs last)
 ];
 
 export function findNextStep(g: Game): Step | null {
@@ -1651,4 +1653,5 @@ export const TECHNIQUE_NAMES = [
   "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
   "X-Chain", "XY-Chain", "AIC Type 1", "AIC Type 2",
   "ALS-XZ", "ALS-XY-Wing", "ALS Chain", "Death Blossom", "AIC (ALS nodes)",
-];
+
+  "Chain Lens (grouped chains, AIC)",];
