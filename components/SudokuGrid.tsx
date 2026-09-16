@@ -52,7 +52,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
 
   return (
     <div className="relative w-[min(92vw,540px)] aspect-square select-none touch-manipulation">
-      <div className="absolute inset-0 grid grid-cols-9 grid-rows-9 bg-white border-2 border-slate-500 shadow">
+      <div className="absolute inset-0 grid grid-cols-9 grid-rows-9 bg-white border-2 border-black shadow">
         {Array.from({ length: 81 }, (_, i) => {
           const r = Math.floor(i / 9), c = i % 9;
           const value = game.values[i];
@@ -86,9 +86,9 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
 
           return (
             <div key={i}
-              className={cls("relative border border-slate-200 flex items-center justify-center cursor-pointer",
-                (c === 2 || c === 5) && "border-r-2 border-r-slate-500",
-                (r === 2 || r === 5) && "border-b-2 border-b-slate-500",
+              className={cls("relative border border-[#C0C0C0] flex items-center justify-center cursor-pointer",
+                (c === 2 || c === 5) && "border-r-2 border-r-black",
+                (r === 2 || r === 5) && "border-b-2 border-b-black",
                 outline,
                 manual !== undefined && RING[manual % 5],
                 bg)}
