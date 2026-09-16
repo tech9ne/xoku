@@ -72,7 +72,26 @@ export default function MenuBar(p: Props) {
             )}
           </div>
         ))}
-        <div className="flex items-center gap-0.5 ml-2 min-w-0 flex-1 overflow-x-auto">
+
+      {/* toolbar row 2: BIG undo/redo + difficulty */}
+      <div className="flex items-center gap-2 px-2 h-11 overflow-x-auto bg-[#E8E8E8] border-b border-[#A0A0A0]">
+        <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
+          className="w-8 h-8 flex items-center justify-center">
+          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canUndo ? "#5588CC" : "#A8A8A8", WebkitMaskImage: `url(${UNDO_PNG})`, maskImage: `url(${UNDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
+        </button>
+        <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
+          className="w-8 h-8 flex items-center justify-center">
+          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
+        </button>
+        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <select
+          className="h-9 px-2 text-xs border-2 border-[#808080] bg-white rounded-sm"
+          value={p.currentLevel}
+          onChange={(e) => p.onNew(e.target.value as Level)}>
+          {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
+        </select>
+        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280" }} />
+        <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;
             const left = p.digitRemaining(d);
@@ -104,24 +123,6 @@ export default function MenuBar(p: Props) {
           )}
         </div>
       </div>
-
-      {/* toolbar row 2: BIG undo/redo + difficulty */}
-      <div className="flex items-center gap-2 px-2 h-11 bg-[#E8E8E8] border-b border-[#A0A0A0]">
-        <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
-          className="w-8 h-8 flex items-center justify-center">
-          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canUndo ? "#5588CC" : "#A8A8A8", WebkitMaskImage: `url(${UNDO_PNG})`, maskImage: `url(${UNDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
-        </button>
-        <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
-          className="w-8 h-8 flex items-center justify-center">
-          <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
-        </button>
-        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
-        <select
-          className="h-9 px-2 text-xs border-2 border-[#808080] bg-white rounded-sm"
-          value={p.currentLevel}
-          onChange={(e) => p.onNew(e.target.value as Level)}>
-          {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
-        </select>
       </div>
     </nav>
   );
