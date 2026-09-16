@@ -82,7 +82,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
 
           const valueCls = wrong ? "text-red-600"
             : game.given[i] ? "text-slate-900"
-            : "text-blue-700";
+            : "text-[#0000FF]";
 
           return (
             <div key={i}
