@@ -27,12 +27,12 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         if (g.values[p] === 0 && g.cands[p] & candMask(d)) out.push(candKey(p, d));
       for (let s = 0; s < t.sets.length; s++) {
         const set = t.sets[s];
-        if (set.digit === d && cellSeesSet(c, set.cells)) out.push(1000 + s);
+        if (set.digit === d && !set.cells.includes(c) && cellSeesSet(c, set.cells)) out.push(1000 + s);
       }
     } else {
       const set = t.sets[k - 1000];
       for (let c = 0; c < 81; c++)
-        if (g.values[c] === 0 && g.cands[c] & candMask(d) && cellSeesSet(c, set.cells))
+        if (g.values[c] === 0 && g.cands[c] & candMask(d) && !set.cells.includes(c) && cellSeesSet(c, set.cells))
           out.push(candKey(c, d));
       for (let s = 0; s < t.sets.length; s++) {
         const o = t.sets[s];
