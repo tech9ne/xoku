@@ -77,10 +77,10 @@ export default function MenuBar(p: Props) {
             return (
               <button key={d} onClick={() => p.onDigitFilter(on ? null : d)}
                 title={`Highlight candidate ${d} (${left} remaining)`}
-                className={`w-6 h-7 flex items-center justify-center rounded transition-colors ${
+                className={`w-7 h-8 flex-shrink-0 flex items-center justify-center rounded transition-colors ${
                   on ? "bg-indigo-600 text-white" : "hover:bg-slate-300"
                 } ${left === 0 && !on ? "opacity-30" : ""}`}>
-                <span className="text-sm font-semibold leading-none font-serif">{d}</span>
+                <span className="text-base font-semibold leading-none">{d}</span>
               </button>
             );
           })}
