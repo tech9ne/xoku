@@ -106,15 +106,59 @@ export default function MenuBar(p: Props) {
       {/* toolbar row 2: BIG undo/redo + difficulty */}
       <div className="flex items-center gap-2 px-2 h-11 bg-[#E8E8E8] border-b border-[#A0A0A0]">
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
-          className="w-9 h-9 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill={p.canUndo ? "#5588CC" : "#A8A8A8"}>
-            <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z" />
+          className="w-8 h-8 flex items-center justify-center">
+          <svg viewBox="0 0 32 32" className="w-8 h-8" fill={p.canUndo ? "#5588CC" : "#A8A8A8"}>
+            <rect x="2" y="6" width="2" height="1"/>
+            <rect x="2" y="7" width="3" height="1"/>
+            <rect x="15" y="7" width="5" height="1"/>
+            <rect x="2" y="8" width="4" height="1"/>
+            <rect x="10" y="8" width="11" height="1"/>
+            <rect x="2" y="9" width="5" height="1"/>
+            <rect x="10" y="9" width="15" height="1"/>
+            <rect x="2" y="10" width="24" height="1"/>
+            <rect x="2" y="11" width="25" height="1"/>
+            <rect x="2" y="12" width="26" height="1"/>
+            <rect x="2" y="13" width="27" height="1"/>
+            <rect x="2" y="14" width="28" height="2"/>
+            <rect x="2" y="16" width="18" height="1"/>
+            <rect x="25" y="16" width="5" height="1"/>
+            <rect x="2" y="17" width="16" height="1"/>
+            <rect x="27" y="17" width="4" height="1"/>
+            <rect x="2" y="18" width="15" height="2"/>
+            <rect x="28" y="18" width="3" height="1"/>
+            <rect x="29" y="19" width="2" height="1"/>
+            <rect x="2" y="20" width="16" height="1"/>
+            <rect x="2" y="21" width="17" height="1"/>
+            <rect x="2" y="22" width="18" height="1"/>
+            <rect x="2" y="23" width="19" height="2"/>
           </svg>
         </button>
         <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
-          className="w-9 h-9 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" className="w-6 h-6" fill={p.canRedo ? "#55BB55" : "#A8A8A8"}>
-            <path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z" />
+          className="w-8 h-8 flex items-center justify-center">
+          <svg viewBox="0 0 32 32" className="w-8 h-8" fill={p.canRedo ? "#55BB55" : "#A8A8A8"}>
+            <rect x="28" y="6" width="2" height="1"/>
+            <rect x="12" y="7" width="5" height="1"/>
+            <rect x="27" y="7" width="3" height="1"/>
+            <rect x="9" y="8" width="11" height="1"/>
+            <rect x="26" y="8" width="4" height="1"/>
+            <rect x="7" y="9" width="15" height="1"/>
+            <rect x="25" y="9" width="5" height="1"/>
+            <rect x="6" y="10" width="24" height="1"/>
+            <rect x="5" y="11" width="25" height="1"/>
+            <rect x="4" y="12" width="26" height="1"/>
+            <rect x="3" y="13" width="27" height="1"/>
+            <rect x="2" y="14" width="28" height="2"/>
+            <rect x="2" y="16" width="5" height="1"/>
+            <rect x="12" y="16" width="18" height="1"/>
+            <rect x="1" y="17" width="4" height="1"/>
+            <rect x="14" y="17" width="16" height="1"/>
+            <rect x="1" y="18" width="3" height="1"/>
+            <rect x="15" y="18" width="15" height="2"/>
+            <rect x="1" y="19" width="2" height="1"/>
+            <rect x="14" y="20" width="16" height="1"/>
+            <rect x="13" y="21" width="17" height="1"/>
+            <rect x="12" y="22" width="18" height="1"/>
+            <rect x="11" y="23" width="19" height="2"/>
           </svg>
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
