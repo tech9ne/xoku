@@ -288,7 +288,7 @@ export default function Home() {
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands}
         digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
-        digitRemaining={remaining} />
+        digitRemaining={remaining} currentLevel={level} />
 
       <div className="flex flex-1 items-start justify-center gap-6 p-6 flex-wrap lg:flex-nowrap">
         {/* GRID — generous, centered */}

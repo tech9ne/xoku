@@ -13,6 +13,7 @@ interface Props {
   digitFilter: number | "xy" | null;
   onDigitFilter: (f: number | "xy" | null) => void;
   digitRemaining: (d: number) => number;
+  currentLevel: Level;
 }
 
 const UndoIcon = () => (
@@ -110,6 +111,33 @@ export default function MenuBar(p: Props) {
             </button>
           )}
         </div>
+      </div>
+
+      {/* toolbar row 2: BIG undo/redo + difficulty */}
+      <div className="flex items-center gap-2 px-2 h-11 bg-[#E8E8E8] border-b border-[#A0A0A0]">
+        <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
+          className="w-11 h-9 flex items-center justify-center border-2 border-[#808080] bg-gradient-to-b from-white to-[#D8D8D8] rounded-sm active:from-[#B8B8E8] active:to-[#9090D0] disabled:opacity-30 disabled:from-[#E0E0E0] disabled:to-[#D0D0D0] shadow-sm">
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#203050"
+            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 14L4 9l5-5" />
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+          </svg>
+        </button>
+        <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
+          className="w-11 h-9 flex items-center justify-center border-2 border-[#808080] bg-gradient-to-b from-white to-[#D8D8D8] rounded-sm active:from-[#B8B8E8] active:to-[#9090D0] disabled:opacity-30 disabled:from-[#E0E0E0] disabled:to-[#D0D0D0] shadow-sm">
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="#203050"
+            strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 14l5-5-5-5" />
+            <path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />
+          </svg>
+        </button>
+        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <select
+          className="h-9 px-2 text-xs border-2 border-[#808080] bg-white rounded-sm"
+          value={p.currentLevel}
+          onChange={(e) => p.onNew(e.target.value as Level)}>
+          {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
+        </select>
       </div>
     </nav>
   );

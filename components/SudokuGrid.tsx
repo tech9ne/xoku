@@ -72,7 +72,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
           const manualCell = manual !== undefined ? PALETTE[manual % 5].cell : undefined;
 
           // priority: selection > hint placement > hint sets > hint pattern > manual > filter
-          const bg = selected ? "bg-yellow-200"
+          const bg = selected ? "ring-[3px] ring-inset ring-slate-900 z-10"
             : placing ? "bg-green-200"
             : groupOf.has(i) ? PALETTE[groupOf.get(i)!].cell
             : pattern ? "bg-sky-100"
