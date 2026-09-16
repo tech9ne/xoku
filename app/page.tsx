@@ -274,9 +274,15 @@ export default function Home() {
   const cellLocked = !hasSel || game.given[sel] || game.values[sel] !== 0;
   const progress = Math.round((81 - game.values.filter(v => v === 0).length) / 81 * 100);
 
+  const TitleBar = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-[#E0E0E0] border-b border-[#A0A0A0] px-2 py-1 text-xs font-bold text-slate-700">{children}</div>
+  );
+  const Panel = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <section className={`bg-white border border-[#A0A0A0] ${className}`}>{children}</section>
+  );
+
   return (
     <main className="min-h-screen bg-[#F2F2F2] text-slate-900 flex flex-col">
-      {/* ZONE 1: menu + toolbar (MenuBar already carries both) */}
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
         onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
@@ -284,137 +290,138 @@ export default function Home() {
         digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
         digitRemaining={remaining} />
 
-      {/* ZONE 2+3: grid left, panel right */}
-      <div className="flex flex-1 items-start justify-center gap-4 p-3 flex-wrap">
+      <div className="flex flex-1 items-start justify-center gap-6 p-6 flex-wrap lg:flex-nowrap">
+        {/* GRID — generous, centered */}
         <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
           digitFilter={digitFilter}
           manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} />
 
-        {/* HoDoKu right panel: Summary, Active Cell, Set Value, Exclude, buttons, Solution path */}
-        <aside className="w-64 flex flex-col gap-1.5 text-sm">
+        {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
+        <aside className="w-full sm:w-80 lg:w-72 xl:w-80 flex flex-col gap-2 text-sm">
           {/* Summary */}
-          <section className="bg-white border border-[#B0B0B0]">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Summary</div>
-            <div className="px-2 py-1 text-xs space-y-0.5">
-              <div className="flex justify-between"><span>Level</span><span>{level}</span></div>
-              <div className="flex justify-between"><span>Time</span><span>{mmss(seconds)}</span></div>
-              <div className="flex justify-between"><span>Progress</span><span>{progress}%</span></div>
-              <div className="flex justify-between"><span>Build</span><span>{BUILD_TAG}</span></div>
+          <Panel>
+            <TitleBar>Summary</TitleBar>
+            <div className="px-3 py-2 text-xs space-y-1">
+              <div className="flex justify-between"><span className="text-slate-500">Level</span><span className="font-semibold">{level}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Time</span><span>{mmss(seconds)}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Progress</span><span>{progress}%</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Build</span><span className="text-slate-400">{BUILD_TAG}</span></div>
             </div>
-          </section>
+          </Panel>
 
           {/* Active Cell */}
-          <section className="bg-white border border-[#B0B0B0]">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Active Cell</div>
-            <div className="px-2 py-1 text-xs">
+          <Panel>
+            <TitleBar>Active Cell</TitleBar>
+            <div className="px-3 py-2 text-xs">
               {hasSel ? `${cellName(sel)} — ${game.values[sel] !== 0
                 ? `value ${game.values[sel]}${game.given[sel] ? " (given)" : ""}`
                 : `candidates: ${candsOf(game.cands[sel]).join(" ") || "none"}`}`
                 : "none"}
             </div>
-          </section>
+          </Panel>
 
-          {/* Set Value */}
-          <section className="bg-white border border-[#B0B0B0]">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Set Value</div>
-            <div className="grid grid-cols-9 gap-px p-1">
+          {/* Set Value — HoDoKu-style: 3 rows of proper squares */}
+          <Panel>
+            <TitleBar>Set Value</TitleBar>
+            <div className="grid grid-cols-3 gap-1.5 p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked}
-                  className="h-7 border border-[#C0C0C0] bg-white text-xs hover:bg-[#E0E0E0] disabled:opacity-40"
+                  className="h-10 border border-[#A0A0A0] bg-white text-base hover:bg-[#E0E0E0] active:bg-[#D0D0D0] disabled:opacity-40 shadow-sm"
                   onClick={() => setValue(sel, d)}>
                   {d}
                 </button>
               ))}
             </div>
-          </section>
+          </Panel>
 
-          {/* Exclude Candidates */}
-          <section className="bg-white border border-[#B0B0B0]">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Exclude Candidates</div>
-            <div className="grid grid-cols-9 gap-px p-1">
+          {/* Exclude Candidates — same block style, tint marks present candidates */}
+          <Panel>
+            <TitleBar>Exclude Candidates</TitleBar>
+            <div className="grid grid-cols-3 gap-1.5 p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked}
-                  className={cls("h-7 border text-xs disabled:opacity-40",
+                  className={cls("h-10 border text-base disabled:opacity-40 shadow-sm",
                     hasSel && game.cands[sel] & candMask(d)
-                      ? "border-[#C0C0C0] bg-[#F8D0D0]" : "border-[#C0C0C0] bg-white",
-                    !hasSel && "opacity-40")}
+                      ? "border-[#A0A0A0] bg-[#F8D7D7]" : "border-[#A0A0A0] bg-white hover:bg-[#E0E0E0]")}
                   onClick={() => toggleCand(sel, d)}>
                   {d}
                 </button>
               ))}
             </div>
-          </section>
-
+          </Panel>
           {/* Coloring */}
-          <section className="bg-white border border-[#B0B0B0]">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Coloring</div>
-            <div className="px-2 py-1.5">
+          <Panel>
+            <TitleBar>Coloring</TitleBar>
+            <div className="px-3 py-2">
               <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
                 onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
             </div>
-          </section>
+          </Panel>
 
-          {/* Action buttons */}
-          <section className="flex flex-col gap-1">
-            <button className="h-7 border border-[#B0B0B0] bg-white text-xs hover:bg-[#E0E0E0]"
+          {/* Action buttons — narrow full-width, HoDoKu style */}
+          <div className="flex flex-col gap-1.5">
+            <button className="h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
               onClick={showAll}>{allSteps ? "Hide" : "Show"} all possible steps</button>
-            <button className="h-7 border border-[#B0B0B0] bg-white text-xs hover:bg-[#E0E0E0]"
+            <button className="h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
               onClick={autoSolve}>Solve puzzle automatically</button>
-          </section>
+          </div>
 
-          {/* Solution path */}
-          <section className="bg-white border border-[#B0B0B0] flex-1 min-h-0 flex flex-col">
-            <div className="bg-[#E8E8E8] border-b border-[#B0B0B0] px-2 py-0.5 text-xs font-bold">Solution path</div>
-            <ol className="overflow-y-auto text-[11px] px-2 py-1 max-h-64 flex-1">
+          {/* Solution path — tall, scrollable, a real area */}
+          <Panel className="flex-1 min-h-40 flex flex-col">
+            <TitleBar>Solution path</TitleBar>
+            <ol className="overflow-y-auto text-xs px-3 py-2 flex-1">
               {solutionPath.map((t, i) => (
-                <li key={i} className="py-px border-b border-[#F0F0F0] last:border-0">
-                  <span className="text-slate-400 mr-1">{i + 1}.</span>{t}
+                <li key={i} className="py-0.5 border-b border-[#F0F0F0] last:border-0">
+                  <span className="text-slate-400 mr-1.5">{i + 1}.</span>{t}
                 </li>
               ))}
               {!solutionPath.length && <li className="text-slate-400 italic">no steps yet — solve or hint to begin</li>}
             </ol>
-          </section>
+          </Panel>
         </aside>
       </div>
 
-      {/* All-steps list (toggleable, above the hints block) */}
+      {/* All-steps list (toggleable) */}
       {allSteps && (
-        <div className="px-3 pb-1">
-          <div className="bg-white border border-[#B0B0B0] max-h-40 overflow-y-auto">
+        <div className="px-6 pb-2 max-w-5xl mx-auto w-full">
+          <Panel className="max-h-48 overflow-y-auto">
             {allSteps.map((s, idx) => (
-              <button key={idx} className="block w-full text-left px-2 py-0.5 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
+              <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
                 onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
                 <span>{s.technique}</span>
                 <span className="text-slate-400">XR {s.score}</span>
               </button>
             ))}
-            {!allSteps.length && <div className="px-2 py-1 text-xs text-slate-400">No steps found.</div>}
-          </div>
+            {!allSteps.length && <div className="px-3 py-2 text-xs text-slate-400">No steps found.</div>}
+          </Panel>
         </div>
       )}
 
-      {/* ZONE 4: Hints block — full width, bottom, HoDoKu signature */}
-      <div className="bg-white border-t border-[#B0B0B0] px-3 py-2 mt-auto">
-        <div className="flex items-start gap-2">
-          <div className="flex flex-col gap-1 shrink-0">
-            <button className="h-7 px-3 border border-[#B0B0B0] bg-[#E8E8E8] text-xs hover:bg-[#D8D8D8]"
-              onClick={getHint}>Next Hint</button>
-            <button className="h-7 px-3 border border-[#B0B0B0] bg-[#E8E8E8] text-xs hover:bg-[#D8D8D8] disabled:opacity-40"
-              disabled={!hint} onClick={applyHint}>Execute</button>
+      {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
+      <div className="px-6 pb-4 max-w-5xl mx-auto w-full">
+        <Panel>
+          <TitleBar>Hints</TitleBar>
+          <div className="flex items-stretch gap-2 p-2">
+            <div className="flex flex-col gap-1.5 shrink-0">
+              <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                onClick={getHint}>Next Hint</button>
+              <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                disabled={!hint} onClick={applyHint}>Execute</button>
+            </div>
+            <div className="flex-1 bg-[#FAFAFA] border border-[#D0D0D0] px-3 py-2 text-xs leading-relaxed min-h-16 overflow-y-auto max-h-24">
+              {hint ? (
+                <p><b className="text-[#1a5276]">{hint.technique}:</b> {hint.reason}</p>
+              ) : (
+                <p className="text-slate-500">{msg}</p>
+              )}
+            </div>
           </div>
-          <div className="flex-1 bg-[#FAFAFA] border border-[#D0D0D0] px-2 py-1 text-xs min-h-10 overflow-y-auto max-h-20">
-            {hint ? (
-              <p><b className="text-[#1a5276]">{hint.technique}:</b> {hint.reason}</p>
-            ) : (
-              <p className="text-slate-500">{msg}</p>
-            )}
-          </div>
-        </div>
+        </Panel>
       </div>
 
-      {/* Status bar — their format: coloring · level · progress · mode · cell */}
-      <footer className="bg-[#404040] text-[#E8E8E8] text-[11px] px-3 py-0.5 flex gap-3 flex-wrap">
+      {/* Status bar — their format */}
+      <footer className="bg-[#404040] text-[#E8E8E8] text-[11px] px-4 py-1 flex gap-4 flex-wrap mt-auto">
         <span>Coloring: {activeColor === null ? "none" : "active"}</span>
         <span>{level} · {progress}%</span>
         <span>{solved ? "Solved" : "Playing"} {hasSel ? cellName(sel) : ""}</span>
