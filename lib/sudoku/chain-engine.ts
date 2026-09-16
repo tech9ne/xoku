@@ -36,13 +36,16 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
           out.push(candKey(c, d));
       for (let s = 0; s < t.sets.length; s++) {
         const o = t.sets[s];
-        if (o.digit === d && s !== k - 1000 && setSeesSet(set.cells, o.cells)) out.push(1000 + s);
+        if (o.digit === d && s !== k - 1000 && setSeesSet(set.cells, o.cells) && !set.cells.some(x => o.cells.includes(x))) out.push(1000 + s);
       }
     }
     return out;
   };
 
-  const tryEnding = (start: number, end: number): { cell: number; cand: number }[] | null => {
+  const onPathNode = (k: number, c: number, d: number): boolean =>
+      (isSetKey(k) ? (t.sets[k - 1000].digit === d && t.sets[k - 1000].cells.includes(c))
+                   : (keyCell(k) === c && keyDigit(k) === d));
+  const tryEnding = (start: number, end: number, path: number[]): { cell: number; cand: number }[] | null => {
     const sd = isSetKey(start) ? t.sets[start - 1000].digit : keyDigit(start);
     const ed = isSetKey(end) ? t.sets[end - 1000].digit : keyDigit(end);
     if (sd === ed) {
@@ -52,6 +55,12 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
       for (let c = 0; c < 81; c++) {
         if (g.values[c] !== 0 || !(g.cands[c] & candMask(sd))) continue;
         if (sc.includes(c) || ec.includes(c)) continue;
+        let onPath = false;
+        for (const k of path) {
+          if (isSetKey(k)) { if (t.sets[k - 1000].digit === sd && t.sets[k - 1000].cells.includes(c)) { onPath = true; break; } }
+          else if (keyCell(k) === c && keyDigit(k) === sd) { onPath = true; break; }
+        }
+        if (onPath) continue;
         if (sc.every(s => seesCell(c, s)) && ec.every(s => seesCell(c, s)))
           elims.push({ cell: c, cand: sd });
       }
@@ -61,14 +70,17 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
     if (isSetKey(start) || isSetKey(end)) return null;
     const a = keyCell(start), b = keyCell(end);
     if (a === b) {
-      const elims = candsOf(g.cands[a]).filter(x => x !== sd && x !== ed)
+      const elims = candsOf(g.cands[a]).filter(x => x !== sd && x !== ed &&
+          !path.some(k => onPathNode(k, a, x)))
         .map(x => ({ cell: a, cand: x }));
       return elims.length ? elims : null;
     }
     if (seesCell(a, b)) {
       const elims: { cell: number; cand: number }[] = [];
-      if (g.cands[a] & candMask(ed)) elims.push({ cell: a, cand: ed });
-      if (g.cands[b] & candMask(sd)) elims.push({ cell: b, cand: sd });
+      if (g.cands[a] & candMask(ed) && !path.some(k => onPathNode(k, a, ed)))
+        elims.push({ cell: a, cand: ed });
+      if (g.cands[b] & candMask(sd) && !path.some(k => onPathNode(k, b, sd)))
+        elims.push({ cell: b, cand: sd });
       return elims.length ? elims : null;
     }
     return null;
@@ -91,7 +103,7 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         const { cur, path, sc } = stack.pop()!;
         const strongArrived = path.length % 2 === 0;
         if (strongArrived && sc >= 2) {
-          const elims = tryEnding(start, cur);
+          const elims = tryEnding(start, cur, path);
           if (elims) record(path, elims);
         }
         if (sc >= maxStrong) continue;

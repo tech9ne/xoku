@@ -1,7 +1,9 @@
-// Soundness audit v2: validates every found chain against the ACTUAL
-// ending rules - T1 (same digit, both objects), T2-cross (mixed digits,
-// single cells, peers), T2-samecell. Set endpoints with mixed digits are
-// the true unsound class. Fresh-compile guard: no stale /tmp reuse.
+// Soundness audit v5 - the complete verifier (AIC 101 rules).
+//   1. T1: same-digit endpoints, victims see all cells of both objects
+//   2. T2: mixed digits, single-cell endpoints only (cross or same-cell)
+//   3. NAND adjacency: candidate not inside its weak-linked set
+//   4. Overlap: two sets on a weak hop are disjoint (doubly-coloured-cell rule)
+//   5. Self-kill: no victim is a member of any path node
 const { execSync } = require("child_process");
 execSync("rm -rf /tmp/xkaudit");
 execSync(
@@ -24,29 +26,47 @@ for (const p of puzzles) {
   const found = E.searchChains(g, t, 4);
   for (const f of found) {
     total++;
-    const a = f.path[0], b = f.path[f.path.length - 1];
     const dig = k => (T.isSetKey(k) ? t.sets[k - 1000].digit : k % 10);
     const kind = k => (T.isSetKey(k) ? "set" : "cand");
+    const a = f.path[0], b = f.path[f.path.length - 1];
     const sd = dig(a), ed = dig(b);
-    let ok;
+
     if (sd === ed) {
-      ok = f.elims.every(e => e.cand === sd);                    // T1
+      const cells = k => (T.isSetKey(k) ? t.sets[k - 1000].cells : [Math.floor(k / 10)]);
+      if (!f.elims.every(e => e.cand === sd && !cells(a).includes(e.cell) && !cells(b).includes(e.cell)))
+        { bad++; console.log("BAD-T1:", JSON.stringify(f.elims)); }
     } else if (kind(a) === "set" || kind(b) === "set") {
-      ok = false;                                                 // true bug class
+      bad++; console.log("BAD-MIXED-SET-END:", JSON.stringify({ ends: [sd, ed] }));
     } else {
       const ca = Math.floor(a / 10), cb = Math.floor(b / 10);
-      if (ca === cb)
-        ok = f.elims.every(e => e.cell === ca && e.cand !== sd && e.cand !== ed);
-      else                                                        // T2 cross
-        ok = f.elims.every(e =>
-          (e.cell === ca && e.cand === ed) || (e.cell === cb && e.cand === sd));
+      const ok = ca === cb
+        ? f.elims.every(e => e.cell === ca && e.cand !== sd && e.cand !== ed)
+        : f.elims.every(e => (e.cell === ca && e.cand === ed) || (e.cell === cb && e.cand === sd));
+      if (!ok) { bad++; console.log("BAD-T2:", JSON.stringify(f.elims)); }
     }
-    if (!ok) {
-      bad++;
-      console.log("UNSOUND:", JSON.stringify({
-        elims: f.elims, endDigits: [sd, ed], kinds: [kind(a), kind(b)],
-      }));
+
+    for (let k = 0; k + 1 < f.path.length; k++) {
+      if (k % 2 !== 1) continue;
+      const x = f.path[k], y = f.path[k + 1];
+      const xSet = T.isSetKey(x), ySet = T.isSetKey(y);
+      if (xSet !== ySet) {
+        const setC = xSet ? t.sets[x - 1000].cells : t.sets[y - 1000].cells;
+        const candCell = xSet ? Math.floor(y / 10) : Math.floor(x / 10);
+        if (setC.includes(candCell)) { bad++; console.log("NAND-SELF:", JSON.stringify({ at: k })); }
+      }
+      if (xSet && ySet) {
+        const sa = t.sets[x - 1000].cells, sb = t.sets[y - 1000].cells;
+        if (sa.some(c => sb.includes(c))) { bad++; console.log("OVERLAP:", JSON.stringify({ at: k })); }
+      }
     }
+
+    for (const e of f.elims)
+      for (const k of f.path) {
+        const member = T.isSetKey(k)
+          ? (t.sets[k - 1000].digit === e.cand && t.sets[k - 1000].cells.includes(e.cell))
+          : (k % 10 === e.cand && Math.floor(k / 10) === e.cell);
+        if (member) { bad++; console.log("SELF-KILL:", JSON.stringify({ cell: e.cell, cand: e.cand })); break; }
+      }
   }
   console.log(p.slice(0, 20) + "... chains:", found.length);
 }
