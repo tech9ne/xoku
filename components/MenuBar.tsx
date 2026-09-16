@@ -70,16 +70,6 @@ export default function MenuBar(p: Props) {
             )}
           </div>
         ))}
-        <div className="flex items-center gap-0.5 shrink-0 ml-1">
-          <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-300 disabled:opacity-30 disabled:hover:bg-transparent">
-            <UndoIcon />
-          </button>
-          <button title="Redo (Ctrl+Y)" aria-label="Redo" disabled={!p.canRedo} onClick={p.onRedo}
-            className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-300 disabled:opacity-30 disabled:hover:bg-transparent">
-            <RedoIcon />
-          </button>
-        </div>
         <div className="flex items-center gap-0.5 ml-2 min-w-0 flex-1 overflow-x-auto">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;
