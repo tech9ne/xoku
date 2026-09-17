@@ -107,8 +107,10 @@ fixed frame; dock under grid on both. (v14.3-h8b)
 H8c DONE (v14.3-h8c): main-row sizing — desktop board fills left column
 (lg:w-[min(100%,calc(100vh-280px))]); mobile main row pans on x-axis
 (board+dock left, panel right) like Hodoku under termux:X11.
-H8d right-panel 2x2 tab switcher (Summary / All possible steps /
-Solution path / Active Cell) with Hodoku-style blue active bar.
+H8d DONE (v14.3-h8d): right-panel 2x2 tab switcher (Summary | Solution path /
+All possible steps | Active Cell) + blue active bar #0084D4. Groups:
+active = Active Cell+Set Value+Exclude+Coloring; steps = show-all button +
+all-steps list (moved from left column); path = auto-solve + Solution path.
 H8e right-panel controls restyle to Hodoku look (Set Value / Exclude gray
 squares, coloring swatch pair + R + radios + 12 palette + eye).
 H8f toolbar hint cluster moved after xy, round glossy colored buttons

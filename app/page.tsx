@@ -20,6 +20,9 @@ export default function Home() {
   const [sel, setSel] = useState(40);
   const [hint, setHint] = useState<Step | null>(null);
   const [hintMode, setHintMode] = useState<"vague" | "concrete">("concrete");
+  type PanelTab = "summary" | "active" | "steps" | "path";
+  const [panelTab, setPanelTab] = useState<PanelTab>("summary");
+  const TABS: [PanelTab, string][] = [["summary","Summary"],["path","Solution path"],["steps","All possible steps"],["active","Active Cell"]];
   const PROGRESS = new Set(["Single", "Subset"]);
   const hintCells = (st: Step) => {
     const x = st as any;
@@ -336,21 +339,6 @@ export default function Home() {
           onSelect={setSel} onCandClick={toggleCand} />
 
           </div>
-        {/* All-steps list (toggleable) */}
-        {allSteps && (
-          <div className="w-full">
-            <Panel className="max-h-48 overflow-y-auto">
-              {allSteps.map((s, idx) => (
-                <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
-                  onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
-                  <span>{s.technique}</span>
-                  <span className="text-slate-400">XR {s.score}</span>
-                </button>
-              ))}
-              {!allSteps.length && <div className="px-3 py-2 text-xs text-slate-400">No steps found.</div>}
-            </Panel>
-          </div>
-        )}
         {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
         <div className="w-full flex-shrink-0">
           <Panel>
@@ -379,6 +367,13 @@ export default function Home() {
         </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
         <aside className="w-72 xl:w-80 shrink-0 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0">
+          <div className="grid grid-cols-2 gap-px bg-[#A0A0A0] border border-[#A0A0A0] shrink-0">
+            {TABS.map(([k, label]) => (
+              <button key={k} onClick={() => setPanelTab(k)} className={"h-7 px-1 text-xs " + (panelTab === k ? "bg-white font-semibold" : "bg-[#F0F0F0] hover:bg-[#E4E4E4]")}>{label}</button>
+            ))}
+          </div>
+          <div className="h-6 shrink-0 flex items-center justify-center bg-[#0084D4] text-white text-xs font-bold">{TABS.find(t => t[0] === panelTab)![1]}</div>
+          {panelTab === "summary" && (<>
           {/* Summary */}
           <Panel>
             <TitleBar>Summary</TitleBar>
@@ -390,6 +385,8 @@ export default function Home() {
             </div>
           </Panel>
 
+          </>)}
+          {panelTab === "active" && (<>
           {/* Active Cell */}
           <Panel>
             <TitleBar>Active Cell</TitleBar>
@@ -439,14 +436,33 @@ export default function Home() {
             </div>
           </Panel>
 
-          {/* Action buttons — narrow full-width, HoDoKu style */}
+          </>)}
+          {panelTab === "steps" && (<>
           <div className="flex flex-col gap-1.5">
             <button className="h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
               onClick={showAll}>{allSteps ? "Hide" : "Show"} all possible steps</button>
+          </div>
+        {/* All-steps list (toggleable) */}
+        {allSteps && (
+          <div className="w-full">
+            <Panel className="max-h-48 overflow-y-auto">
+              {allSteps.map((s, idx) => (
+                <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
+                  onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
+                  <span>{s.technique}</span>
+                  <span className="text-slate-400">XR {s.score}</span>
+                </button>
+              ))}
+              {!allSteps.length && <div className="px-3 py-2 text-xs text-slate-400">No steps found.</div>}
+            </Panel>
+          </div>
+        )}
+          </>)}
+          {panelTab === "path" && (<>
+          <div className="flex flex-col gap-1.5">
             <button className="h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
               onClick={autoSolve}>Solve puzzle automatically</button>
           </div>
-
           {/* Solution path — tall, scrollable, a real area */}
           <Panel className="flex-1 min-h-40 flex flex-col">
             <TitleBar>Solution path</TitleBar>
@@ -459,6 +475,7 @@ export default function Home() {
               {!solutionPath.length && <li className="text-slate-400 italic">no steps yet — solve or hint to begin</li>}
             </ol>
           </Panel>
+          </>)}
         </aside>
       </div>
 
