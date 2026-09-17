@@ -57,7 +57,7 @@ export default function MenuBar(p: Props) {
   };
   return (
     <nav className="bg-slate-200 text-slate-800 border-b border-slate-300">
-      <div className="flex items-center flex-nowrap gap-1 px-1 h-9">
+      <div className="flex items-center flex-nowrap gap-1 px-1 h-9 overflow-x-auto bg-white">
         {Object.entries(menus).map(([title, entries]) => (
           <div key={title} className="relative shrink-0">
             <button className="px-2 h-7 text-xs hover:bg-slate-300 rounded-sm whitespace-nowrap"
@@ -73,8 +73,9 @@ export default function MenuBar(p: Props) {
           </div>
         ))}
 
+      </div>
       {/* toolbar row 2: BIG undo/redo + difficulty */}
-      <div className="flex items-center gap-2 px-2 h-11 overflow-x-auto bg-[#E8E8E8] border-b border-[#A0A0A0]">
+      <div className="flex items-center flex-wrap gap-2 px-2 min-h-11 py-1 bg-[#D6D9DE] border-b border-[#9aa0aa]">
         <button title="Undo (Ctrl+Z)" aria-label="Undo" disabled={!p.canUndo} onClick={p.onUndo}
           className="w-8 h-8 flex items-center justify-center">
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canUndo ? "#5588CC" : "#A8A8A8", WebkitMaskImage: `url(${UNDO_PNG})`, maskImage: `url(${UNDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
@@ -122,7 +123,6 @@ export default function MenuBar(p: Props) {
             </button>
           )}
         </div>
-      </div>
       </div>
     </nav>
   );
