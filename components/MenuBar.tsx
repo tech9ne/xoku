@@ -90,30 +90,6 @@ export default function MenuBar(p: Props) {
           className="w-8 h-8 flex items-center justify-center">
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
-        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <button title="Vague hint (technique + region only)" aria-label="Vague hint" onClick={p.onHintVague}
-            className={"w-8 h-8 flex items-center justify-center border border-[#808080] " + (p.hintMode === "vague" ? "bg-[#C8D8E8]" : "bg-[#E8E8E8]")}>
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#37474F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.5 1 2.5h6c0-1 .4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>
-          </button>
-          <button title="Concrete hint (full explanation + dots)" aria-label="Concrete hint" onClick={p.onHintConcrete}
-            className={"w-8 h-8 flex items-center justify-center border border-[#808080] " + (p.hintMode === "concrete" ? "bg-[#C8D8E8]" : "bg-[#E8E8E8]")}>
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#37474F" stroke="#37474F" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.5 1 2.5h6c0-1 .4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>
-          </button>
-          <button title="Next hint" aria-label="Next hint" onClick={p.onHintNext}
-            className="w-8 h-8 flex items-center justify-center border border-[#808080] bg-[#E8E8E8]">
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#37474F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-          </button>
-          <button title="Execute hint" aria-label="Execute hint" onClick={p.onHintExecute} disabled={!p.hasHint}
-            className="w-8 h-8 flex items-center justify-center border border-[#808080] bg-[#E8E8E8] disabled:opacity-40">
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#37474F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-          </button>
-          <button title="Cancel hint" aria-label="Cancel hint" onClick={p.onHintAbort} disabled={!p.hasHint}
-            className="w-8 h-8 flex items-center justify-center border border-[#808080] bg-[#E8E8E8] disabled:opacity-40">
-            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="#37474F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
-          </button>
-        </div>
-        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
         <button title="Create a new sudoku" aria-label="Create a new sudoku" onClick={() => p.onNew(chosen)}
           className="w-9 h-9 flex-shrink-0 flex items-center justify-center border border-[#808080] bg-white shadow-[1px_1px_1px_rgba(0,0,0,0.25)]">
           <svg viewBox="0 0 32 32" className="w-7 h-7">
@@ -157,6 +133,24 @@ export default function MenuBar(p: Props) {
               <span className="text-sm font-semibold [text-shadow:1px_2px_1px_rgba(0,0,0,0.3)]">y</span>
             </span>
           </button>
+        </div>
+        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button title="Vague hint (technique + region only)" aria-label="Vague hint" onClick={p.onHintVague}
+            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "vague" ? "bg-[#C8D8E8]" : "")}>
+            <img src="hodoku/vageHint.png" alt="" className="w-8 h-8" /></button>
+          <button title="Concrete hint (full explanation + dots)" aria-label="Concrete hint" onClick={p.onHintConcrete}
+            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "concrete" ? "bg-[#C8D8E8]" : "")}>
+            <img src="hodoku/concreteHint.png" alt="" className="w-8 h-8" /></button>
+          <button title="Next hint" aria-label="Next hint" onClick={p.onHintNext}
+            className="w-8 h-8 flex items-center justify-center">
+            <img src="hodoku/nextHint.png" alt="" className="w-8 h-8" /></button>
+          <button title="Execute hint" aria-label="Execute hint" onClick={p.onHintExecute} disabled={!p.hasHint}
+            className="w-8 h-8 flex items-center justify-center disabled:opacity-40">
+            <img src="hodoku/executeHint.png" alt="" className="w-8 h-8" /></button>
+          <button title="Cancel hint" aria-label="Cancel hint" onClick={p.onHintAbort} disabled={!p.hasHint}
+            className="w-8 h-8 flex items-center justify-center disabled:opacity-40">
+            <img src="hodoku/abortHint.png" alt="" className="w-8 h-8" /></button>
         </div>
       </div>
     </nav>

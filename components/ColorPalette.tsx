@@ -32,12 +32,8 @@ export default function ColorPalette(p: Props) {
           <div className="absolute left-0 top-0 w-11 h-11 border border-[#707070]"
             style={{ backgroundColor: "#" + H[c1] }} />
           <button title="swap colors" onClick={p.onSwap}
-            className="absolute -top-2 -right-2 w-5 h-5">
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none"
-              stroke="#808080" strokeWidth="3" strokeLinecap="round">
-              <path d="M19 15v-3a8 8 0 0 0-8-8H6" />
-              <path d="M9 1L6 4l3 3" />
-            </svg>
+            className="absolute -top-2 -right-2 w-6 h-6">
+            <img src="hodoku/swap_color_arrow.png" alt="" className="w-6 h-6" />
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
             className="absolute -bottom-2 -left-2 w-6 h-6 border border-[#808080] bg-[#E8E8E8] text-[11px] font-semibold shadow-[inset_1px_1px_0_#ffffff,inset_-1px_-1px_0_#9a9a9a,1px_1px_0_#707070]">R</button>
@@ -62,10 +58,9 @@ export default function ColorPalette(p: Props) {
         <button title={p.visible ? "hide coloring" : "show coloring"}
           onClick={p.onToggleVisible}
           className="w-7 h-7 bg-[#E8E8E8] flex items-center justify-center shadow-[inset_1px_1px_0_#ffffff,inset_-1px_-1px_0_#9a9a9a]">
-          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="black" strokeWidth="2">
-            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" />
-            <circle cx="12" cy="12" r="2.5" fill="black" />
-          </svg>
+          {p.visible
+            ? <img src="hodoku/visibility_on_64x64_cc0.png" alt="" className="w-5 h-5" />
+            : <img src="hodoku/visibility_off_64x64_cc0.png" alt="" className="w-5 h-5" />}
         </button>
         {H.slice(6, 12).map((_, i) => sw(i + 6))}
         <div className="w-7 h-7 bg-[#ECECEC]" />

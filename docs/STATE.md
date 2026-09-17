@@ -127,9 +127,13 @@ cells = click paints cell background, default = current behavior.
 H8j DONE (v14.3-h8j): manual paints render via inline styles (Tailwind JIT
 cannot see runtime-built bg-[#hex] classes — that was the invisible-paint
 bug); R/eye get Swing bevel; bolder swap arrow.
-H8k toolbar hint cluster after xy with real Hodoku PNG icons
-(vageHint/concreteHint/nextHint/executeHint/abortHint from /tmp/hodoku2-src
-img/), replacing the square SVG bulbs.
+H8k DONE (v14.3-h8k): toolbar hint cluster = real Hodoku PNGs (vageHint/
+concreteHint/nextHint/executeHint/abortHint) placed after xy behind a
+separator; palette swap = swap_color_arrow.png; eye = visibility_on/off PNGs.
+H9 additions from termux screenshots: H9b Summary tab = technique statistics
+table (count + technique + band-colored rows + Total); H9c all-steps panel
+buttons move below list, renamed Find all steps / Add to solution. Optional
+later: 4th radio Draw Links (Hodoku2).
 H9 solution path parity (manual: rows clickable, jump/show step): notation
 (reason) shown with technique, rows tinted by difficulty band RGBs, click =
 step into hint dock + board dots. Then chain/link arrows overlay.
