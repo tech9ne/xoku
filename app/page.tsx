@@ -36,7 +36,10 @@ export default function Home() {
   const [filterMode, setFilterMode] = useState<"possible" | "excluded">("possible");
   const toggleFilterMode = () => setFilterMode(m => m === "possible" ? "excluded" : "possible");
   const [manualColors, setManualColors] = useState<Map<number, number>>(new Map());
-  const [activeColor, setActiveColor] = useState<number | null>(null);
+  const [activeColor, setActiveColor] = useState<number | null>(8);
+  const [color2, setColor2] = useState(4);
+  const [colorMode, setColorMode] = useState<"default" | "cands" | "cells">("default");
+  const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Generating puzzle…");
   const [seconds, setSeconds] = useState(0);
@@ -343,7 +346,7 @@ export default function Home() {
           <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
           <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
-          manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
+          manualColors={coloringVisible ? manualColors : new Map()} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} />
 
           </div>
@@ -409,10 +412,10 @@ export default function Home() {
           {/* Set Value — HoDoKu-style: 3 rows of proper squares */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Set Value:</div>
-            <div className="grid grid-cols-3 gap-1.5 p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || peersSee(d)}
-                  className={"aspect-square border text-base " + (cellLocked || peersSee(d) ? "border-[#C8C8C8] bg-[#C8C8C8] text-transparent" : "border-[#909090] bg-[#E8E8E8] text-black hover:bg-[#D8D8D8] active:bg-[#C0C0C0]")}
+                  className={"w-11 h-11 border text-base " + (cellLocked || peersSee(d) ? "border-[#B8B8B8] bg-[#C4C4C4] text-transparent" : "border-[#989898] bg-[#E4E4E4] text-black hover:bg-[#D8D8D8] active:bg-[#C8C8C8]")}
                   onClick={() => setValue(sel, d)}>
                   {d}
                 </button>
@@ -423,10 +426,10 @@ export default function Home() {
           {/* Exclude Candidates — same block style, tint marks present candidates */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Exclude Candidates:</div>
-            <div className="grid grid-cols-3 gap-1.5 p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || !(hasSel && game.cands[sel] & candMask(d))}
-                  className={"aspect-square border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#C8C8C8] bg-[#C8C8C8] text-transparent" : "border-[#909090] bg-[#E8E8E8] text-black hover:bg-[#D8D8D8] active:bg-[#C0C0C0]")}
+                  className={"w-11 h-11 border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#B8B8B8] bg-[#C4C4C4] text-transparent" : "border-[#989898] bg-[#E4E4E4] text-black hover:bg-[#D8D8D8] active:bg-[#C8C8C8]")}
                   onClick={() => toggleCand(sel, d)}>
                   {d}
                 </button>
@@ -437,8 +440,12 @@ export default function Home() {
           <Panel>
             <TitleBar>Coloring</TitleBar>
             <div className="px-3 py-2">
-              <ColorPalette active={activeColor} onPick={c => setActiveColor(a => (a === c ? null : c))}
-                onClearAll={() => setManualColors(new Map())} anySet={manualColors.size > 0} />
+              <ColorPalette active={activeColor} second={color2}
+                onPick={i => setActiveColor(i)} onPickSecond={i => setColor2(i)}
+                onSwap={() => { setActiveColor(color2); setColor2(c1 => (activeColor === null ? 8 : c1 === color2 ? color2 : activeColor)); }}
+                onClearAll={() => setManualColors(new Map())}
+                visible={coloringVisible} onToggleVisible={() => setColoringVisible(v => !v)}
+                mode={colorMode} onMode={setColorMode} />
             </div>
           </Panel>
 

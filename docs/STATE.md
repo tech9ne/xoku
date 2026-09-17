@@ -117,7 +117,14 @@ H8f DONE (v14.3-h8f): Set Value / Exclude = Hodoku gray squares, centered
 labels, per-digit availability (peersSee), solid-gray unavailable cells.
 H8g coloring widget: 12-swatch COLORING_COLORS palette + R + eye; swatch pair
 + mouse-mode radios wired at H10.
-H8h toolbar hint cluster after xy with real Hodoku PNG icons
+H8h DONE (v14.3-h8h): coloring widget fidelity — overlapping pair (defaults
+green #86F280 / pink #F7A5A7 like Hodoku toolbar swatch), curved swap arrow
+top-right, R bottom-left, mouse-mode radios (visual now, behavior at H8i),
+6x2 palette with eye as 7th cell of row 1 (eye wired: hides coloring);
+Set Value/Exclude = centered 44px Hodoku squares.
+H8i wire color modes into grid: cands = click paints candidate,
+cells = click paints cell background, default = current behavior.
+H8j toolbar hint cluster after xy with real Hodoku PNG icons
 (vageHint/concreteHint/nextHint/executeHint/abortHint from /tmp/hodoku2-src).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
