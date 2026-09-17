@@ -15,20 +15,9 @@ const HINT_COLORS = [
   { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
   { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
-const MANUAL_COLORS = [
-  { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
-  { node: "bg-green-600 text-white", cell: "bg-green-100" },
-  { node: "bg-red-600 text-white", cell: "bg-red-100" },
-  { node: "bg-purple-600 text-white", cell: "bg-purple-100" },
-  { node: "bg-teal-600 text-white", cell: "bg-teal-100" },
-];
-const RING = [
-  "ring-2 ring-inset ring-blue-400",
-  "ring-2 ring-inset ring-green-500",
-  "ring-2 ring-inset ring-orange-300",
-  "ring-2 ring-inset ring-purple-400",
-  "ring-2 ring-inset ring-teal-400",
-];
+const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","86E8D0","CEFBED","86F280","D7FFD7","33CCFF","FFFF00"];
+const MANUAL_COLORS = H.map(h => ({ node: `bg-[#${h}] text-black`, cell: `bg-[#${h}]/20` }));
+const RING = H.map(h => `ring-2 ring-inset ring-[#${h}]`);
 
 interface Props {
   game: Game; sel: number; step: Step | null; showCands: boolean;
@@ -77,7 +66,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
           }
 
           const manual = manualColors.get(i);
-          const manualCell = manual !== undefined ? MANUAL_COLORS[manual % 5].cell : undefined;
+          const manualCell = manual !== undefined ? MANUAL_COLORS[manual].cell : undefined;
 
           // selection is an OUTLINE (yellow, thick) - never a background -
           // so digit highlights, hint tints and pattern colors stay visible
@@ -95,7 +84,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                 (c === 2 || c === 5) && "border-r-2 border-r-black",
                 (r === 2 || r === 5) && "border-b-2 border-b-black",
                 outline,
-                manual !== undefined && RING[manual % 5],
+                manual !== undefined && RING[manual],
                 bg)}
               onClick={() => onSelect(selected ? -1 : i)}
               title={value !== 0 ? undefined : "tap to select; long-press paints the active color; right-click a pencil digit excludes it"}>
@@ -123,7 +112,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                         : pat || plc
                           ? cls(PALETTE[1].node, "rounded-full font-bold")
                           : manualNode !== undefined
-                            ? cls(MANUAL_COLORS[manualNode % 5].node, "rounded-full font-bold")
+                            ? cls(MANUAL_COLORS[manualNode].node, "rounded-full font-bold")
                             : hasRich ? "opacity-30"
                             : hl ? "text-green-900 font-bold"
                           : undefined;
