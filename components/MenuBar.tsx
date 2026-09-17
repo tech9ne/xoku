@@ -43,7 +43,7 @@ export default function MenuBar(p: Props) {
   ];
   const menus: Record<string, [string, () => void][]> = {
     File: [
-      ...LEVELS.map(l => [`New ${l}`, () => p.onNew(l)] as [string, () => void]),
+      
       ["Restart", p.onRestart],
       ["Import…", p.onImport],
       ["Export (copy to clipboard)", p.onExport],
@@ -108,7 +108,7 @@ export default function MenuBar(p: Props) {
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
           value={chosen}
           onChange={(e) => setChosen(e.target.value as Level)}>
-          {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
+          {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
         <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "3px 3px 0 #f2a0a0" }} />
         <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
