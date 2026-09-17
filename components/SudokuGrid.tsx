@@ -9,11 +9,10 @@ const FILTER_BG = "bg-[#B9FFB9]";
 const FILTER_BG_X = "bg-[#FFB9B9]";
 
 const PALETTE = [
-  { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
-  { node: "bg-green-600 text-white", cell: "bg-green-100" },
-  { node: "bg-red-600 text-white", cell: "bg-red-100" },
-  { node: "bg-purple-600 text-white", cell: "bg-purple-100" },
-  { node: "bg-teal-600 text-white", cell: "bg-teal-100" },
+  { node: "bg-[#C5E88C] text-black", cell: "bg-[#C5E88C]/20" },
+  { node: "bg-[#FFCBCB] text-black", cell: "bg-[#FFCBCB]/20" },
+  { node: "bg-[#B2DFDF] text-black", cell: "bg-[#B2DFDF]/20" },
+  { node: "bg-[#FCDCa5] text-black", cell: "bg-[#FCDCa5]/20" },
 ];
 
 const RING = [
@@ -110,7 +109,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                     );
                     const manualNode = manualColors.get(i * 10 + d);
                     const candCls = elim
-                      ? "bg-red-500 text-white rounded-full font-bold"
+                      ? "bg-[#FF7684] text-black rounded-full font-bold"
                       : nc !== undefined
                         ? cls(PALETTE[nc].node, "rounded-full font-bold")
                         : pat || plc
