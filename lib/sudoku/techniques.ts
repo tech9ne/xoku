@@ -417,9 +417,10 @@ export const xyzWing: Finder = (g) => {
         if (!elims.length) continue;
         return mk({
           technique: "XYZ-Wing", category: "Wing", score: 4.8,
-          cellGroups: [
-            { cells: [p, a], color: 3 },
-            { cells: [b], color: 4 },
+          candColors: [
+            { cell: p, cand: z, color: 3 },
+            { cell: a, cand: z, color: 3 },
+            { cell: b, cand: z, color: 4 },
           ],
                               reason: `XYZ-Wing: pivot ${cellName(p)} (${x}/${y}/${z}) with pincers ${cellName(a)} and ${cellName(b)} — ${z} must be in the pivot or a pincer.`,
           eliminations: elims, patternCells: [p, a, b],
@@ -768,7 +769,10 @@ export const alsXZ: Finder = (g) => {
           return mk({
             technique: zRestr ? "ALS-XZ (doubly linked)" : "ALS-XZ",
             category: "ALS", score: 7.0,
-            cellGroups: [{ cells: A.cells, color: 0 }, { cells: B.cells, color: 1 }],
+            candColors: [
+            ...A.cells.map(c => ({ cell: c, cand: z, color: 0 })),
+            ...B.cells.map(c => ({ cell: c, cand: z, color: 1 })),
+          ],
             reason: `ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) and ALS ${B.cells.map(cellName).join("+")} (${candsOf(B.mask).join("/")}) share restricted candidate ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets${zRestr ? `, and ${x} likewise (doubly linked)` : ""}.`,
             eliminations: elims, patternCells,
             patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1096,7 +1100,11 @@ export const alsXYWing: Finder = (g) => {
           const patternCells = [...A.cells, ...B.cells, ...C.cells];
           return mk({
             technique: "ALS-XY-Wing", category: "ALS", score: 7.2,
-            cellGroups: [{ cells: A.cells, color: 0 }, { cells: B.cells, color: 1 }, { cells: C.cells, color: 2 }],
+            candColors: [
+            ...A.cells.map(c => ({ cell: c, cand: Z, color: 0 })),
+            ...B.cells.map(c => ({ cell: c, cand: Z, color: 1 })),
+            ...C.cells.map(c => ({ cell: c, cand: Z, color: 2 })),
+          ],
             reason: `Pivot ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) is linked by restricted candidate ${X} to pincer ${B.cells.map(cellName).join("+")} and by restricted ${Y} to pincer ${C.cells.map(cellName).join("+")}. If ${X} is true in the pivot, the first pincer locks and must place ${Z}; if ${X} is false, the pivot locks, places ${Y}, and the second pincer must place ${Z}. Either way ${Z} is placed in one of the pincers — removed from cells seeing all of it in both.`,
             eliminations: elims, patternCells,
             patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1147,7 +1155,7 @@ export const alsChain: Finder = (g) => {
             const patternCells = path.flatMap(p => als[p].cells);
             return mk({
               technique: "ALS Chain", category: "ALS", score: 7.4,
-              cellGroups: path.map((p, k) => ({ cells: als[p].cells, color: k % 5 })),
+              candColors: path.flatMap((p, k) => als[p].cells.map(c => ({ cell: c, cand: Z, color: k % 5 }))),
               reason: `ALS chain ${path.map(p => als[p].cells.map(cellName).join("+")).join(" -> ")}: if ${Z} were false throughout the first set it would lock, and the restricted links force each following set to lock in turn until the last set places ${Z} — so ${Z} must be true in one of the end sets and is removed from cells seeing all of it in both.`,
               eliminations: elims, patternCells,
               patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1205,7 +1213,11 @@ export const deathBlossom: Finder = (g) => {
         const patternCells = [S, ...A.cells, ...B.cells];
         return mk({
           technique: "Death Blossom", category: "ALS", score: 7.6,
-          cellGroups: [{ cells: [S], color: 0 }, { cells: A.cells, color: 1 }, { cells: B.cells, color: 2 }],
+          candColors: [
+            { cell: S, cand: Z, color: 0 },
+            ...A.cells.map(c => ({ cell: c, cand: Z, color: 1 })),
+            ...B.cells.map(c => ({ cell: c, cand: Z, color: 2 })),
+          ],
           reason: `Stem ${cellName(S)} (${x}/${y}) with petals ${A.cells.map(cellName).join("+")} and ${B.cells.map(cellName).join("+")}: the stem is ${x} or ${y}; either way one petal loses its link digit, locks, and must place ${Z} — so ${Z} is removed from cells seeing all of it in both petals.`,
           eliminations: elims, patternCells,
           patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),

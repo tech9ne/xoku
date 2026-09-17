@@ -35,13 +35,11 @@ interface Props {
 }
 
 export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick }: Props) {
-  const groupOf = new Map<number, number>();
-  if (step?.cellGroups)
-    for (const grp of step.cellGroups) for (const c of grp.cells) groupOf.set(c, grp.color % 5);
+
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
     for (const nc of step.candColors) nodeOf.set(nc.cell * 10 + nc.cand, nc.color % 5);
-  const hasRich = groupOf.size > 0 || nodeOf.size > 0;
+  const hasRich = nodeOf.size > 0;
 
   // center of candidate d in cell, in 0-100 viewBox units
   const candPos = (cell: number, d: number) => {
