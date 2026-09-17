@@ -347,7 +347,8 @@ export default function Home() {
           <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={coloringVisible ? manualColors : new Map()} brush={activeColor} onPaintCand={paintCand}
-          onSelect={setSel} onCandClick={toggleCand} />
+          onSelect={setSel} onCandClick={toggleCand} colorMode={colorMode}
+          onPaintCell={i => { if (activeColor !== null) setManualColors(m => new Map(m).set(i, activeColor)); }} />
 
           </div>
         {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
@@ -377,7 +378,7 @@ export default function Home() {
         </div>
         </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
-        <aside className="w-72 xl:w-80 shrink-0 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0">
+        <aside className="w-72 xl:w-80 shrink-0 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0 bg-[#EFEFEF] border border-[#989898] p-1.5 [&_section]:bg-transparent [&_section]:border-0">
           <div className="grid grid-cols-2 gap-px bg-[#A0A0A0] border border-[#A0A0A0] shrink-0">
             {TABS.map(([k, label]) => (
               <button key={k} onClick={() => setPanelTab(k)} className={"h-7 px-1 text-xs " + (panelTab === k ? "bg-white font-semibold" : "bg-[#F0F0F0] hover:bg-[#E4E4E4]")}>{label}</button>
@@ -415,7 +416,7 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || peersSee(d)}
-                  className={"w-11 h-11 border text-base " + (cellLocked || peersSee(d) ? "border-[#B8B8B8] bg-[#C4C4C4] text-transparent" : "border-[#989898] bg-[#E4E4E4] text-black hover:bg-[#D8D8D8] active:bg-[#C8C8C8]")}
+                  className={"w-12 h-12 border text-base " + (cellLocked || peersSee(d) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}
                   onClick={() => setValue(sel, d)}>
                   {d}
                 </button>
@@ -429,7 +430,7 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || !(hasSel && game.cands[sel] & candMask(d))}
-                  className={"w-11 h-11 border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#B8B8B8] bg-[#C4C4C4] text-transparent" : "border-[#989898] bg-[#E4E4E4] text-black hover:bg-[#D8D8D8] active:bg-[#C8C8C8]")}
+                  className={"w-12 h-12 border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}
                   onClick={() => toggleCand(sel, d)}>
                   {d}
                 </button>

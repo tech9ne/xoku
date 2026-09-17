@@ -29,7 +29,7 @@ interface Props {
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick }: Props) {
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick, colorMode, onPaintCell }: Props & { colorMode: "default" | "cands" | "cells"; onPaintCell: (i: number) => void }) {
 
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
@@ -86,8 +86,11 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                 outline,
                 manual !== undefined && RING[manual],
                 bg)}
-              onClick={() => onSelect(selected ? -1 : i)}
-              title={value !== 0 ? undefined : "tap to select; long-press paints the active color; right-click a pencil digit excludes it"}>
+              onClick={() => {
+                if (colorMode === "cells" && brush !== null && value === 0) { onPaintCell(i); return; }
+                onSelect(selected ? -1 : i);
+              }}
+              title={value !== 0 ? undefined : "tap to select; right-click a pencil digit excludes it; coloring follows the mouse-mode radios"}>
               {value !== 0 ? (
                 <span className={cls("text-2xl sm:text-3xl font-medium", valueCls)}>
                   {value}
@@ -119,9 +122,9 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                     return (
                       <span key={d}
                         className={cls("flex items-center justify-center z-10", !on && "invisible", candCls,
-                          brush !== null && on && "cursor-pointer")}
+                          colorMode !== "default" && on && "cursor-pointer")}
                         onClick={e => {
-                          if (brush !== null && on) {
+                          if (colorMode === "cands" && brush !== null && on) {
                             e.stopPropagation();
                             onPaintCand(i, d);
                           }

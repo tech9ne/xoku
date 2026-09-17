@@ -20,7 +20,7 @@ export default function ColorPalette(p: Props) {
     <button key={i} title={"color " + (i + 1)}
       onClick={() => p.onPick(i)}
       onContextMenu={(e) => { e.preventDefault(); p.onPickSecond(i); }}
-      className={"w-7 h-7 " + (c1 === i ? "outline outline-2 outline-black" : "")}
+      className={"w-7 h-7 " + (c1 === i ? "ring-1 ring-inset ring-black/30" : "")}
       style={{ backgroundColor: "#" + H[i] }} />
   );
   return (
@@ -35,8 +35,8 @@ export default function ColorPalette(p: Props) {
             className="absolute -top-2 -right-2 w-5 h-5">
             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none"
               stroke="#909090" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M4 20c9 0 3-12 12-12" />
-              <path d="M12 4l4 4-4 4" />
+              <path d="M19 15v-3a8 8 0 0 0-8-8H6" />
+              <path d="M9 1L6 4l3 3" />
             </svg>
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
