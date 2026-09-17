@@ -57,7 +57,7 @@ export default function MenuBar(p: Props) {
   };
   return (
     <nav className="bg-slate-200 text-slate-800 border-b border-slate-300">
-      <div className="flex items-center flex-nowrap gap-1 px-1 h-9 overflow-x-auto bg-white">
+      <div className="flex items-center flex-wrap gap-1 px-1 min-h-9 py-0.5 bg-white">
         {Object.entries(menus).map(([title, entries]) => (
           <div key={title} className="relative shrink-0">
             <button className="px-2 h-7 text-xs hover:bg-slate-300 rounded-sm whitespace-nowrap"
