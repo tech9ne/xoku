@@ -100,20 +100,20 @@ export default function MenuBar(p: Props) {
               <button key={d} onClick={() => p.onDigitFilter(on ? null : d)}
                 title={`Highlight candidate ${d} (${left} remaining)`}
                 className={`w-7 h-8 flex-shrink-0 flex items-center justify-center rounded transition-colors ${
-                  on ? "bg-indigo-600 text-white" : "hover:bg-slate-300"
+                  on ? "bg-indigo-600 text-white" : "hover:bg-slate-300 text-[#6e6e6e]"
                 } ${left === 0 && !on ? "opacity-30" : ""}`}>
-                <span className="text-base font-semibold leading-none">{d}</span>
+                <span className="text-base font-semibold leading-none [text-shadow:1px_1px_0_rgba(255,255,255,0.9),1px_2px_1px_rgba(0,0,0,0.28)]">{d}</span>
               </button>
             );
           })}
           <button onClick={() => p.onDigitFilter(p.digitFilter === "xy" ? null : "xy")}
             title="Highlight bivalue cells (exactly 2 candidates)"
             className={`w-8 h-7 flex items-center justify-center rounded transition-colors ml-0.5 ${
-              p.digitFilter === "xy" ? "bg-purple-600 text-white" : "hover:bg-slate-300"
+              p.digitFilter === "xy" ? "bg-purple-600 text-white" : "hover:bg-slate-300 text-[#6e6e6e]"
             }`}>
             <span className="inline-flex items-baseline">
-              <sup className="text-[11px] font-semibold mr-0.5">x</sup>
-              <span className="text-sm font-semibold">y</span>
+              <sup className="text-[11px] font-semibold mr-0.5 [text-shadow:1px_1px_0_rgba(255,255,255,0.9),1px_2px_1px_rgba(0,0,0,0.28)]">x</sup>
+              <span className="text-sm font-semibold [text-shadow:1px_1px_0_rgba(255,255,255,0.9),1px_2px_1px_rgba(0,0,0,0.28)]">y</span>
             </span>
           </button>
           {p.digitFilter !== null && (
