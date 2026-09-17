@@ -445,7 +445,7 @@ export default function Home() {
         {/* All-steps list (toggleable) */}
         {allSteps && (
           <div className="w-full">
-            <Panel className="max-h-48 overflow-y-auto">
+            <Panel>
               {allSteps.map((s, idx) => (
                 <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
                   onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>

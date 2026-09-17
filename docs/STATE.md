@@ -111,10 +111,13 @@ H8d DONE (v14.3-h8d): right-panel 2x2 tab switcher (Summary | Solution path /
 All possible steps | Active Cell) + blue active bar #0084D4. Groups:
 active = Active Cell+Set Value+Exclude+Coloring; steps = show-all button +
 all-steps list (moved from left column); path = auto-solve + Solution path.
-H8e right-panel controls restyle to Hodoku look (Set Value / Exclude gray
+H8e DONE (v14.3-h8e): all-steps list scrolls with the panel (removed nested
+max-h-48 scroller that snapped back on touch).
+H8f right-panel controls restyle to Hodoku look (Set Value / Exclude gray
 squares, coloring swatch pair + R + radios + 12 palette + eye).
-H8f toolbar hint cluster moved after xy, round glossy colored buttons
-(? ? ! check X), mapping confirmed from MainFrame.java tooltips.
+H8g toolbar hint cluster moved after xy, round glossy colored buttons
+(? ? ! check X), mapping confirmed from MainFrame.java tooltips; icons copied
+from /tmp/hodoku2-src img/*.png into public/.
 H9 chain/link arrows overlay: solid red = strong link, dashed red = weak link
 (refs: Hodoku2 Draw Links, SudokuPanel drawing); solution-path band colors
 (green/yellow/orange by technique class).
