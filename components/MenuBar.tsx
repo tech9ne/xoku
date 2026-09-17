@@ -91,13 +91,12 @@ export default function MenuBar(p: Props) {
         <button title="Create a new sudoku" aria-label="Create a new sudoku" onClick={() => p.onNew(chosen)}
           className="w-9 h-9 flex-shrink-0 flex items-center justify-center border border-[#808080] bg-white shadow-[1px_1px_1px_rgba(0,0,0,0.25)]">
           <svg viewBox="0 0 32 32" className="w-7 h-7">
-            <rect x="1.5" y="1.5" width="29" height="29" rx="5" fill="#FBFBF8" stroke="#37474F" strokeWidth="3"/>
-            <line x1="11.7" y1="3" x2="11.7" y2="29" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="20.3" y1="3" x2="20.3" y2="29" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="3" y1="11.7" x2="29" y2="11.7" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="3" y1="20.3" x2="29" y2="20.3" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="7" y1="7" x2="25" y2="25" stroke="#4F46E5" strokeWidth="4" strokeLinecap="round"/>
-            <line x1="25" y1="7" x2="7" y2="25" stroke="#E8604C" strokeWidth="4" strokeLinecap="round"/>
+            <line x1="10.7" y1="0" x2="10.7" y2="32" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="21.3" y1="0" x2="21.3" y2="32" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="0" y1="10.7" x2="32" y2="10.7" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="0" y1="21.3" x2="32" y2="21.3" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="2" y1="2" x2="30" y2="30" stroke="#4F46E5" strokeWidth="4.5" strokeLinecap="round"/>
+            <line x1="30" y1="2" x2="2" y2="30" stroke="#E8604C" strokeWidth="4.5" strokeLinecap="round"/>
           </svg>
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
