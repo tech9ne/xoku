@@ -60,7 +60,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
   };
 
   return (
-    <div className="relative w-[min(92vw,540px)] aspect-square select-none touch-manipulation">
+    <div className="relative w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto aspect-square select-none touch-manipulation">
       <div className="absolute inset-0 grid grid-cols-9 grid-rows-9 bg-white border-2 border-black shadow">
         {Array.from({ length: 81 }, (_, i) => {
           const r = Math.floor(i / 9), c = i % 9;

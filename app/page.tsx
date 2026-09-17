@@ -326,9 +326,9 @@ export default function Home() {
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
         hintMode={hintMode} hasHint={!!hint} />
 
-      <div className="flex flex-1 flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:overflow-hidden min-h-0">
+      <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
-        <div className="flex-1 flex flex-col gap-2 lg:min-h-0 min-w-0">
+        <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
           <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
@@ -378,7 +378,7 @@ export default function Home() {
         </div>
         </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
-        <aside className="w-full lg:w-72 xl:w-80 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0">
+        <aside className="w-72 xl:w-80 shrink-0 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0">
           {/* Summary */}
           <Panel>
             <TitleBar>Summary</TitleBar>

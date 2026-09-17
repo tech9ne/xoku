@@ -23,6 +23,7 @@ Updated: 2026-09-18, session H8a. Read fully before touching code.
 - One feature = one commit + version bump + push + phone verification.
 
 - Every commit must update docs/STATE.md with the new state/milestone before push.
+- Every pasted block starts with cd ~/xoku; never assume the cwd.
 
 ## 3. File map
 - app/page.tsx — state + handlers: hint state ~21, getHint ~159, applyHint ~171,
@@ -103,7 +104,9 @@ phone scrolls. Left column = grid + all-steps + hints dock; right column
 internal scroll; status bar pinned.
 H8b mobile/layout fix: phone scrolls (height lock removed), desktop keeps
 fixed frame; dock under grid on both. (v14.3-h8b)
-H8c desktop grid fill: board scales to available left-column space.
+H8c DONE (v14.3-h8c): main-row sizing — desktop board fills left column
+(lg:w-[min(100%,calc(100vh-280px))]); mobile main row pans on x-axis
+(board+dock left, panel right) like Hodoku under termux:X11.
 H8d right-panel 2x2 tab switcher (Summary / All possible steps /
 Solution path / Active Cell) with Hodoku-style blue active bar.
 H8e right-panel controls restyle to Hodoku look (Set Value / Exclude gray
