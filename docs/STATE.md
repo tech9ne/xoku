@@ -101,9 +101,15 @@ VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, 
 H8a DONE (v14.3-h8a): app shell — desktop fixed 100vh frame, no page scroll;
 phone scrolls. Left column = grid + all-steps + hints dock; right column
 internal scroll; status bar pinned.
-H8b right-panel 2x2 tab switcher (Summary / All possible steps /
+H8b mobile/layout fix: phone scrolls (height lock removed), desktop keeps
+fixed frame; dock under grid on both. (v14.3-h8b)
+H8c desktop grid fill: board scales to available left-column space.
+H8d right-panel 2x2 tab switcher (Summary / All possible steps /
 Solution path / Active Cell) with Hodoku-style blue active bar.
-H8c hints dock refinements under grid (heights/borders) if needed after H8b.
+H8e right-panel controls restyle to Hodoku look (Set Value / Exclude gray
+squares, coloring swatch pair + R + radios + 12 palette + eye).
+H8f toolbar hint cluster moved after xy, round glossy colored buttons
+(? ? ! check X), mapping confirmed from MainFrame.java tooltips.
 H9 chain/link arrows overlay: solid red = strong link, dashed red = weak link
 (refs: Hodoku2 Draw Links, SudokuPanel drawing); solution-path band colors
 (green/yellow/orange by technique class).

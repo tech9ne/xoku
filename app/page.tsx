@@ -315,7 +315,7 @@ export default function Home() {
   );
 
   return (
-    <main className="h-screen lg:h-screen bg-[#F2F2F2] text-slate-900 flex flex-col overflow-hidden">
+    <main className="min-h-screen lg:h-screen bg-[#F2F2F2] text-slate-900 flex flex-col lg:overflow-hidden">
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
         onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
@@ -326,10 +326,10 @@ export default function Home() {
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
         hintMode={hintMode} hasHint={!!hint} />
 
-      <div className="flex flex-1 flex-col lg:flex-row gap-4 p-4 lg:p-6 overflow-hidden min-h-0">
+      <div className="flex flex-1 flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
-        <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-0">
-          <div className="flex-1 flex items-center justify-center min-h-0">
+        <div className="flex-1 flex flex-col gap-2 lg:min-h-0 min-w-0">
+          <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
           <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
@@ -463,7 +463,7 @@ export default function Home() {
       </div>
 
       {/* Status bar — their format */}
-      <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 border-t border-[#9aa0aa]">
+      <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 mt-auto lg:mt-0 border-t border-[#9aa0aa]">
         <span className="px-2">Coloring: {activeColor === null ? "none" : "active"}</span>
         <span className="px-2 border-l border-[#b0b4bb] flex items-center gap-1">
           <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-black" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
