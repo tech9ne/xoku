@@ -10,10 +10,10 @@ const FILTER_BG_X = "bg-[#FFB9B9]";
 const HINT_COLORS = [
   { node: "bg-[#7FBBFF] text-black", cell: "bg-[#7FBBFF]/20" },
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
-  { node: "bg-[#C5E88C] text-black", cell: "bg-[#C5E88C]/20" },
-  { node: "bg-[#FFCBCB] text-black", cell: "bg-[#FFCBCB]/20" },
-  { node: "bg-[#B2DFDF] text-black", cell: "bg-[#B2DFDF]/20" },
-  { node: "bg-[#FCDCA5] text-black", cell: "bg-[#FCDCA5]/20" },
+  { node: "bg-[#FF8800] text-black", cell: "bg-[#FF8800]/20" },
+  { node: "bg-[#9D4EDD] text-white", cell: "bg-[#9D4EDD]/20" },
+  { node: "bg-[#00B4D8] text-black", cell: "bg-[#00B4D8]/20" },
+  { node: "bg-[#FF006E] text-white", cell: "bg-[#FF006E]/20" },
 ];
 const MANUAL_COLORS = [
   { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
