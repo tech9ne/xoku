@@ -91,17 +91,13 @@ export default function MenuBar(p: Props) {
         <button title="Create a new sudoku" aria-label="Create a new sudoku" onClick={() => p.onNew(chosen)}
           className="w-9 h-9 flex-shrink-0 flex items-center justify-center border border-[#808080] bg-white shadow-[1px_1px_1px_rgba(0,0,0,0.25)]">
           <svg viewBox="0 0 32 32" className="w-7 h-7">
-            <rect x="1" y="1" width="30" height="30" fill="#ffffff" stroke="#404040" strokeWidth="2"/>
-            <line x1="16" y1="1" x2="16" y2="31" stroke="#404040" strokeWidth="2"/>
-            <line x1="1" y1="16" x2="31" y2="16" stroke="#404040" strokeWidth="2"/>
-            <text x="8" y="12" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">2</text>
-            <text x="24" y="28" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">6</text>
-            <line x1="4" y1="28" x2="28" y2="4" stroke="#c02020" strokeWidth="2" strokeDasharray="4 3"/>
-            <line x1="6" y1="20" x2="20" y2="6" stroke="#c02020" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <circle cx="4" cy="28" r="3" fill="#20a020"/>
-            <circle cx="28" cy="4" r="3" fill="#20a020"/>
-            <circle cx="8" cy="18" r="2.5" fill="#3070d0"/>
-            <circle cx="18" cy="8" r="2.5" fill="#3070d0"/>
+            <rect x="1.5" y="1.5" width="29" height="29" rx="5" fill="#FBFBF8" stroke="#37474F" strokeWidth="3"/>
+            <line x1="11.7" y1="3" x2="11.7" y2="29" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="20.3" y1="3" x2="20.3" y2="29" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="3" y1="11.7" x2="29" y2="11.7" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="3" y1="20.3" x2="29" y2="20.3" stroke="#C7CCD1" strokeWidth="1"/>
+            <line x1="7" y1="7" x2="25" y2="25" stroke="#4F46E5" strokeWidth="4" strokeLinecap="round"/>
+            <line x1="25" y1="7" x2="7" y2="25" stroke="#E8604C" strokeWidth="4" strokeLinecap="round"/>
           </svg>
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
