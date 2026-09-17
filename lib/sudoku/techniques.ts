@@ -709,6 +709,14 @@ function restrictedCommon(A: Als, B: Als, d: number): boolean {
   return A.byDigit[d].every(a => B.byDigit[d].every(b => fastPeers(a, b)));
 }
 
+function ccOf(g: Game, cells: number[], d: number): number[] {
+  return cells.filter(c => (g.cands[c] & candMask(d)) !== 0);
+}
+function memOf(g: Game, cells: number[], exclude: number[], color: number) {
+  const ex = new Set(exclude);
+  return cells.flatMap(c => candsOf(g.cands[c]).filter(d => !ex.has(d)).map(d => ({ cell: c, cand: d, color })));
+}
+
 export const alsXZ: Finder = (g) => {
   const empt = emptyCells(g);
   if (empt.length < 4) return null;
@@ -770,8 +778,12 @@ export const alsXZ: Finder = (g) => {
             technique: zRestr ? "ALS-XZ (doubly linked)" : "ALS-XZ",
             category: "ALS", score: 7.0,
             candColors: [
-            ...A.cells.map(c => ({ cell: c, cand: z, color: 0 })),
-            ...B.cells.map(c => ({ cell: c, cand: z, color: 1 })),
+            ...ccOf(g, B.cells, z).map(c => ({ cell: c, cand: z, color: 0 })),
+            ...ccOf(g, B.cells, x).map(c => ({ cell: c, cand: x, color: 1 })),
+            ...ccOf(g, A.cells, x).map(c => ({ cell: c, cand: x, color: 0 })),
+            ...ccOf(g, A.cells, z).map(c => ({ cell: c, cand: z, color: 1 })),
+            ...memOf(g, A.cells, [x, z], 2),
+            ...memOf(g, B.cells, [x, z], 3),
           ],
             reason: `ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) and ALS ${B.cells.map(cellName).join("+")} (${candsOf(B.mask).join("/")}) share restricted candidate ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets${zRestr ? `, and ${x} likewise (doubly linked)` : ""}.`,
             eliminations: elims, patternCells,
@@ -1101,9 +1113,15 @@ export const alsXYWing: Finder = (g) => {
           return mk({
             technique: "ALS-XY-Wing", category: "ALS", score: 7.2,
             candColors: [
-            ...A.cells.map(c => ({ cell: c, cand: Z, color: 0 })),
-            ...B.cells.map(c => ({ cell: c, cand: Z, color: 1 })),
-            ...C.cells.map(c => ({ cell: c, cand: Z, color: 2 })),
+            ...ccOf(g, A.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
+            ...ccOf(g, A.cells, X).map(c => ({ cell: c, cand: X, color: 1 })),
+            ...ccOf(g, B.cells, X).map(c => ({ cell: c, cand: X, color: 0 })),
+            ...ccOf(g, B.cells, Y).map(c => ({ cell: c, cand: Y, color: 1 })),
+            ...ccOf(g, C.cells, Y).map(c => ({ cell: c, cand: Y, color: 0 })),
+            ...ccOf(g, C.cells, Z).map(c => ({ cell: c, cand: Z, color: 1 })),
+            ...memOf(g, A.cells, [Z, X], 2),
+            ...memOf(g, B.cells, [X, Y], 3),
+            ...memOf(g, C.cells, [Y, Z], 4),
           ],
             reason: `Pivot ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) is linked by restricted candidate ${X} to pincer ${B.cells.map(cellName).join("+")} and by restricted ${Y} to pincer ${C.cells.map(cellName).join("+")}. If ${X} is true in the pivot, the first pincer locks and must place ${Z}; if ${X} is false, the pivot locks, places ${Y}, and the second pincer must place ${Z}. Either way ${Z} is placed in one of the pincers — removed from cells seeing all of it in both.`,
             eliminations: elims, patternCells,
@@ -1133,15 +1151,15 @@ export const alsChain: Finder = (g) => {
   for (let s = 0; s < als.length; s++) {
     const A1 = als[s];
     for (const Z of candsOf(A1.mask)) {
-      const stack: { cur: number; via: number; path: number[]; cells: Set<number> }[] = [];
+      const stack: { cur: number; via: number; path: number[]; cells: Set<number>; vias: number[] }[] = [];
       for (const e of nb[s]) {
         if (e.d === Z) continue; // first link must differ from Z
         const cells = new Set<number>([...A1.cells, ...als[e.j].cells]);
-        stack.push({ cur: e.j, via: e.d, path: [s, e.j], cells });
+        stack.push({ cur: e.j, via: e.d, path: [s, e.j], cells, vias: [e.d] });
       }
       while (stack.length) {
         if (--budget < 0) return null;
-        const { cur, via, path, cells } = stack.pop()!;
+        const { cur, via, path, cells, vias } = stack.pop()!;
         const curAls = als[cur];
 
         // closed chain: current set holds Z and Z is not its entry digit
@@ -1155,7 +1173,17 @@ export const alsChain: Finder = (g) => {
             const patternCells = path.flatMap(p => als[p].cells);
             return mk({
               technique: "ALS Chain", category: "ALS", score: 7.4,
-              candColors: path.flatMap((p, k) => als[p].cells.map(c => ({ cell: c, cand: Z, color: k % 5 }))),
+                            candColors: (() => {
+                const spine: { cell: number; cand: number; color: number }[] = [];
+                path.forEach((p, k) => {
+                  const ent = k === 0 ? Z : vias[k - 1];
+                  const ext = k === path.length - 1 ? Z : vias[k];
+                  spine.push(...ccOf(g, als[p].cells, ent).map(c => ({ cell: c, cand: ent, color: 0 })));
+                  spine.push(...ccOf(g, als[p].cells, ext).map(c => ({ cell: c, cand: ext, color: 1 })));
+                  spine.push(...memOf(g, als[p].cells, [ent, ext], 2 + (k % 4)));
+                });
+                return spine;
+              })(),
               reason: `ALS chain ${path.map(p => als[p].cells.map(cellName).join("+")).join(" -> ")}: if ${Z} were false throughout the first set it would lock, and the restricted links force each following set to lock in turn until the last set places ${Z} — so ${Z} must be true in one of the end sets and is removed from cells seeing all of it in both.`,
               eliminations: elims, patternCells,
               patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1170,7 +1198,7 @@ export const alsChain: Finder = (g) => {
           if (als[e.j].cells.some(c => cells.has(c))) continue; // pairwise disjoint
           const ncells = new Set(cells);
           for (const c of als[e.j].cells) ncells.add(c);
-          stack.push({ cur: e.j, via: e.d, path: [...path, e.j], cells: ncells });
+          stack.push({ cur: e.j, via: e.d, path: [...path, e.j], cells: ncells, vias: [...vias, e.d] });
         }
       }
     }
@@ -1214,9 +1242,15 @@ export const deathBlossom: Finder = (g) => {
         return mk({
           technique: "Death Blossom", category: "ALS", score: 7.6,
           candColors: [
-            { cell: S, cand: Z, color: 0 },
-            ...A.cells.map(c => ({ cell: c, cand: Z, color: 1 })),
-            ...B.cells.map(c => ({ cell: c, cand: Z, color: 2 })),
+            ...ccOf(g, A.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
+            ...ccOf(g, A.cells, x).map(c => ({ cell: c, cand: x, color: 1 })),
+            ...ccOf(g, [S], x).map(c => ({ cell: c, cand: x, color: 0 })),
+            ...ccOf(g, [S], y).map(c => ({ cell: c, cand: y, color: 1 })),
+            ...ccOf(g, B.cells, y).map(c => ({ cell: c, cand: y, color: 0 })),
+            ...ccOf(g, B.cells, Z).map(c => ({ cell: c, cand: Z, color: 1 })),
+            ...memOf(g, A.cells, [Z, x], 2),
+            ...memOf(g, [S], [x, y], 3),
+            ...memOf(g, B.cells, [Z, y], 4),
           ],
           reason: `Stem ${cellName(S)} (${x}/${y}) with petals ${A.cells.map(cellName).join("+")} and ${B.cells.map(cellName).join("+")}: the stem is ${x} or ${y}; either way one petal loses its link digit, locks, and must place ${Z} — so ${Z} is removed from cells seeing all of it in both petals.`,
           eliminations: elims, patternCells,
