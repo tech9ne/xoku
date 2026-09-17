@@ -16,6 +16,7 @@ interface Props {
   onDigitFilter: (f: number | "xy" | null) => void;
   digitRemaining: (d: number) => number;
   currentLevel: Level;
+  filterMode: "possible" | "excluded"; onToggleFilterMode: () => void;
 }
 
 const UndoIcon = () => (
@@ -110,7 +111,7 @@ export default function MenuBar(p: Props) {
           onChange={(e) => setChosen(e.target.value as Level)}>
           {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
-        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "3px 3px 0 #f2a0a0" }} />
+        <button title="Toggle filter mode (possible/excluded cells)" aria-label="Toggle filter mode" onClick={p.onToggleFilterMode} className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: p.filterMode === "possible" ? "#86F280" : "#F28686", boxShadow: p.filterMode === "possible" ? "4px 4px 0 #f2a0a0" : "4px 4px 0 #a0f2a0" }} />
         <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;

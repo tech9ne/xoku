@@ -6,6 +6,7 @@ const cls = (...xs: (string | false | undefined)[]) => xs.filter(Boolean).join("
 export type DigitFilter = number | "xy" | null;
 
 const FILTER_BG = "bg-[#B9FFB9]";
+const FILTER_BG_X = "bg-[#FFB9B9]";
 
 const PALETTE = [
   { node: "bg-blue-600 text-white ring-2 ring-white/90", cell: "bg-blue-100" },
@@ -26,13 +27,14 @@ const RING = [
 interface Props {
   game: Game; sel: number; step: Step | null; showCands: boolean;
   digitFilter: DigitFilter;
+  filterMode: "possible" | "excluded";
   manualColors: Map<number, number>;
   brush: number | null;
   onPaintCand: (cell: number, d: number) => void;
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, manualColors, brush, onPaintCand, onSelect, onCandClick }: Props) {
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick }: Props) {
   const groupOf = new Map<number, number>();
   if (step?.cellGroups)
     for (const grp of step.cellGroups) for (const c of grp.cells) groupOf.set(c, grp.color % 5);
@@ -65,7 +67,8 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, ma
           let filterBg: string | undefined;
           if (digitFilter === "xy") { if (bi) filterBg = FILTER_BG; }
           else if (typeof digitFilter === "number" && value === 0) {
-            if (game.cands[i] & candMask(digitFilter)) filterBg = FILTER_BG;
+            const has = (game.cands[i] & candMask(digitFilter)) !== 0;
+            if (filterMode === "excluded" ? !has : has) filterBg = filterMode === "excluded" ? FILTER_BG_X : FILTER_BG;
           }
 
           const manual = manualColors.get(i);
