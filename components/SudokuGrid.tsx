@@ -39,7 +39,9 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
     for (const nc of step.candColors) nodeOf.set(nc.cell * 10 + nc.cand, nc.color % 5);
-  const hasRich = nodeOf.size > 0;
+  const patSet = new Set((step?.patternCands ?? []).map(e => e.cell * 10 + e.cand));
+  const placeSet = new Set((step?.placements ?? []).map(q => q.cell * 10 + q.value));
+  const hasRich = nodeOf.size > 0 || patSet.size > 0 || placeSet.size > 0;
 
   // center of candidate d in cell, in 0-100 viewBox units
   const candPos = (cell: number, d: number) => {
@@ -57,8 +59,6 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
           const r = Math.floor(i / 9), c = i % 9;
           const value = game.values[i];
           const wrong = value !== 0 && !game.given[i] && value !== game.solution[i];
-          const pattern = step?.patternCells.includes(i);
-          const placing = step?.placements.some(p => p.cell === i);
           const selected = sel === i;
           const bi = value === 0 && countCands(game.cands[i]) === 2;
 
@@ -76,9 +76,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
           // so digit highlights, hint tints and pattern colors stay visible
           const outline = selected ? "ring-[3px] ring-inset ring-[#FFFF00] z-10" : "";
           // priority: hint placement > hint sets > hint pattern > manual > filter
-          const bg = placing ? "bg-green-200"
-            : pattern ? "bg-sky-100"
-            : manualCell ?? filterBg;
+          const bg = manualCell ?? filterBg;
 
           const valueCls = wrong ? "text-red-600"
             : game.given[i] ? "text-slate-900"
@@ -104,7 +102,8 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                     const on = (game.cands[i] & candMask(d)) !== 0;
                     const elim = step?.eliminations.some(e => e.cell === i && e.cand === d);
                     const nc = nodeOf.get(i * 10 + d);
-                    const pat = step?.patternCands.some(e => e.cell === i && e.cand === d);
+                    const pat = patSet.has(i * 10 + d);
+                    const plc = placeSet.has(i * 10 + d);
                     const hl = on && !elim && !pat && nc === undefined && !hasRich && (
                       (digitFilter === "xy" && bi) ||
                       (typeof digitFilter === "number" && d === digitFilter)
@@ -114,11 +113,12 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                       ? "bg-red-500 text-white rounded-full font-bold"
                       : nc !== undefined
                         ? cls(PALETTE[nc].node, "rounded-full font-bold")
-                        : manualNode !== undefined
-                          ? cls(PALETTE[manualNode % 5].node, "rounded-full font-bold")
-                          : hasRich ? "opacity-30"
-                          : pat ? "text-green-700 font-bold"
-                          : hl ? "text-green-900 font-bold"
+                        : pat || plc
+                          ? cls(PALETTE[1].node, "rounded-full font-bold")
+                          : manualNode !== undefined
+                            ? cls(PALETTE[manualNode % 5].node, "rounded-full font-bold")
+                            : hasRich ? "opacity-30"
+                            : hl ? "text-green-900 font-bold"
                           : undefined;
                     return (
                       <span key={d}
