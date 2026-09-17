@@ -124,8 +124,15 @@ top-right, R bottom-left, mouse-mode radios (visual now, behavior at H8i),
 Set Value/Exclude = centered 44px Hodoku squares.
 H8i wire color modes into grid: cands = click paints candidate,
 cells = click paints cell background, default = current behavior.
-H8j toolbar hint cluster after xy with real Hodoku PNG icons
-(vageHint/concreteHint/nextHint/executeHint/abortHint from /tmp/hodoku2-src).
+H8j DONE (v14.3-h8j): manual paints render via inline styles (Tailwind JIT
+cannot see runtime-built bg-[#hex] classes — that was the invisible-paint
+bug); R/eye get Swing bevel; bolder swap arrow.
+H8k toolbar hint cluster after xy with real Hodoku PNG icons
+(vageHint/concreteHint/nextHint/executeHint/abortHint from /tmp/hodoku2-src
+img/), replacing the square SVG bulbs.
+H9 solution path parity (manual: rows clickable, jump/show step): notation
+(reason) shown with technique, rows tinted by difficulty band RGBs, click =
+step into hint dock + board dots. Then chain/link arrows overlay.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:
