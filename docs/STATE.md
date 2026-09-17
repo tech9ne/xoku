@@ -1,0 +1,115 @@
+# xoku — Project State (resume doc)
+Updated: 2026-09-17, session H7. Read fully before touching code.
+
+## 1. What this is
+- Sudoku trainer "xoku": Next.js 16.3.5 (Turbopack) + TS + Tailwind, static export to GitHub Pages.
+- Repo github.com:tech9ne/xoku.git ; live https://tech9ne.github.io/xoku/ ; workdir ~/xoku on ubuntu@rev9.
+- Behavior/UX reference: HoDoKu (PseudoFish fork). Clone at /tmp/hodoku-src (HEAD c37fe90).
+  If missing: git clone --depth 1 https://github.com/PseudoFish/Hodoku /tmp/hodoku-src
+- Owner: Tommy. Wants rigor, verified short steps, no guessing, no beginner explanations.
+
+## 2. Workflow rules (hard-won; follow them)
+- Mobile SSH terminal mangles long pastes. Use small blocks, one purpose each, verify with grep/sed after.
+- Python edit scripts: assert anchor count==1; write file only at end; prefer substring anchors.
+- Version tag: lib/version.ts BUILD_TAG. Bump with
+  TAG=$(grep -o 'v14\.3-h7[a-z]' lib/version.ts); sed -i "s/$TAG/v14.3-hXX/" lib/version.ts
+  Never assume the previous tag (the h7b-stuck incident: chained seds no-op'd for 4 releases).
+- npx tsc --noEmit must be silent before commit. Broken commit already pushed?
+  fix, git commit --amend, git push --force-with-lease origin main.
+- Phone Chrome caches hard: after push, clear cached images and confirm Summary>Build tag
+  before judging any visual change. Pages deploy takes ~1-2 min; a transient
+  "This page couldn't load" is network/deploy window, NOT an app crash.
+- One feature = one commit + version bump + push + phone verification.
+
+## 3. File map
+- app/page.tsx — state + handlers: hint state ~21, getHint ~159, applyHint ~171,
+  auto-solve loop ~190-199, Hints dock ~405-420, right panel below.
+- components/SudokuGrid.tsx — board, hint-dot rendering, HINT_COLORS + MANUAL_COLORS.
+- components/MenuBar.tsx — toolbar: undo/redo mask PNGs, logo SVG, level select,
+  filter swatch, digit strip. Props: onNew/onRestart/onImport/onExport/onUndo/
+  onRedo/canUndo/canRedo/onToggleFilterMode/filterMode.
+- lib/sudoku/core.ts — Game/Step types, applyStep, candMask, candsOf, cellName.
+- lib/sudoku/techniques.ts — finders. findNextStep(g: Game): Step | null at ~1685
+  (NO singlesOnly param). findAllSteps ~1653. Helpers ccOf/memOf near alsXZ.
+- lib/version.ts — BUILD_TAG. docs/STATE.md — this file.
+
+## 4. Hint coloring system (current, deliberate)
+Candidate-only dots (Hodoku fillOval parity). No cell tints for techniques.
+Selection = 3px yellow ring outline only, never a fill.
+- HINT_COLORS[6] in SudokuGrid:
+  0 #7FBBFF spine off/entry (blue), 1 #3FDA65 spine on/exit (green),
+  2 #FF8800 set0 orange, 3 #9D4EDD set1 violet,
+  4 #FF00FF set2 fuchsia, 5 #800000 set3 maroon.
+- Spine rule: per ALS set entry=0(blue), exit=1(green); weak link carries
+  green->blue across sets; every chain starts blue.
+  ALS-XZ [z@B0,x@B1,x@A0,z@A1]; ALS-XY-Wing pivot-middle [Z@B0,X@B1,X@A0,Y@A1,Y@C0,Z@C1];
+  ALS-Chain tracks vias[] in its DFS stack; Death Blossom [Z@A0,x@A1,x@S0,y@S1,y@B0,Z@B1];
+  XYZ-Wing pure 6-dot spine [z@a0,x@a1,x@p0,y@p1,y@b0,z@b1] (no members).
+- Members: non-spine candidates of set k get color 2+(k%4). Emitters use
+  ccOf (presence-filtered dots) + memOf (members minus spine digits).
+- Eliminations: bg-red-500 #EF4444 white text, one global color for all techniques
+  (role = "dies"). Deliberate divergence from Hodoku salmon #FF7684: in a vibrant
+  palette salmon reads as a set color; true red keeps the alarm function.
+- ALS theory: within an ALS any two candidates are strong-linked = inclusive OR
+  (both-false impossible, both-true possible) = NAND of negations. NOT XOR.
+- Human digit filter (toolbar 1-9): cell-level #B9FFB9 possible / #FFB9B9 excluded.
+  Unchanged by design (Hodoku filters candidate squares; accepted divergence).
+- Manual paint: MANUAL_COLORS 5 entries; to be replaced by Hodoku COLORING_COLORS
+  12 swatches at H10.
+- Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
+
+## 5. Milestones (git log is truth; tags v14.3-h6k..h7j)
+H6k filter-mode toggle swatch. H6l TS fixes (LayoutProps, dup prop).
+H6m logo D (X-Wing two-tone X on nonet). H6n logo full-bleed (no slate frame).
+H7a ALS/Wing emitters emit candColors; deleted cell-tint branch.
+H7b candidate-only dots: placements+patternCands as dots; deleted bg-sky-100/green-200.
+H7c flat dots (white ring removed). H7d category palettes (superseded by H7f).
+H7e ALS spine + per-set members. H7f HINT_COLORS 6-slot unification, nc %6.
+H7g vibrant members + version-tag fix. H7h spine order fixes (XY-Wing pivot middle,
+XYZ-Wing true spine). H7i copper (rejected). H7j fuchsia+maroon.
+VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h7j,
+re-run the fuchsia+maroon block (replace #B87333 or #00B4D8 -> #FF00FF,
+#FF006E -> #800000, white text on both) before anything else.
+
+## 6. Hodoku reference pointers (/tmp/hodoku-src)
+- SudokuPanel.java ~2574-2678: hintColor decision tree — chain strong=green back,
+  weak=fin blue; ALS backs[alsIndex%4]; fins; endo-fins; coloring map; delete;
+  cannibalistic. Dots drawn with g2.fillOval per candidate.
+- Options.java ~495-545: color constants — FILTER #B9FFB9, INVERSE #FFB9B9,
+  AKT_CELL #FFFF96, HINT_CANDIDATE_BACK #3FDA65, DELETE #FF7684, FIN #7FBBFF,
+  ENDO_FIN #D8B2FF, ALS backs 4 pastels, COLORING_COLORS 12, difficulty RGBs
+  (our level dots already match exactly).
+- MainFrame.java 191-202: toolbar vageHintToggleButton, concreteHintToggleButton,
+  hintSeperator, execute-next-step button. Hint panel: solveUpToButton,
+  hinweisAusfuehrenButton (Execute), hinweisAbbrechenButton (Cancel),
+  hinweisTextArea.
+
+## 7. In progress: H7 (hint UI completion)
+Already done: dock with Next Hint + Execute + reason text (page.tsx ~405-420);
+auto-solve loop exists (~190-199, guard 500, loops to completion).
+Remaining:
+- MenuBar: five toolbar hint buttons (vague, concrete, next, execute, abort)
+  with new props from page.tsx, 32px icons, after the redo separator.
+- Dock: add Solve up to + Cancel buttons (Hodoku panel parity).
+- OPEN DECISION 1 — vague vs concrete semantics: findNextStep has no
+  singlesOnly param. Proposal: vague = dock shows technique name + elimination
+  list only; concrete = full reason string. Alternative: restrict finder
+  categories. Tommy to confirm.
+- OPEN DECISION 2 — Solve up to stopping rule: Hodoku stops at first
+  non-progress step (Playing mode) / non-training step otherwise. xoku has no
+  StepConfig. Proposal: stop when next step category leaves
+  {Singles, Subsets, Intersections}. Tommy to confirm.
+
+## 8. Queue after H7
+H8 right-panel switcher (Summary / Active Cell / All possible steps /
+Solution path as toggle tabs; currently all panels stacked).
+H9 solution-path band colors (green/yellow/orange by technique class).
+H10 coloring palette wiring (COLORING_COLORS 12, primary/secondary swatches,
+R reset, mode radios, 12-swatch grid).
+Optional: status-bar left swatch segments; favicon app/icon.svg from logo;
+active-cell pale fill #FFFF96 (proposed once, never approved — ring only now).
+
+## 9. Logo
+New-game button: inline SVG viewBox 32, full-bleed 3x3 grid lines #C7CCD1 plus
+X strokes indigo #4F46E5 and coral #E8604C, round caps, in MenuBar.
+Chosen from concepts A/D/J family (X-Wing identity). Favicon not yet done.
