@@ -1,11 +1,12 @@
 # xoku — Project State (resume doc)
-Updated: 2026-09-17, session H8. Read fully before touching code.
+Updated: 2026-09-18, session H8a. Read fully before touching code.
 
 ## 1. What this is
 - Sudoku trainer "xoku": Next.js 16.3.5 (Turbopack) + TS + Tailwind, static export to GitHub Pages.
 - Repo github.com:tech9ne/xoku.git ; live https://tech9ne.github.io/xoku/ ; workdir ~/xoku on ubuntu@rev9.
 - Behavior/UX reference: HoDoKu (PseudoFish fork). Clone at /tmp/hodoku-src (HEAD c37fe90).
   If missing: git clone --depth 1 https://github.com/PseudoFish/Hodoku /tmp/hodoku-src
+- Secondary reference: Hodoku2 (wyzelli) clone at /tmp/hodoku2-src — newer UI and Draw Links mode (manual strong/weak link arrows); H9 arrows reference.
 - Owner: Tommy. Wants rigor, verified short steps, no guessing, no beginner explanations.
 
 ## 2. Workflow rules (hard-won; follow them)
@@ -25,7 +26,7 @@ Updated: 2026-09-17, session H8. Read fully before touching code.
 
 ## 3. File map
 - app/page.tsx — state + handlers: hint state ~21, getHint ~159, applyHint ~171,
-  auto-solve loop ~190-199, Hints dock ~439-455; hintMode/solveUpTo/cancelHint added, right panel below.
+  auto-solve loop ~190-199, Hints dock ~354 (left column under grid); shell: root ~318, left col ~331, aside ~380, footer ~465; hintMode/solveUpTo/cancelHint, right panel below.
 - components/SudokuGrid.tsx — board, hint-dot rendering, HINT_COLORS + MANUAL_COLORS.
 - components/MenuBar.tsx — toolbar: undo/redo mask PNGs, logo SVG, level select,
   filter swatch, digit strip. Props: onNew/onRestart/onImport/onExport/onUndo/
@@ -61,7 +62,7 @@ Selection = 3px yellow ring outline only, never a fill.
   12 swatches at H10.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
-## 5. Milestones (git log is truth; tags v14.3-h6k..h8)
+## 5. Milestones (git log is truth; tags v14.3-h6k..h8a)
 H6k filter-mode toggle swatch. H6l TS fixes (LayoutProps, dup prop).
 H6m logo D (X-Wing two-tone X on nonet). H6n logo full-bleed (no slate frame).
 H7a ALS/Wing emitters emit candColors; deleted cell-tint branch.
@@ -71,6 +72,7 @@ H7e ALS spine + per-set members. H7f HINT_COLORS 6-slot unification, nc %6.
 H7g vibrant members + version-tag fix. H7h spine order fixes (XY-Wing pivot middle,
 XYZ-Wing true spine). H7i copper (rejected). H7j fuchsia+maroon.
 H7k H7 UI completion: toolbar vague/concrete/next/execute/abort; dock Solve up to/Cancel; vague = name+region no dots; solve-up-to stops at first non-Single/Subset and shows step (v14.3-h8).
+H8a app shell frame: fixed desktop viewport, left column = grid+all-steps+dock, right column internal scroll, status bar pinned (v14.3-h8a).
 VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, re-apply H7 UI (toolbar hint group + dock Solve up to/Cancel + vague/concrete logic) before anything else.
 
 ## 6. Hodoku reference pointers (/tmp/hodoku-src)
@@ -95,14 +97,22 @@ VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, 
 - `getHint` accepts `unknown` first arg so React click events cannot enter the hint-mode union.
 - Locked decisions: 1a vague = name+region only; 2 solve-up-to boundary = Single/Subset + show stopping step.
 
-## 8. Queue after H7
-H8 right-panel switcher (Summary / Active Cell / All possible steps /
-Solution path as toggle tabs; currently all panels stacked).
-H9 solution-path band colors (green/yellow/orange by technique class).
-H10 coloring palette wiring (COLORING_COLORS 12, primary/secondary swatches,
-R reset, mode radios, 12-swatch grid).
-Optional: status-bar left swatch segments; favicon app/icon.svg from logo;
-active-cell pale fill #FFFF96 (proposed once, never approved — ring only now).
+## 8. Queue after H7 (rescoped at H8a: shell-parity program)
+H8a DONE (v14.3-h8a): app shell — desktop fixed 100vh frame, no page scroll;
+phone scrolls. Left column = grid + all-steps + hints dock; right column
+internal scroll; status bar pinned.
+H8b right-panel 2x2 tab switcher (Summary / All possible steps /
+Solution path / Active Cell) with Hodoku-style blue active bar.
+H8c hints dock refinements under grid (heights/borders) if needed after H8b.
+H9 chain/link arrows overlay: solid red = strong link, dashed red = weak link
+(refs: Hodoku2 Draw Links, SudokuPanel drawing); solution-path band colors
+(green/yellow/orange by technique class).
+H10 round glossy toolbar buttons (yellow ?/? green ! orange check red X);
+blue status bar with palette segments + R; coloring palette wiring
+(COLORING_COLORS 12, primary/secondary swatches, R reset, mode radios).
+Decisions locked at H8a: desktop fixed frame no scroll; phone scroll + tabs;
+selection stays ring-only (no #FFFF96 fill).
+Optional: favicon app/icon.svg from logo.
 
 ## 9. Logo
 New-game button: inline SVG viewBox 32, full-bleed 3x3 grid lines #C7CCD1 plus

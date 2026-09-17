@@ -315,7 +315,7 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-[#F2F2F2] text-slate-900 flex flex-col">
+    <main className="h-screen lg:h-screen bg-[#F2F2F2] text-slate-900 flex flex-col overflow-hidden">
       <MenuBar onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
         onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
@@ -326,15 +326,59 @@ export default function Home() {
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
         hintMode={hintMode} hasHint={!!hint} />
 
-      <div className="flex flex-1 items-start justify-center gap-6 p-6 flex-wrap lg:flex-nowrap">
+      <div className="flex flex-1 flex-col lg:flex-row gap-4 p-4 lg:p-6 overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
-        <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
+        <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-0">
+          <div className="flex-1 flex items-center justify-center min-h-0">
+          <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} />
 
+          </div>
+        {/* All-steps list (toggleable) */}
+        {allSteps && (
+          <div className="w-full">
+            <Panel className="max-h-48 overflow-y-auto">
+              {allSteps.map((s, idx) => (
+                <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
+                  onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
+                  <span>{s.technique}</span>
+                  <span className="text-slate-400">XR {s.score}</span>
+                </button>
+              ))}
+              {!allSteps.length && <div className="px-3 py-2 text-xs text-slate-400">No steps found.</div>}
+            </Panel>
+          </div>
+        )}
+        {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
+        <div className="w-full flex-shrink-0">
+          <Panel>
+            <TitleBar>Hints</TitleBar>
+            <div className="flex items-stretch gap-2 p-2">
+              <div className="grid grid-cols-2 gap-1.5 shrink-0 content-start order-2">
+                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                  onClick={() => getHint()}>Next Hint</button>
+                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                  disabled={!hint} onClick={applyHint}>Execute</button>
+                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                  onClick={solveUpTo}>Solve up to</button>
+                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                  disabled={!hint} onClick={cancelHint}>Cancel</button>
+              </div>
+              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28">
+                {hint ? (
+                  <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
+                ) : (
+                  <p className="text-slate-500">{msg}</p>
+                )}
+              </div>
+            </div>
+          </Panel>
+        </div>
+        </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
-        <aside className="w-full sm:w-80 lg:w-72 xl:w-80 flex flex-col gap-2 text-sm">
+        <aside className="w-full lg:w-72 xl:w-80 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0">
           {/* Summary */}
           <Panel>
             <TitleBar>Summary</TitleBar>
@@ -418,50 +462,8 @@ export default function Home() {
         </aside>
       </div>
 
-      {/* All-steps list (toggleable) */}
-      {allSteps && (
-        <div className="px-6 pb-2 max-w-5xl mx-auto w-full">
-          <Panel className="max-h-48 overflow-y-auto">
-            {allSteps.map((s, idx) => (
-              <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
-                onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
-                <span>{s.technique}</span>
-                <span className="text-slate-400">XR {s.score}</span>
-              </button>
-            ))}
-            {!allSteps.length && <div className="px-3 py-2 text-xs text-slate-400">No steps found.</div>}
-          </Panel>
-        </div>
-      )}
-
-      {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
-      <div className="px-6 pb-4 max-w-5xl mx-auto w-full">
-        <Panel>
-          <TitleBar>Hints</TitleBar>
-          <div className="flex items-stretch gap-2 p-2">
-            <div className="grid grid-cols-2 gap-1.5 shrink-0 content-start order-2">
-              <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
-                onClick={() => getHint()}>Next Hint</button>
-              <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
-                disabled={!hint} onClick={applyHint}>Execute</button>
-              <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
-                onClick={solveUpTo}>Solve up to</button>
-              <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
-                disabled={!hint} onClick={cancelHint}>Cancel</button>
-            </div>
-            <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28">
-              {hint ? (
-                <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
-              ) : (
-                <p className="text-slate-500">{msg}</p>
-              )}
-            </div>
-          </div>
-        </Panel>
-      </div>
-
       {/* Status bar — their format */}
-      <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap mt-auto border-t border-[#9aa0aa]">
+      <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 border-t border-[#9aa0aa]">
         <span className="px-2">Coloring: {activeColor === null ? "none" : "active"}</span>
         <span className="px-2 border-l border-[#b0b4bb] flex items-center gap-1">
           <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-black" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
