@@ -21,6 +21,8 @@ export default function Home() {
   const [hint, setHint] = useState<Step | null>(null);
   const [allSteps, setAllSteps] = useState<Step[] | null>(null);
   const [showCands, setShowCands] = useState(true);
+  const [filterMode, setFilterMode] = useState<"possible" | "excluded">("possible");
+  const toggleFilterMode = () => setFilterMode(m => m === "possible" ? "excluded" : "possible");
   const [manualColors, setManualColors] = useState<Map<number, number>>(new Map());
   const [activeColor, setActiveColor] = useState<number | null>(null);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
@@ -288,11 +290,11 @@ export default function Home() {
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands}
         digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
-        digitRemaining={remaining} currentLevel={level} />
+        digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode} />
 
       <div className="flex flex-1 items-start justify-center gap-6 p-6 flex-wrap lg:flex-nowrap">
         {/* GRID — generous, centered */}
-        <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands}
+        <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} />
