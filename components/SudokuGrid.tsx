@@ -9,11 +9,11 @@ const FILTER_BG = "bg-[#B9FFB9]";
 const FILTER_BG_X = "bg-[#FFB9B9]";
 
 const PALETTE = [
-  { node: "bg-blue-600 text-white ring-2 ring-white/90", cell: "bg-blue-100" },
-  { node: "bg-green-600 text-white ring-2 ring-white/90", cell: "bg-green-100" },
-  { node: "bg-red-600 text-white ring-2 ring-white/90", cell: "bg-red-100" },
-  { node: "bg-purple-600 text-white ring-2 ring-white/90", cell: "bg-purple-100" },
-  { node: "bg-teal-600 text-white ring-2 ring-white/90", cell: "bg-teal-100" },
+  { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
+  { node: "bg-green-600 text-white", cell: "bg-green-100" },
+  { node: "bg-red-600 text-white", cell: "bg-red-100" },
+  { node: "bg-purple-600 text-white", cell: "bg-purple-100" },
+  { node: "bg-teal-600 text-white", cell: "bg-teal-100" },
 ];
 
 const RING = [
