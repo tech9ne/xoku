@@ -77,7 +77,6 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
           const outline = selected ? "ring-[3px] ring-inset ring-[#FFFF00] z-10" : "";
           // priority: hint placement > hint sets > hint pattern > manual > filter
           const bg = placing ? "bg-green-200"
-            : groupOf.has(i) ? PALETTE[groupOf.get(i)!].cell
             : pattern ? "bg-sky-100"
             : manualCell ?? filterBg;
 
