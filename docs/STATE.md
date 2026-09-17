@@ -1,5 +1,5 @@
 # xoku — Project State (resume doc)
-Updated: 2026-09-17, session H7. Read fully before touching code.
+Updated: 2026-09-17, session H8. Read fully before touching code.
 
 ## 1. What this is
 - Sudoku trainer "xoku": Next.js 16.3.5 (Turbopack) + TS + Tailwind, static export to GitHub Pages.
@@ -21,13 +21,15 @@ Updated: 2026-09-17, session H7. Read fully before touching code.
   "This page couldn't load" is network/deploy window, NOT an app crash.
 - One feature = one commit + version bump + push + phone verification.
 
+- Every commit must update docs/STATE.md with the new state/milestone before push.
+
 ## 3. File map
 - app/page.tsx — state + handlers: hint state ~21, getHint ~159, applyHint ~171,
-  auto-solve loop ~190-199, Hints dock ~405-420, right panel below.
+  auto-solve loop ~190-199, Hints dock ~439-455; hintMode/solveUpTo/cancelHint added, right panel below.
 - components/SudokuGrid.tsx — board, hint-dot rendering, HINT_COLORS + MANUAL_COLORS.
 - components/MenuBar.tsx — toolbar: undo/redo mask PNGs, logo SVG, level select,
   filter swatch, digit strip. Props: onNew/onRestart/onImport/onExport/onUndo/
-  onRedo/canUndo/canRedo/onToggleFilterMode/filterMode.
+  onRedo/canUndo/canRedo/onToggleFilterMode/filterMode/onHintVague/onHintConcrete/onHintNext/onHintExecute/onHintAbort/hintMode/hasHint.
 - lib/sudoku/core.ts — Game/Step types, applyStep, candMask, candsOf, cellName.
 - lib/sudoku/techniques.ts — finders. findNextStep(g: Game): Step | null at ~1685
   (NO singlesOnly param). findAllSteps ~1653. Helpers ccOf/memOf near alsXZ.
@@ -35,6 +37,7 @@ Updated: 2026-09-17, session H7. Read fully before touching code.
 
 ## 4. Hint coloring system (current, deliberate)
 Candidate-only dots (Hodoku fillOval parity). No cell tints for techniques.
+Vague hint mode suppresses dots by passing null step to SudokuGrid; concrete mode passes the active Step.
 Selection = 3px yellow ring outline only, never a fill.
 - HINT_COLORS[6] in SudokuGrid:
   0 #7FBBFF spine off/entry (blue), 1 #3FDA65 spine on/exit (green),
@@ -58,7 +61,7 @@ Selection = 3px yellow ring outline only, never a fill.
   12 swatches at H10.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
-## 5. Milestones (git log is truth; tags v14.3-h6k..h7j)
+## 5. Milestones (git log is truth; tags v14.3-h6k..h8)
 H6k filter-mode toggle swatch. H6l TS fixes (LayoutProps, dup prop).
 H6m logo D (X-Wing two-tone X on nonet). H6n logo full-bleed (no slate frame).
 H7a ALS/Wing emitters emit candColors; deleted cell-tint branch.
@@ -67,9 +70,8 @@ H7c flat dots (white ring removed). H7d category palettes (superseded by H7f).
 H7e ALS spine + per-set members. H7f HINT_COLORS 6-slot unification, nc %6.
 H7g vibrant members + version-tag fix. H7h spine order fixes (XY-Wing pivot middle,
 XYZ-Wing true spine). H7i copper (rejected). H7j fuchsia+maroon.
-VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h7j,
-re-run the fuchsia+maroon block (replace #B87333 or #00B4D8 -> #FF00FF,
-#FF006E -> #800000, white text on both) before anything else.
+H7k H7 UI completion: toolbar vague/concrete/next/execute/abort; dock Solve up to/Cancel; vague = name+region no dots; solve-up-to stops at first non-Single/Subset and shows step (v14.3-h8).
+VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, re-apply H7 UI (toolbar hint group + dock Solve up to/Cancel + vague/concrete logic) before anything else.
 
 ## 6. Hodoku reference pointers (/tmp/hodoku-src)
 - SudokuPanel.java ~2574-2678: hintColor decision tree — chain strong=green back,
@@ -84,21 +86,14 @@ re-run the fuchsia+maroon block (replace #B87333 or #00B4D8 -> #FF00FF,
   hinweisAusfuehrenButton (Execute), hinweisAbbrechenButton (Cancel),
   hinweisTextArea.
 
-## 7. In progress: H7 (hint UI completion)
-Already done: dock with Next Hint + Execute + reason text (page.tsx ~405-420);
-auto-solve loop exists (~190-199, guard 500, loops to completion).
-Remaining:
-- MenuBar: five toolbar hint buttons (vague, concrete, next, execute, abort)
-  with new props from page.tsx, 32px icons, after the redo separator.
-- Dock: add Solve up to + Cancel buttons (Hodoku panel parity).
-- OPEN DECISION 1 — vague vs concrete semantics: findNextStep has no
-  singlesOnly param. Proposal: vague = dock shows technique name + elimination
-  list only; concrete = full reason string. Alternative: restrict finder
-  categories. Tommy to confirm.
-- OPEN DECISION 2 — Solve up to stopping rule: Hodoku stops at first
-  non-progress step (Playing mode) / non-training step otherwise. xoku has no
-  StepConfig. Proposal: stop when next step category leaves
-  {Singles, Subsets, Intersections}. Tommy to confirm.
+## 7. Done: H7 (hint UI completion)
+- Dock: Hodoku-style text area left + 2×2 button grid right: Next Hint, Execute, Solve up to, Cancel.
+- Toolbar: hint group after redo separator, before new-game logo: vague, concrete, next, execute, abort.
+- Vague mode: technique + region cells only; no dots. Grid receives `step={hintMode === "concrete" ? hint : null}`.
+- Concrete mode: full reason + dots.
+- Solve up to: applies while `step.category` is `Single` or `Subset`; stops before first non-progress step, forces concrete mode, shows stopping step as active hint.
+- `getHint` accepts `unknown` first arg so React click events cannot enter the hint-mode union.
+- Locked decisions: 1a vague = name+region only; 2 solve-up-to boundary = Single/Subset + show stopping step.
 
 ## 8. Queue after H7
 H8 right-panel switcher (Summary / Active Cell / All possible steps /

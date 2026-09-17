@@ -19,6 +19,15 @@ export default function Home() {
   const [level, setLevel] = useState<Level>("Easy");
   const [sel, setSel] = useState(40);
   const [hint, setHint] = useState<Step | null>(null);
+  const [hintMode, setHintMode] = useState<"vague" | "concrete">("concrete");
+  const PROGRESS = new Set(["Single", "Subset"]);
+  const hintCells = (st: Step) => {
+    const x = st as any;
+    const cs: number[] = x.patternCells?.length ? x.patternCells :
+      [...(x.candColors ?? []).map((c: { cell: number }) => c.cell),
+       ...(x.eliminations ?? []).map((e: { cell: number }) => e.cell)];
+    return [...new Set(cs)].map(cellName).join(", ");
+  };
   const [allSteps, setAllSteps] = useState<Step[] | null>(null);
   const [showCands, setShowCands] = useState(true);
   const [filterMode, setFilterMode] = useState<"possible" | "excluded">("possible");
@@ -156,13 +165,15 @@ export default function Home() {
     setMsg("Undo.");
   };
 
-  const getHint = () => {
+  const getHint = (mode?: unknown) => {
+    if (mode === "vague" || mode === "concrete") setHintMode(mode);
+    const m = mode === "vague" || mode === "concrete" ? mode : hintMode;
     if (!game || solved) return;
     try {
       const s = findNextStep(game);
       setAllSteps(null);
       setHint(s);
-      setMsg(s ? `${s.technique} — ${s.reason}` : "No step found with the implemented techniques.");
+      setMsg(s ? (m === "vague" ? `${s.technique} in ${hintCells(s)}` : `${s.technique} — ${s.reason}`) : "No step found with the implemented techniques.");
     } catch (e) {
       setMsg(`Hint error: ${String((e as Error).message).slice(0, 120)}`);
     }
@@ -199,6 +210,26 @@ export default function Home() {
     setMsg("Auto-solved as far as the implemented techniques allow.");
   };
 
+  const cancelHint = () => setHint(null);
+  const solveUpTo = () => {
+    if (!game || solved) return;
+    const taken: string[] = [];
+    let stop: Step | null = null;
+    withUndo(g => {
+      for (let guard = 0; guard < 500 && !isSolved(g); guard++) {
+        const st = findNextStep(g);
+        if (!st) break;
+        if (!PROGRESS.has(st.category)) { stop = st; return; }
+        applyStep(g, st);
+        taken.push(st.technique);
+      }
+    });
+    if (taken.length) setSolutionPath(p2 => [...p2, ...taken]);
+    const stopStep = stop as unknown as Step | null;
+    if (stopStep) setHintMode("concrete");
+    setHint(stopStep);
+    setMsg(stopStep ? `Solved ${taken.length} step(s); next is ${stopStep.technique} — your turn.` : `Solved ${taken.length} step(s); nothing left in progress categories.`);
+  };
   const check = () => {
     if (!game) return;
     const wrong = game.values.filter((v, i) => v !== 0 && !game.given[i] && v !== game.solution[i]).length;
@@ -290,11 +321,14 @@ export default function Home() {
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands}
         digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
-        digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode} />
+        digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
+        onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
+        onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
+        hintMode={hintMode} hasHint={!!hint} />
 
       <div className="flex flex-1 items-start justify-center gap-6 p-6 flex-wrap lg:flex-nowrap">
         {/* GRID — generous, centered */}
-        <SudokuGrid game={game} sel={sel} step={hint} showCands={showCands} filterMode={filterMode}
+        <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={manualColors} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} />
@@ -405,15 +439,19 @@ export default function Home() {
         <Panel>
           <TitleBar>Hints</TitleBar>
           <div className="flex items-stretch gap-2 p-2">
-            <div className="flex flex-col gap-1.5 shrink-0">
+            <div className="grid grid-cols-2 gap-1.5 shrink-0 content-start order-2">
               <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
-                onClick={getHint}>Next Hint</button>
+                onClick={() => getHint()}>Next Hint</button>
               <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
                 disabled={!hint} onClick={applyHint}>Execute</button>
+              <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                onClick={solveUpTo}>Solve up to</button>
+              <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                disabled={!hint} onClick={cancelHint}>Cancel</button>
             </div>
-            <div className="flex-1 bg-[#FAFAFA] border border-[#D0D0D0] px-3 py-2 text-xs leading-relaxed min-h-16 overflow-y-auto max-h-24">
+            <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28">
               {hint ? (
-                <p><b className="text-[#1a5276]">{hint.technique}:</b> {hint.reason}</p>
+                <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
               ) : (
                 <p className="text-slate-500">{msg}</p>
               )}
