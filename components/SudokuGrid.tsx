@@ -12,8 +12,8 @@ const HINT_COLORS = [
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
   { node: "bg-[#FF8800] text-black", cell: "bg-[#FF8800]/20" },
   { node: "bg-[#9D4EDD] text-white", cell: "bg-[#9D4EDD]/20" },
-  { node: "bg-[#B87333] text-white", cell: "bg-[#B87333]/20" },
-  { node: "bg-[#FF006E] text-white", cell: "bg-[#FF006E]/20" },
+  { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
+  { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
 const MANUAL_COLORS = [
   { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
