@@ -308,6 +308,14 @@ export default function Home() {
   const remaining = (d: number) => 9 - game.values.filter(v => v === d).length;
   const hasSel = sel >= 0;
   const cellLocked = !hasSel || game.given[sel] || game.values[sel] !== 0;
+  const peersSee = (d: number) => {
+    if (!hasSel) return true;
+    const r = Math.floor(sel / 9), c = sel % 9;
+    for (let k = 0; k < 9; k++) if (game.values[r * 9 + k] === d || game.values[k * 9 + c] === d) return true;
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+    for (let dr = 0; dr < 3; dr++) for (let dc = 0; dc < 3; dc++) if (game.values[(br + dr) * 9 + bc + dc] === d) return true;
+    return false;
+  };
   const progress = Math.round((81 - game.values.filter(v => v === 0).length) / 81 * 100);
 
   const TitleBar = ({ children }: { children: React.ReactNode }) => (
@@ -400,11 +408,11 @@ export default function Home() {
 
           {/* Set Value — HoDoKu-style: 3 rows of proper squares */}
           <Panel>
-            <TitleBar>Set Value</TitleBar>
+            <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Set Value:</div>
             <div className="grid grid-cols-3 gap-1.5 p-2">
               {ALL_DIGITS.map(d => (
-                <button key={d} disabled={cellLocked}
-                  className="h-10 border border-[#A0A0A0] bg-white text-base hover:bg-[#E0E0E0] active:bg-[#D0D0D0] disabled:opacity-40 shadow-sm"
+                <button key={d} disabled={cellLocked || peersSee(d)}
+                  className={"aspect-square border text-base " + (cellLocked || peersSee(d) ? "border-[#C8C8C8] bg-[#C8C8C8] text-transparent" : "border-[#909090] bg-[#E8E8E8] text-black hover:bg-[#D8D8D8] active:bg-[#C0C0C0]")}
                   onClick={() => setValue(sel, d)}>
                   {d}
                 </button>
@@ -414,13 +422,11 @@ export default function Home() {
 
           {/* Exclude Candidates — same block style, tint marks present candidates */}
           <Panel>
-            <TitleBar>Exclude Candidates</TitleBar>
+            <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Exclude Candidates:</div>
             <div className="grid grid-cols-3 gap-1.5 p-2">
               {ALL_DIGITS.map(d => (
-                <button key={d} disabled={cellLocked}
-                  className={cls("h-10 border text-base disabled:opacity-40 shadow-sm",
-                    hasSel && game.cands[sel] & candMask(d)
-                      ? "border-[#A0A0A0] bg-[#F8D7D7]" : "border-[#A0A0A0] bg-white hover:bg-[#E0E0E0]")}
+                <button key={d} disabled={cellLocked || !(hasSel && game.cands[sel] & candMask(d))}
+                  className={"aspect-square border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#C8C8C8] bg-[#C8C8C8] text-transparent" : "border-[#909090] bg-[#E8E8E8] text-black hover:bg-[#D8D8D8] active:bg-[#C0C0C0]")}
                   onClick={() => toggleCand(sel, d)}>
                   {d}
                 </button>

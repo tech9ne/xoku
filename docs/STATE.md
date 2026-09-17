@@ -113,11 +113,16 @@ active = Active Cell+Set Value+Exclude+Coloring; steps = show-all button +
 all-steps list (moved from left column); path = auto-solve + Solution path.
 H8e DONE (v14.3-h8e): all-steps list scrolls with the panel (removed nested
 max-h-48 scroller that snapped back on touch).
-H8f right-panel controls restyle to Hodoku look (Set Value / Exclude gray
-squares, coloring swatch pair + R + radios + 12 palette + eye).
-H8g toolbar hint cluster moved after xy, round glossy colored buttons
-(? ? ! check X), mapping confirmed from MainFrame.java tooltips; icons copied
-from /tmp/hodoku2-src img/*.png into public/.
+H8f DONE (v14.3-h8f): Set Value / Exclude = Hodoku gray squares, centered
+labels, per-digit availability (peersSee), solid-gray unavailable cells.
+H8g coloring widget: 12-swatch COLORING_COLORS palette + R + eye; swatch pair
++ mouse-mode radios wired at H10.
+H8h toolbar hint cluster after xy with real Hodoku PNG icons
+(vageHint/concreteHint/nextHint/executeHint/abortHint from /tmp/hodoku2-src).
+H9 solution-path rows colored by technique difficulty band (same RGBs as
+status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
+score thresholds; path entries store band. Plus chain/link arrows overlay:
+solid red strong, dashed red weak (refs: Hodoku2 Draw Links, SudokuPanel).
 H9 chain/link arrows overlay: solid red = strong link, dashed red = weak link
 (refs: Hodoku2 Draw Links, SudokuPanel drawing); solution-path band colors
 (green/yellow/orange by technique class).
