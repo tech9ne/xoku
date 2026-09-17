@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Level } from "@/lib/sudoku/solver";
 import { ALL_DIGITS } from "@/lib/sudoku/core";
 import { UNDO_PNG } from "../lib/undoPng";
@@ -35,6 +35,8 @@ const RedoIcon = () => (
 
 export default function MenuBar(p: Props) {
   const [open, setOpen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<Level>(p.currentLevel);
+  useEffect(() => { setChosen(p.currentLevel); }, [p.currentLevel]);
   const toggleCands: [string, () => void] = [
     p.showCands ? "Hide candidates" : "Show candidates",
     () => p.setShowCands(!p.showCands),
@@ -85,10 +87,24 @@ export default function MenuBar(p: Props) {
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <button title="Create a new sudoku" aria-label="Create a new sudoku" onClick={() => p.onNew(chosen)}
+          className="w-9 h-9 flex-shrink-0 flex items-center justify-center border border-[#808080] bg-white shadow-[1px_1px_1px_rgba(0,0,0,0.25)]">
+          <svg viewBox="0 0 32 32" className="w-7 h-7">
+            <rect x="1" y="1" width="30" height="30" fill="#ffffff" stroke="#404040" strokeWidth="2"/>
+            <line x1="16" y1="1" x2="16" y2="31" stroke="#404040" strokeWidth="2"/>
+            <line x1="1" y1="16" x2="31" y2="16" stroke="#404040" strokeWidth="2"/>
+            <text x="8" y="12" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">2</text>
+            <text x="24" y="28" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">6</text>
+            <line x1="4" y1="28" x2="28" y2="4" stroke="#c02020" strokeWidth="2" strokeDasharray="4 3"/>
+            <circle cx="4" cy="28" r="3" fill="#20a020"/>
+            <circle cx="28" cy="4" r="3" fill="#20a020"/>
+          </svg>
+        </button>
+        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
         <select
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
-          value={p.currentLevel}
-          onChange={(e) => p.onNew(e.target.value as Level)}>
+          value={chosen}
+          onChange={(e) => setChosen(e.target.value as Level)}>
           {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
         </select>
         <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "2px 2px 0 #f2a0a0" }} />
