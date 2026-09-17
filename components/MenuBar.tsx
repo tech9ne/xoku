@@ -96,8 +96,11 @@ export default function MenuBar(p: Props) {
             <text x="8" y="12" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">2</text>
             <text x="24" y="28" fontSize="12" fontWeight="700" textAnchor="middle" fill="#000000">6</text>
             <line x1="4" y1="28" x2="28" y2="4" stroke="#c02020" strokeWidth="2" strokeDasharray="4 3"/>
+            <line x1="6" y1="20" x2="20" y2="6" stroke="#c02020" strokeWidth="1.5" strokeDasharray="3 3"/>
             <circle cx="4" cy="28" r="3" fill="#20a020"/>
             <circle cx="28" cy="4" r="3" fill="#20a020"/>
+            <circle cx="8" cy="18" r="2.5" fill="#3070d0"/>
+            <circle cx="18" cy="8" r="2.5" fill="#3070d0"/>
           </svg>
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
@@ -107,7 +110,7 @@ export default function MenuBar(p: Props) {
           onChange={(e) => setChosen(e.target.value as Level)}>
           {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
         </select>
-        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "2px 2px 0 #f2a0a0" }} />
+        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "3px 3px 0 #f2a0a0" }} />
         <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;
