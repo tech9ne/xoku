@@ -7,15 +7,20 @@ export type DigitFilter = number | "xy" | null;
 
 const FILTER_BG = "bg-[#B9FFB9]";
 const FILTER_BG_X = "bg-[#FFB9B9]";
-const CHAIN_PALETTE = [
+const HINT_COLORS = [
   { node: "bg-[#7FBBFF] text-black", cell: "bg-[#7FBBFF]/20" },
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
-];
-const ALS_PALETTE = [
   { node: "bg-[#C5E88C] text-black", cell: "bg-[#C5E88C]/20" },
   { node: "bg-[#FFCBCB] text-black", cell: "bg-[#FFCBCB]/20" },
   { node: "bg-[#B2DFDF] text-black", cell: "bg-[#B2DFDF]/20" },
   { node: "bg-[#FCDCA5] text-black", cell: "bg-[#FCDCA5]/20" },
+];
+const MANUAL_COLORS = [
+  { node: "bg-blue-600 text-white", cell: "bg-blue-100" },
+  { node: "bg-green-600 text-white", cell: "bg-green-100" },
+  { node: "bg-red-600 text-white", cell: "bg-red-100" },
+  { node: "bg-purple-600 text-white", cell: "bg-purple-100" },
+  { node: "bg-teal-600 text-white", cell: "bg-teal-100" },
 ];
 const RING = [
   "ring-2 ring-inset ring-blue-400",
@@ -39,10 +44,10 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
 
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
-    for (const nc of step.candColors) nodeOf.set(nc.cell * 10 + nc.cand, nc.color % 5);
+    for (const nc of step.candColors) nodeOf.set(nc.cell * 10 + nc.cand, nc.color % 6);
   const patSet = new Set((step?.patternCands ?? []).map(e => e.cell * 10 + e.cand));
   const placeSet = new Set((step?.placements ?? []).map(q => q.cell * 10 + q.value));
-  const PALETTE = step?.category === "ALS" ? ALS_PALETTE : CHAIN_PALETTE;
+  const PALETTE = HINT_COLORS;
   const hasRich = nodeOf.size > 0 || patSet.size > 0 || placeSet.size > 0;
 
   // center of candidate d in cell, in 0-100 viewBox units
@@ -72,7 +77,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
           }
 
           const manual = manualColors.get(i);
-          const manualCell = manual !== undefined ? PALETTE[manual % PALETTE.length].cell : undefined;
+          const manualCell = manual !== undefined ? MANUAL_COLORS[manual % 5].cell : undefined;
 
           // selection is an OUTLINE (yellow, thick) - never a background -
           // so digit highlights, hint tints and pattern colors stay visible
@@ -118,7 +123,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                         : pat || plc
                           ? cls(PALETTE[1].node, "rounded-full font-bold")
                           : manualNode !== undefined
-                            ? cls(PALETTE[manualNode % PALETTE.length].node, "rounded-full font-bold")
+                            ? cls(MANUAL_COLORS[manualNode % 5].node, "rounded-full font-bold")
                             : hasRich ? "opacity-30"
                             : hl ? "text-green-900 font-bold"
                           : undefined;
