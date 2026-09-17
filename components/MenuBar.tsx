@@ -86,12 +86,12 @@ export default function MenuBar(p: Props) {
         </button>
         <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
         <select
-          className="h-9 px-2 text-xs border-2 border-[#808080] bg-white rounded-sm"
+          className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
           value={p.currentLevel}
           onChange={(e) => p.onNew(e.target.value as Level)}>
           {LEVELS.map(l => <option key={l} value={l}>New {l}</option>)}
         </select>
-        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280" }} />
+        <button title="Coloring color" aria-label="Coloring color" className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: "#86F280", boxShadow: "2px 2px 0 #f2a0a0" }} />
         <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
           {ALL_DIGITS.map(d => {
             const on = p.digitFilter === d;
@@ -116,12 +116,6 @@ export default function MenuBar(p: Props) {
               <span className="text-sm font-semibold [text-shadow:1px_1px_0_rgba(255,255,255,0.9),1px_2px_1px_rgba(0,0,0,0.28)]">y</span>
             </span>
           </button>
-          {p.digitFilter !== null && (
-            <button onClick={() => p.onDigitFilter(null)}
-              className="h-6 px-1 ml-0.5 rounded text-[11px] text-slate-500 hover:bg-slate-300 shrink-0">
-              clear
-            </button>
-          )}
         </div>
       </div>
     </nav>
