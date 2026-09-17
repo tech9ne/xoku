@@ -424,7 +424,7 @@ export default function Home() {
       <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap mt-auto border-t border-[#9aa0aa]">
         <span className="px-2">Coloring: {activeColor === null ? "none" : "active"}</span>
         <span className="px-2 border-l border-[#b0b4bb] flex items-center gap-1">
-          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-black" style={{ backgroundColor: ({ Easy: "#FFFFFF", Medium: "#64FF64", Hard: "#FFFF64", Diabolical: "#FF9650", Extreme: "#FF6464" } as Record<string, string>)[level] }} />
+          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-black" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
           {level} · {progress}%
         </span>
         <span className="px-2 border-l border-[#b0b4bb]">{solved ? "Solved" : "Playing"} {hasSel ? cellName(sel) : ""}</span>

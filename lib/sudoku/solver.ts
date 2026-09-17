@@ -94,41 +94,41 @@ export function rateGame(g: Game): Rating {
   };
 }
 
-export type Level = "Easy" | "Medium" | "Hard" | "Diabolical" | "Extreme";
+export type Level = "Easy" | "Moderate" | "Hard" | "Brutal" | "Nightmare";
 
 // ---- Xoku Rating (XR) ----
 // Every technique has an XR; a puzzle's XR is the rating of the hardest
 // technique its solve path actually requires. Levels are bands over XR:
 //   Easy       1.0 - 1.9   singles only
-//   Medium     2.0 - 4.9   locked candidates, subsets, X-Wing, UR, BUG+1,
+//   Moderate     2.0 - 4.9   locked candidates, subsets, X-Wing, UR, BUG+1,
 //                          skyscraper/kite/turbot, colors, remote pairs, XY/XYZ-wings
 //   Hard       5.0 - 6.9   swordfish, W-wing, BUG+2/+3, jellyfish, XY-chains
-//   Diabolical 7.0 - 8.4   ALS family, death blossom, kraken fish
-//   Extreme    8.5+ / not solvable with the current engine
-const XR_BAND: Record<Exclude<Level, "Extreme">, [number, number]> = {
+//   Brutal 7.0 - 8.4   ALS family, death blossom, kraken fish
+//   Nightmare    8.5+ / not solvable with the current engine
+const XR_BAND: Record<Exclude<Level, "Nightmare">, [number, number]> = {
   Easy: [1.0, 2.0],
-  Medium: [2.0, 5.0],
+  Moderate: [2.0, 5.0],
   Hard: [5.0, 7.0],
-  Diabolical: [7.0, 8.5],
+  Brutal: [7.0, 8.5],
 };
 
 export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): Level {
-  if (!r.solvedByLogic) return "Extreme";
+  if (!r.solvedByLogic) return "Nightmare";
   if (r.hardest < 2.0) return "Easy";
-  if (r.hardest < 5.0) return "Medium";
+  if (r.hardest < 5.0) return "Moderate";
   if (r.hardest < 7.0) return "Hard";
-  if (r.hardest < 8.5) return "Diabolical";
-  return "Extreme";
+  if (r.hardest < 8.5) return "Brutal";
+  return "Nightmare";
 }
 
 export function generatePuzzle(level: Level = "Easy") {
-  const cluesTarget: Record<Level, number> = { Easy: 40, Medium: 32, Hard: 24, Diabolical: 22, Extreme: 22 };
-  const maxAttempts: Record<Level, number> = { Easy: 30, Medium: 30, Hard: 50, Diabolical: 50, Extreme: 50 };
-  const band = level === "Extreme" ? null : XR_BAND[level];
+  const cluesTarget: Record<Level, number> = { Easy: 40, Moderate: 32, Hard: 24, Brutal: 22, Nightmare: 22 };
+  const maxAttempts: Record<Level, number> = { Easy: 30, Moderate: 30, Hard: 50, Brutal: 50, Nightmare: 50 };
+  const band = level === "Nightmare" ? null : XR_BAND[level];
   const t0 = Date.now();
 
   // distance from the requested band (0 = exact match).
-  // With ALS-XZ (XR 7.0) Diabolical is reachable; fallback reports honestly.
+  // With ALS-XZ (XR 7.0) Brutal is reachable; fallback reports honestly.
   //
   const dist = (r: Rating): number => {
     if (!band) return r.solvedByLogic ? 1000 - Math.min(r.hardest, 999) : 0;

@@ -5,7 +5,7 @@ import { ALL_DIGITS } from "@/lib/sudoku/core";
 import { UNDO_PNG } from "../lib/undoPng";
 import { REDO_PNG } from "../lib/redoPng";
 
-const LEVELS: Level[] = ["Easy", "Medium", "Hard", "Diabolical", "Extreme"];
+const LEVELS: Level[] = ["Easy", "Moderate", "Hard", "Brutal", "Nightmare"];
 
 interface Props {
   onNew: (l: Level) => void; onRestart: () => void; onImport: () => void; onExport: () => void;
