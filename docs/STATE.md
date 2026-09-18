@@ -139,6 +139,17 @@ step XR (<2 #FFFFFF, <5 #64FF64, <7 #FFFF64, <8.5 #FF9650, else #FF6464 —
 same RGBs as status-bar dot); click = step into hint dock (concrete) + dots.
 Manual placements no longer enter the path (Hodoku parity).
 H9a (v14.3-h9a): shipped manual-paint hex fix (SudokuGrid missed by H9 commit).
+H9b DONE (v14.3-h9b): Summary tab = technique statistics table (count |
+technique | XR, rows band-tinted, Total row, own scroll); Level/Time/Progress
+already in status bar, Build added there; scroll regions: path list, steps
+list (x+y), dock textarea kept; steps buttons moved below list and renamed
+Find all steps / Add to solution (Add appends current hint step to path). Optional
+later: 4th radio Draw Links (Hodoku2).
+H9 DONE (v14.3-h9): solution path = Step[] rows with notation, band-tinted by
+step XR (<2 #FFFFFF, <5 #64FF64, <7 #FFFF64, <8.5 #FF9650, else #FF6464 —
+same RGBs as status-bar dot); click = step into hint dock (concrete) + dots.
+Manual placements no longer enter the path (Hodoku parity).
+H9a (v14.3-h9a): shipped manual-paint hex fix (SudokuGrid missed by H9 commit).
 H9b Summary tab = technique statistics table (count + technique + band rows +
 Total). H9c all-steps buttons below list: Find all steps / Add to solution.
 Then chain/link arrows overlay (solid red strong, dashed red weak).

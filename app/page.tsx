@@ -389,11 +389,27 @@ export default function Home() {
           {/* Summary */}
           <Panel>
             <TitleBar>Summary</TitleBar>
-            <div className="px-3 py-2 text-xs space-y-1">
-              <div className="flex justify-between"><span className="text-slate-500">Level</span><span className="font-semibold">{level}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Time</span><span>{mmss(seconds)}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Progress</span><span>{progress}%</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Build</span><span className="text-slate-400">{BUILD_TAG}</span></div>
+            <div className="max-h-72 overflow-y-auto overflow-x-auto">
+              <table className="w-full text-xs">
+                <tbody>
+                  {Object.entries(pathSteps.reduce<Record<string, { n: number; xr: number }>>((acc, st) => {
+                    const e = acc[st.technique] ?? (acc[st.technique] = { n: 0, xr: 0 });
+                    e.n++; e.xr += st.score; return acc;
+                  }, {})).map(([name, e]) => (
+                    <tr key={name} style={{ backgroundColor: BAND_HEX(e.xr / e.n) }}>
+                      <td className="px-2 py-0.5 text-right text-slate-600">{e.n}</td>
+                      <td className="px-2 py-0.5">{name}</td>
+                      <td className="px-2 py-0.5 text-right text-slate-600">{e.xr.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                  {!pathSteps.length && <tr><td colSpan={3} className="px-2 py-1 text-slate-400 italic">no steps yet</td></tr>}
+                  <tr className="border-t border-[#A0A0A0] font-semibold">
+                    <td className="px-2 py-0.5 text-right">{pathSteps.length}</td>
+                    <td className="px-2 py-0.5">Total</td>
+                    <td className="px-2 py-0.5 text-right">{pathSteps.reduce((a, st) => a + st.score, 0).toFixed(1)}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </Panel>
 
@@ -452,14 +468,10 @@ export default function Home() {
 
           </>)}
           {panelTab === "steps" && (<>
-          <div className="flex flex-col gap-1.5">
-            <button className="h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
-              onClick={showAll}>{allSteps ? "Hide" : "Show"} all possible steps</button>
-          </div>
         {/* All-steps list (toggleable) */}
         {allSteps && (
           <div className="w-full">
-            <Panel>
+            <Panel className="max-h-72 overflow-y-auto overflow-x-auto">
               {allSteps.map((s, idx) => (
                 <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
                   onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
@@ -471,6 +483,12 @@ export default function Home() {
             </Panel>
           </div>
         )}
+          <div className="flex gap-1.5">
+            <button className="flex-1 h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0]"
+              onClick={showAll}>{allSteps ? "Hide steps list" : "Find all steps"}</button>
+            <button className="flex-1 h-8 border border-[#A0A0A0] bg-white text-xs hover:bg-[#E0E0E0] disabled:opacity-40"
+              disabled={!hint} onClick={() => { if (hint) recordStep(hint); }}>Add to solution</button>
+          </div>
           </>)}
           {panelTab === "path" && (<>
           <div className="flex flex-col gap-1.5">
@@ -480,7 +498,7 @@ export default function Home() {
           {/* Solution path — tall, scrollable, a real area */}
           <Panel className="flex-1 min-h-40 flex flex-col">
             <TitleBar>Solution path</TitleBar>
-            <ol className="overflow-y-auto text-xs px-3 py-2 flex-1">
+            <ol className="overflow-y-auto overflow-x-auto text-xs px-3 py-2 flex-1 max-h-72">
               {pathSteps.map((st, i) => (
                 <li key={i}>
                   <button className="w-full text-left py-0.5 px-1 border-b border-[#F0F0F0] last:border-0"
@@ -506,6 +524,7 @@ export default function Home() {
         </span>
         <span className="px-2 border-l border-[#b0b4bb]">{solved ? "Solved" : "Playing"} {hasSel ? cellName(sel) : ""}</span>
         <span className="px-2 border-l border-[#b0b4bb] flex-1 truncate">{msg}</span>
+        <span className="px-2 border-l border-[#b0b4bb] text-slate-500">{BUILD_TAG}</span>
         <span className="px-2 border-l border-[#b0b4bb]">{mmss(seconds)}</span>
       </footer>
     </main>
