@@ -366,7 +366,7 @@ export default function Home() {
                 <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
                   disabled={!hint} onClick={cancelHint}>Cancel</button>
               </div>
-              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28">
+              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28 overscroll-contain scrollarea">
                 {hint ? (
                   <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
                 ) : (
@@ -389,7 +389,7 @@ export default function Home() {
           {/* Summary */}
           <Panel>
             <TitleBar>Summary</TitleBar>
-            <div className="max-h-72 overflow-y-auto overflow-x-auto">
+            <div className="scrollarea h-64 lg:h-auto lg:max-h-72 overflow-y-auto overflow-x-auto overscroll-contain">
               <table className="w-full text-xs">
                 <tbody>
                   {Object.entries(pathSteps.reduce<Record<string, { n: number; xr: number }>>((acc, st) => {
@@ -455,7 +455,6 @@ export default function Home() {
           </Panel>
           {/* Coloring */}
           <Panel>
-            <TitleBar>Coloring</TitleBar>
             <div className="px-3 py-2">
               <ColorPalette active={activeColor} second={color2}
                 onPick={i => setActiveColor(i)} onPickSecond={i => setColor2(i)}
@@ -471,7 +470,7 @@ export default function Home() {
         {/* All-steps list (toggleable) */}
         {allSteps && (
           <div className="w-full">
-            <Panel className="max-h-72 overflow-y-auto overflow-x-auto">
+            <Panel className="scrollarea h-64 lg:h-auto lg:max-h-72 overflow-y-auto overflow-x-auto overscroll-contain">
               {allSteps.map((s, idx) => (
                 <button key={idx} className="block w-full text-left px-3 py-1 text-xs hover:bg-[#E0E0E0] flex justify-between border-b border-[#F0F0F0] last:border-0"
                   onClick={() => { setHint(s); setMsg(`${s.technique} — ${s.reason}`); }}>
@@ -498,7 +497,7 @@ export default function Home() {
           {/* Solution path — tall, scrollable, a real area */}
           <Panel className="flex-1 min-h-40 flex flex-col">
             <TitleBar>Solution path</TitleBar>
-            <ol className="overflow-y-auto overflow-x-auto text-xs px-3 py-2 flex-1 max-h-72">
+            <ol className="scrollarea h-64 lg:h-auto lg:flex-1 lg:max-h-72 overflow-y-auto overflow-x-auto overscroll-contain touch-pan-y text-xs px-3 py-2">
               {pathSteps.map((st, i) => (
                 <li key={i}>
                   <button className="w-full text-left py-0.5 px-1 border-b border-[#F0F0F0] last:border-0"

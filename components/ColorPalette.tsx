@@ -24,7 +24,7 @@ export default function ColorPalette(p: Props) {
       style={{ backgroundColor: "#" + H[i] }} />
   );
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <div className="relative w-16 h-16 shrink-0">
           <div className="absolute right-0 bottom-0 w-11 h-11 border border-[#707070]"
@@ -32,11 +32,11 @@ export default function ColorPalette(p: Props) {
           <div className="absolute left-0 top-0 w-11 h-11 border border-[#707070]"
             style={{ backgroundColor: "#" + H[c1] }} />
           <button title="swap colors" onClick={p.onSwap}
-            className="absolute -top-2 -right-2 w-6 h-6">
+            className="absolute -top-3 -right-2 w-6 h-6">
             <img src="hodoku/swap_color_arrow.png" alt="" className="w-6 h-6" />
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
-            className="absolute -bottom-2 -left-2 w-6 h-6 border border-[#808080] bg-[#E8E8E8] text-[11px] font-semibold shadow-[inset_1px_1px_0_#ffffff,inset_-1px_-1px_0_#9a9a9a,1px_1px_0_#707070]">R</button>
+            className="absolute -left-3 bottom-0 w-6 h-6 border border-[#808080] bg-[#E8E8E8] text-[11px] font-semibold shadow-[inset_1px_1px_0_#ffffff,inset_-1px_-1px_0_#9a9a9a,1px_1px_0_#707070]">R</button>
         </div>
         <div className="flex flex-col gap-1 text-xs">
           <label className="flex items-center gap-1.5">

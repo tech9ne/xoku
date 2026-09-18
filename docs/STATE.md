@@ -152,6 +152,11 @@ Manual placements no longer enter the path (Hodoku parity).
 H9a (v14.3-h9a): shipped manual-paint hex fix (SudokuGrid missed by H9 commit).
 H9b Summary tab = technique statistics table (count + technique + band rows +
 Total). H9c all-steps buttons below list: Find all steps / Add to solution.
+H9c (v14.3-h9c): list boxes are fixed-height scrollers on phone (h-64) with
+overscroll-contain + touch-pan-y (kills touch snap-back / scroll chaining);
+desktop keeps lg:max-h-72. .scrollarea CSS = thin persistent bar where the
+platform allows (desktop); phones show OS overlay indicator while dragging.
+Coloring header strip removed; swap arrow raised; R clear of palette.
 Then chain/link arrows overlay (solid red strong, dashed red weak).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
