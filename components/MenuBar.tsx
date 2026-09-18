@@ -8,6 +8,7 @@ import { REDO_PNG } from "../lib/redoPng";
 const LEVELS: Level[] = ["Easy", "Moderate", "Hard", "Brutal", "Nightmare"];
 
 interface Props {
+  level: Level;
   dead: boolean[];
   onNew: (l: Level) => void; onRestart: () => void; onImport: () => void; onExport: () => void;
   onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean;
@@ -91,17 +92,10 @@ export default function MenuBar(p: Props) {
           className="w-8 h-8 flex items-center justify-center">
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
-        <button title="Create a new sudoku" aria-label="Create a new sudoku" onClick={() => p.onNew(chosen)}
-          className="w-9 h-9 flex-shrink-0 flex items-center justify-center border border-[#808080] bg-white shadow-[1px_1px_1px_rgba(0,0,0,0.25)]">
-          <svg viewBox="0 0 32 32" className="w-7 h-7">
-            <line x1="10.7" y1="0" x2="10.7" y2="32" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="21.3" y1="0" x2="21.3" y2="32" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="0" y1="10.7" x2="32" y2="10.7" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="0" y1="21.3" x2="32" y2="21.3" stroke="#C7CCD1" strokeWidth="1"/>
-            <line x1="2" y1="2" x2="30" y2="30" stroke="#4F46E5" strokeWidth="4.5" strokeLinecap="round"/>
-            <line x1="30" y1="2" x2="2" y2="30" stroke="#E8604C" strokeWidth="4.5" strokeLinecap="round"/>
-          </svg>
-        </button>
+        <button title={"New game — " + p.level} onClick={() => p.onNew(p.level)}
+            className="w-9 h-9 flex items-center justify-center flex-shrink-0" aria-label="New game">
+            <svg viewBox="0 0 64 64" className="w-8 h-8"><rect width="64" height="64" rx="14" fill="#0F172A"/><rect x="9" y="9" width="14" height="14" rx="3.5" fill="#3B82F6"/><rect x="25" y="9" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="9" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="9" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="25" y="25" width="14" height="14" rx="3.5" fill="#1E293B" stroke="#334155"/><rect x="41" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="9" y="41" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="25" y="41" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="41" width="14" height="14" rx="3.5" fill="#3B82F6"/></svg>
+          </button>
         <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <select
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"

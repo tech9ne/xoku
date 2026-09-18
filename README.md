@@ -1,3 +1,5 @@
+![xoku — Sudoku trainer](public/wordmark.svg)
+
 # Xoku
 
 A HoDoKu-style Sudoku trainer in the browser. React + Next.js + TypeScript.
