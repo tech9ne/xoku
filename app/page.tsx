@@ -519,16 +519,23 @@ export default function Home() {
         </div>
       </div>
       {/* Status bar — their format */}
-      <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 mt-auto lg:mt-0 border-t border-[#9aa0aa]">
-        <span className="px-2">Coloring: {activeColor === null ? "none" : "active"}</span>
-        <span className="px-2 border-l border-[#b0b4bb] flex items-center gap-1">
-          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-black" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
+      <footer className="bg-[#0084D4] text-white text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 mt-auto lg:mt-0 border-t border-[#0060A0]">
+        <span className="px-1 flex items-center gap-px">
+          <i className="w-3 h-3 bg-white border border-black/40 inline-block" />
+          {["FFC059","B1A5F3","F7A5A7","86E8D0","86F280","33CCFF"].map(h => (
+            <i key={h} className="w-3 h-3 inline-block border border-black/40" style={{ backgroundColor: "#" + h }} />
+          ))}
+          <i className="w-3 h-3 bg-[#E8E8E8] border border-black/40 inline-block text-black text-[8px] text-center leading-3">R</i>
+        </span>
+        <span className="px-2 border-l border-white/40">Coloring: {activeColor === null ? "none" : "active"}</span>
+        <span className="px-2 border-l border-white/40 flex items-center gap-1">
+          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-white" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
           {level} · {progress}%
         </span>
-        <span className="px-2 border-l border-[#b0b4bb]">{solved ? "Solved" : "Playing"} {hasSel ? cellName(sel) : ""}</span>
-        <span className="px-2 border-l border-[#b0b4bb] flex-1 truncate">{msg}</span>
-        <span className="px-2 border-l border-[#b0b4bb] text-slate-500">{BUILD_TAG}</span>
-        <span className="px-2 border-l border-[#b0b4bb]">{mmss(seconds)}</span>
+        <span className="px-2 border-l border-white/40">Playing{hasSel ? " " + cellName(sel).toUpperCase() : ""}</span>
+        <span className="px-2 border-l border-white/40 flex-1 truncate">{msg}</span>
+        <span className="px-2 border-l border-white/40 text-white/80">{BUILD_TAG}</span>
+        <span className="px-2 border-l border-white/40">{mmss(seconds)}</span>
       </footer>
     </main>
   );
