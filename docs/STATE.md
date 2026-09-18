@@ -220,6 +220,9 @@ H11c (v14.3-h11c): CI red root-caused — page.tsx level-prop fix was never
 committed (git add list omitted it); CI builds the committed tree, local tsc
 saw the working tree. NEW RULE: run git status --short before every commit
 and add every modified file it lists.
+H11d (v14.3-h11d): difficulty select lives in MenuBar LOCAL state
+(const [chosen, setChosen]); H11's button rewrite lost the closure and used
+the computed level. Logo now calls onNew(chosen) + tooltip shows chosen.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:

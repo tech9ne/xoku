@@ -92,7 +92,7 @@ export default function MenuBar(p: Props) {
           className="w-8 h-8 flex items-center justify-center">
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
-        <button title={"New game — " + p.level} onClick={() => p.onNew(p.level)}
+        <button title={"New game — " + chosen} onClick={() => p.onNew(chosen)}
             className="w-9 h-9 flex items-center justify-center flex-shrink-0" aria-label="New game">
             <svg viewBox="0 0 64 64" className="w-8 h-8"><rect width="64" height="64" rx="14" fill="#0F172A"/><rect x="9" y="9" width="14" height="14" rx="3.5" fill="#3B82F6"/><rect x="25" y="9" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="9" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="9" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="25" y="25" width="14" height="14" rx="3.5" fill="#1E293B" stroke="#334155"/><rect x="41" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="9" y="41" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="25" y="41" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="41" width="14" height="14" rx="3.5" fill="#3B82F6"/></svg>
           </button>
