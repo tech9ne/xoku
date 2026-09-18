@@ -106,7 +106,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                       (digitFilter === "xy" && bi) ||
                       (typeof digitFilter === "number" && d === digitFilter)
                     );
-                    const manualNode = manualColors.get(i * 10 + d);
+                    const manualNode = manualColors.get(100 + i * 10 + d);
                     const candCls = elim
                       ? "bg-[#FF7684] text-black rounded-full font-bold"
                       : nc !== undefined

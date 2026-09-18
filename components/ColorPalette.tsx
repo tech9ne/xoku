@@ -32,12 +32,12 @@ export default function ColorPalette(p: Props) {
           <div className="absolute left-0 top-0 w-11 h-11 border border-[#707070]"
             style={{ backgroundColor: "#" + H[c1] }} />
           <button title="swap colors" onClick={p.onSwap}
-            className="absolute top-0 right-0 w-4 h-4">
+            className="absolute top-0 right-0 w-4 h-auto">
             <img src="hodoku/swap_color_arrow.png" alt="" className="w-6 h-6" />
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
-            className="absolute bottom-1 left-0 w-5 h-5 flex items-center justify-center">
-            <img src="hodoku/reset.png" alt="R" className="w-5 h-5" />
+            className="absolute bottom-1 left-0 w-5 h-5 bg-white border border-[#909090] flex items-center justify-center">
+            <img src="hodoku/reset.png" alt="R" className="w-3.5 h-3.5" />
           </button>
         </div>
         <div className="flex flex-col gap-1 text-xs">

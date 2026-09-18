@@ -189,6 +189,11 @@ H10g (v14.3-h10g): swap arrow pinned top-0 right-0 of the 72px pair box
 (12px clearance both swatches). Notes: iPad-landscape panel scroll is
 intended (lg desktop frame = Hodoku JScrollPane parity); portrait = phone
 page-scroll mode. Hint dock textarea scrolls with .scrollarea bar.
+H10h (v14.3-h10h): manualColors key collision fixed (candidate keys now
+100+cell*10+d; cell keys 0-80 no longer overlap — painting a candidate was
+tinting an unrelated cell and vice versa). Hint dock = overflow-y-scroll
+(permanent track like Hodoku JScrollPane). R = glyph inside white bordered
+well. Swap arrow rendered h-auto (natural aspect, equal arms).
 Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR

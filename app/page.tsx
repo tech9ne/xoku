@@ -147,7 +147,7 @@ export default function Home() {
     if (activeColor === null) return;
     setManualColors(m => {
       const next = new Map(m);
-      const key = cell * 10 + d;
+      const key = 100 + cell * 10 + d;
       if (next.get(key) === activeColor) next.delete(key);
       else next.set(key, activeColor);
       return next;
@@ -507,7 +507,7 @@ export default function Home() {
                 <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
                   disabled={!hint} onClick={cancelHint}>Cancel</button>
               </div>
-              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28 overscroll-contain scrollarea">
+              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-scroll max-h-28 overscroll-contain scrollarea">
                 {hint ? (
                   <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
                 ) : (
