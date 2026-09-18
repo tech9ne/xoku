@@ -165,14 +165,27 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
               const bow = same ? 1.1 : (k % 2 === 0 ? 0.9 : -0.9);
               const cx = (x1 + x2) / 2 + px * bow;
               const cy = (y1 + y2) / 2 + py * bow;
+              const arrowLen = 2.5;
+              const arrowH = arrowLen / 3;
+              const ang = Math.atan2(y2 - cy, x2 - cx);
+              const cos = Math.cos(ang), sin = Math.sin(ang);
+              const p1x = x2 - cos * arrowLen - sin * arrowH;
+              const p1y = y2 - sin * arrowLen + cos * arrowH;
+              const p2x = x2 - cos * arrowLen + sin * arrowH;
+              const p2y = y2 - sin * arrowLen - cos * arrowH;
               return (
-                <path key={k}
-                  d={`M ${x1.toFixed(2)} ${y1.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${x2.toFixed(2)} ${y2.toFixed(2)}`}
-                  fill="none"
-                  stroke="#dc2626"
-                  strokeWidth={l.strong ? 0.8 : 0.42}
-                  strokeDasharray={l.strong ? undefined : "1.1 1.3"}
-                  strokeLinecap="round" />
+                <g key={k}>
+                  <path
+                    d={`M ${x1.toFixed(2)} ${y1.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${x2.toFixed(2)} ${y2.toFixed(2)}`}
+                    fill="none"
+                    stroke="#dc2626"
+                    strokeWidth={l.strong ? 0.8 : 0.42}
+                    strokeDasharray={l.strong ? undefined : "1.1 1.3"}
+                    strokeLinecap="round" />
+                  <polygon
+                    points={`${x2.toFixed(2)},${y2.toFixed(2)} ${p1x.toFixed(2)},${p1y.toFixed(2)} ${p2x.toFixed(2)},${p2y.toFixed(2)}`}
+                    fill="#dc2626" />
+                </g>
               );
             })}
         </svg>
