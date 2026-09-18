@@ -157,7 +157,13 @@ overscroll-contain + touch-pan-y (kills touch snap-back / scroll chaining);
 desktop keeps lg:max-h-72. .scrollarea CSS = thin persistent bar where the
 platform allows (desktop); phones show OS overlay indicator while dragging.
 Coloring header strip removed; swap arrow raised; R clear of palette.
-Then chain/link arrows overlay (solid red strong, dashed red weak).
+H9d (v14.3-h9d): ROOT CAUSE of scroll drag-back — Panel/TitleBar were
+defined inside the page component, so the 1s timer remounted every Panel
+subtree and reset scrollTop. Hoisted both to module scope. Never define
+components inside the render body (STATE rule).
+H10 link arrows: existing chain/fish link lines get Hodoku arrowheads
+(solid red strong, dashed weak); geometry from SudokuPanel draw code.
+Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:

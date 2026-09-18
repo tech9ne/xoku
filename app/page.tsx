@@ -11,6 +11,13 @@ import { BUILD_TAG } from "@/lib/version";
 const cls = (...xs: (string | false | undefined)[]) => xs.filter(Boolean).join(" ");
 const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
+const TitleBar = ({ children }: { children: React.ReactNode }) => (
+  <div className="bg-[#E0E0E0] border-b border-[#A0A0A0] px-2 py-1 text-xs font-bold text-slate-700">{children}</div>
+);
+const Panel = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <section className={`bg-white border border-[#A0A0A0] ${className}`}>{children}</section>
+);
+
 export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [history, setHistory] = useState<Game[]>([]);
@@ -321,12 +328,7 @@ export default function Home() {
   const progress = Math.round((81 - game.values.filter(v => v === 0).length) / 81 * 100);
   const BAND_HEX = (xr: number) => xr < 2 ? "#FFFFFF" : xr < 5 ? "#64FF64" : xr < 7 ? "#FFFF64" : xr < 8.5 ? "#FF9650" : "#FF6464";
 
-  const TitleBar = ({ children }: { children: React.ReactNode }) => (
-    <div className="bg-[#E0E0E0] border-b border-[#A0A0A0] px-2 py-1 text-xs font-bold text-slate-700">{children}</div>
-  );
-  const Panel = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-    <section className={`bg-white border border-[#A0A0A0] ${className}`}>{children}</section>
-  );
+
 
   return (
     <main className="min-h-screen lg:h-screen bg-[#F2F2F2] text-slate-900 flex flex-col lg:overflow-hidden">
