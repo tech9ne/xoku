@@ -15,7 +15,7 @@ export default function Home() {
   const [game, setGame] = useState<Game | null>(null);
   const [history, setHistory] = useState<Game[]>([]);
   const [future, setFuture] = useState<Game[]>([]);
-  const [solutionPath, setSolutionPath] = useState<string[]>([]);
+  const [pathSteps, setPathSteps] = useState<Step[]>([]);
   const [level, setLevel] = useState<Level>("Easy");
   const [sel, setSel] = useState(40);
   const [hint, setHint] = useState<Step | null>(null);
@@ -54,7 +54,7 @@ export default function Home() {
     setHistory([]); setHint(null); setAllSteps(null); setDigitFilter(null);
     setManualColors(new Map());
     setFuture([]);
-    setSolutionPath([]);
+    setPathSteps([]);
     setSeconds(0); setGameId(id => id + 1);
     workerRef.current?.terminate();
     workerRef.current = null;
@@ -87,7 +87,7 @@ export default function Home() {
   };
 
   const recordStep = (s: Step) => {
-    setSolutionPath(p => [...p, s.technique]);
+    setPathSteps(p => [...p, s]);
   };
 
   const newPuzzle = (lvl: Level) => {
@@ -128,8 +128,7 @@ export default function Home() {
     withUndo(g => placeValue(g, cell, value));
     setHint(null);
     setMsg(`${cellName(cell)} set to ${value}`);
-    setSolutionPath(p => [...p, `Direct: ${cellName(cell)} = ${value}`]);
-  };
+      };
 
   const toggleCand = (cell: number, d: number) => {
     if (!game || cell < 0 || game.given[cell] || game.values[cell] !== 0) return;
@@ -203,23 +202,23 @@ export default function Home() {
 
   const autoSolve = () => {
     if (!game) return;
-    const taken: string[] = [];
+    const taken: Step[] = [];
     withUndo(g => {
       for (let guard = 0; guard < 500 && !isSolved(g); guard++) {
         const s = findNextStep(g);
         if (!s) break;
         applyStep(g, s);
-        taken.push(s.technique);
+        taken.push(s);
       }
     });
-    setSolutionPath(p => [...p, ...taken]);
+    setPathSteps(p => [...p, ...taken]);
     setMsg("Auto-solved as far as the implemented techniques allow.");
   };
 
   const cancelHint = () => setHint(null);
   const solveUpTo = () => {
     if (!game || solved) return;
-    const taken: string[] = [];
+    const taken: Step[] = [];
     let stop: Step | null = null;
     withUndo(g => {
       for (let guard = 0; guard < 500 && !isSolved(g); guard++) {
@@ -227,10 +226,10 @@ export default function Home() {
         if (!st) break;
         if (!PROGRESS.has(st.category)) { stop = st; return; }
         applyStep(g, st);
-        taken.push(st.technique);
+        taken.push(st);
       }
     });
-    if (taken.length) setSolutionPath(p2 => [...p2, ...taken]);
+    if (taken.length) setPathSteps(p2 => [...p2, ...taken]);
     const stopStep = stop as unknown as Step | null;
     if (stopStep) setHintMode("concrete");
     setHint(stopStep);
@@ -320,6 +319,7 @@ export default function Home() {
     return false;
   };
   const progress = Math.round((81 - game.values.filter(v => v === 0).length) / 81 * 100);
+  const BAND_HEX = (xr: number) => xr < 2 ? "#FFFFFF" : xr < 5 ? "#64FF64" : xr < 7 ? "#FFFF64" : xr < 8.5 ? "#FF9650" : "#FF6464";
 
   const TitleBar = ({ children }: { children: React.ReactNode }) => (
     <div className="bg-[#E0E0E0] border-b border-[#A0A0A0] px-2 py-1 text-xs font-bold text-slate-700">{children}</div>
@@ -481,12 +481,16 @@ export default function Home() {
           <Panel className="flex-1 min-h-40 flex flex-col">
             <TitleBar>Solution path</TitleBar>
             <ol className="overflow-y-auto text-xs px-3 py-2 flex-1">
-              {solutionPath.map((t, i) => (
-                <li key={i} className="py-0.5 border-b border-[#F0F0F0] last:border-0">
-                  <span className="text-slate-400 mr-1.5">{i + 1}.</span>{t}
+              {pathSteps.map((st, i) => (
+                <li key={i}>
+                  <button className="w-full text-left py-0.5 px-1 border-b border-[#F0F0F0] last:border-0"
+                    style={{ backgroundColor: BAND_HEX(st.score) }}
+                    onClick={() => { setHint(st); setHintMode("concrete"); setMsg(`${st.technique} — ${st.reason}`); }}>
+                    <span className="text-slate-500 mr-1.5">{i + 1}.</span>{st.technique}: {st.reason}
+                  </button>
                 </li>
               ))}
-              {!solutionPath.length && <li className="text-slate-400 italic">no steps yet — solve or hint to begin</li>}
+              {!pathSteps.length && <li className="text-slate-400 italic">no steps yet — solve or hint to begin</li>}
             </ol>
           </Panel>
           </>)}

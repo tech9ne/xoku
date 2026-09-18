@@ -134,9 +134,13 @@ H9 additions from termux screenshots: H9b Summary tab = technique statistics
 table (count + technique + band-colored rows + Total); H9c all-steps panel
 buttons move below list, renamed Find all steps / Add to solution. Optional
 later: 4th radio Draw Links (Hodoku2).
-H9 solution path parity (manual: rows clickable, jump/show step): notation
-(reason) shown with technique, rows tinted by difficulty band RGBs, click =
-step into hint dock + board dots. Then chain/link arrows overlay.
+H9 DONE (v14.3-h9): solution path = Step[] rows with notation, band-tinted by
+step XR (<2 #FFFFFF, <5 #64FF64, <7 #FFFF64, <8.5 #FF9650, else #FF6464 —
+same RGBs as status-bar dot); click = step into hint dock (concrete) + dots.
+Manual placements no longer enter the path (Hodoku parity).
+H9b Summary tab = technique statistics table (count + technique + band rows +
+Total). H9c all-steps buttons below list: Find all steps / Add to solution.
+Then chain/link arrows overlay (solid red strong, dashed red weak).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:
