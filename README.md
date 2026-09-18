@@ -1,4 +1,7 @@
-![xoku — Sudoku trainer](public/wordmark.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/wordmark-dark.svg">
+  <img alt="xoku — Sudoku trainer" src="public/wordmark.svg">
+</picture>
 
 # Xoku
 

@@ -215,7 +215,7 @@ H11 (v14.3-h11): BRAND IDENTITY — Grid X on dark tile (#0F172A, cells
 #3B82F6/#EF4444/#F8FAFC, dark knot) = New Game button (click = new game at
 current level, tooltip shows level) + app/icon.svg favicon + launcher;
 woven-X wordmark (red over blue) in README; chain-x.svg reserved for
-about/empty states. Grout by gap, no strokes at small sizes.
+about/empty states. Grout by gap, no strokes at small sizes. Wordmark ships light+dark variants via README <picture> (GitHub dark-mode fix).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:
