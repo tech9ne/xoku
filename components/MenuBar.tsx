@@ -121,6 +121,10 @@ export default function MenuBar(p: Props) {
               </button>
             );
           })}
+          <button onClick={() => p.onDigitFilter(p.digitFilter === "xy" ? null : "xy")}
+            className={"w-8 h-8 flex items-center justify-center " + (p.digitFilter === "xy" ? "bg-[#D6D6D6] shadow-[inset_1px_1px_2px_#707070] rounded" : "")}>
+            <img src="hodoku/f_xyc.png" alt="xy" className="w-8 h-8" />
+          </button>
         </div>
         <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <div className="flex items-center gap-1 flex-shrink-0">
