@@ -3,8 +3,6 @@
   <img alt="xoku — Sudoku trainer" src="public/wordmark.svg">
 </picture>
 
-# Xoku
-
 A HoDoKu-style Sudoku trainer in the browser. React + Next.js + TypeScript.
 
 ## Features
