@@ -216,6 +216,10 @@ H11 (v14.3-h11): BRAND IDENTITY — Grid X on dark tile (#0F172A, cells
 current level, tooltip shows level) + app/icon.svg favicon + launcher;
 woven-X wordmark (red over blue) in README; chain-x.svg reserved for
 about/empty states. Grout by gap, no strokes at small sizes. Wordmark ships light+dark variants via README <picture> (GitHub dark-mode fix).
+H11c (v14.3-h11c): CI red root-caused — page.tsx level-prop fix was never
+committed (git add list omitted it); CI builds the committed tree, local tsc
+saw the working tree. NEW RULE: run git status --short before every commit
+and add every modified file it lists.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:
