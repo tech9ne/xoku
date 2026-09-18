@@ -175,6 +175,11 @@ H10d (v14.3-h10d): R/swap notch positioning refined; XYZ-Wing coloring —
 Set B (pivot + other pincer) candidate not involved in AIC chain = magenta
 (color 4), links added showing AIC chain (bivalue strong links + weak links
 between cells).
+H10e (v14.3-h10e): XYZ-Wing — magenta non-involved cand in BOTH Set B cells,
+chain = 3 links, deduped double links block. R = real Hodoku reset.png in a
+flat bordered well (it was a PNG all along); Set Value / Exclude are L&F-drawn
+Swing buttons (no PNG exists) so CSS squares stay, now sharing ONE left margin
+with pair / R / palette; pair box 72px for notch air.
 Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR

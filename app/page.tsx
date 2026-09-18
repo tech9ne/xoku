@@ -431,7 +431,7 @@ export default function Home() {
           {/* Set Value — HoDoKu-style: 3 rows of proper squares */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Set Value:</div>
-            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || peersSee(d)}
                   className={"w-12 h-12 border text-base " + (cellLocked || peersSee(d) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}
@@ -445,7 +445,7 @@ export default function Home() {
           {/* Exclude Candidates — same block style, tint marks present candidates */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Exclude Candidates:</div>
-            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || !(hasSel && game.cands[sel] & candMask(d))}
                   className={"w-12 h-12 border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}

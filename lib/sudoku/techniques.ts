@@ -385,13 +385,6 @@ export const xyWing: Finder = (g) => {
             { cell: b, cand: y, color: 0 },
             { cell: b, cand: z, color: 1 },
           ],
-          links: [
-            { from: { cell: a, cand: z }, to: { cell: a, cand: x }, strong: true },
-            { from: { cell: a, cand: x }, to: { cell: p, cand: x }, strong: false },
-            { from: { cell: p, cand: x }, to: { cell: p, cand: y }, strong: true },
-            { from: { cell: p, cand: y }, to: { cell: b, cand: y }, strong: false },
-            { from: { cell: b, cand: y }, to: { cell: b, cand: z }, strong: true },
-          ],
                                                   reason: `XY-Wing: ${bivStr(z, x, a)} - ${bivStr(x, y, p)} - ${bivStr(y, z, b)} => ${conclusionStr(elims)}.`,
           eliminations: elims, patternCells: [p, a, b],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
@@ -422,7 +415,7 @@ export const xyzWing: Finder = (g) => {
             ...ccOf(g, [a], x).map(c => ({ cell: c, cand: x, color: 1 })),
             ...ccOf(g, [p], x).map(c => ({ cell: c, cand: x, color: 0 })),
             ...ccOf(g, [p], y).map(c => ({ cell: c, cand: y, color: 4 })),
-            ...ccOf(g, [b], y).map(c => ({ cell: c, cand: y, color: 0 })),
+            ...ccOf(g, [b], y).map(c => ({ cell: c, cand: y, color: 4 })),
             ...ccOf(g, [b], z).map(c => ({ cell: c, cand: z, color: 1 })),
           ],
                               reason: `XYZ-Wing: pivot ${cellName(p)} (${x}/${y}/${z}) with pincers ${cellName(a)} and ${cellName(b)} — ${z} must be in the pivot or a pincer.`,
@@ -430,9 +423,7 @@ export const xyzWing: Finder = (g) => {
           links: [
             { from: { cell: a, cand: z }, to: { cell: a, cand: x }, strong: true },
             { from: { cell: a, cand: x }, to: { cell: p, cand: x }, strong: false },
-            { from: { cell: p, cand: x }, to: { cell: p, cand: y }, strong: true },
-            { from: { cell: p, cand: y }, to: { cell: b, cand: y }, strong: false },
-            { from: { cell: b, cand: y }, to: { cell: b, cand: z }, strong: true },
+            { from: { cell: p, cand: x }, to: { cell: p, cand: z }, strong: true },
           ],
           patternCands: [{ cell: p, cand: x }, { cell: p, cand: y }, { cell: p, cand: z }, { cell: a, cand: x }, { cell: a, cand: z }, { cell: b, cand: y }, { cell: b, cand: z }],
         });
