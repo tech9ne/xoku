@@ -194,7 +194,12 @@ H10h (v14.3-h10h): manualColors key collision fixed (candidate keys now
 tinting an unrelated cell and vice versa). Hint dock = overflow-y-scroll
 (permanent track like Hodoku JScrollPane). R = glyph inside white bordered
 well. Swap arrow rendered h-auto (natural aspect, equal arms).
-Then blue status bar with palette segments.
+H10i (v14.3-h10i): coloring widget at exact clone ratios (panel 63 -> box
+72: swatch 48, secondary at half-offset, arrow 17px flush top-right, R well
+18px flush bottom-left, 7px air everywhere = clone's 6px scaled). Toolbar:
+36px hint buttons around 32px PNGs, 2x17 separators, pressed = neutral inset
+bevel instead of indigo tint.
+Then blue status bar with palette segments (last item).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:

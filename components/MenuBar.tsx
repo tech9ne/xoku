@@ -101,7 +101,7 @@ export default function MenuBar(p: Props) {
             <line x1="30" y1="2" x2="2" y2="30" stroke="#E8604C" strokeWidth="4.5" strokeLinecap="round"/>
           </svg>
         </button>
-        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <select
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
           value={chosen}
@@ -134,13 +134,13 @@ export default function MenuBar(p: Props) {
             </span>
           </button>
         </div>
-        <div className="w-px h-7 bg-[#B0B0B0] mx-1" />
+        <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <div className="flex items-center gap-1 flex-shrink-0">
           <button title="Vague hint (technique + region only)" aria-label="Vague hint" onClick={p.onHintVague}
-            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "vague" ? "bg-[#C8D8E8]" : "")}>
+            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "vague" ? "bg-[#D6D6D6] shadow-[inset_1px_1px_2px_#707070] rounded" : "")}>
             <img src="hodoku/vageHint.png" alt="" className="w-8 h-8" /></button>
           <button title="Concrete hint (full explanation + dots)" aria-label="Concrete hint" onClick={p.onHintConcrete}
-            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "concrete" ? "bg-[#C8D8E8]" : "")}>
+            className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "concrete" ? "bg-[#D6D6D6] shadow-[inset_1px_1px_2px_#707070] rounded" : "")}>
             <img src="hodoku/concreteHint.png" alt="" className="w-8 h-8" /></button>
           <button title="Next hint" aria-label="Next hint" onClick={p.onHintNext}
             className="w-8 h-8 flex items-center justify-center">
