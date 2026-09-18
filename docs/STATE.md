@@ -163,6 +163,10 @@ subtree and reset scrollTop. Hoisted both to module scope. Never define
 components inside the render body (STATE rule).
 H10 link arrows: existing chain/fish link lines get Hodoku arrowheads
 (solid red strong, dashed weak); geometry from SudokuPanel draw code.
+H10b (v14.3-h10b): arrowheads scale per strength (strong 3.2 / weak 2.4
+viewBox units, clamped to len/3.5, skipped when len < 2.2*head — Hodoku's
+short-link guard); fixes stubby strong heads. R + swap arrow moved into the
+pair's empty notches (bottom-left / top-right) so nothing overlaps.
 Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR

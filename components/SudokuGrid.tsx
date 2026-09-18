@@ -165,7 +165,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
               const bow = same ? 1.1 : (k % 2 === 0 ? 0.9 : -0.9);
               const cx = (x1 + x2) / 2 + px * bow;
               const cy = (y1 + y2) / 2 + py * bow;
-              const arrowLen = 2.5;
+              const arrowLen = Math.min(l.strong ? 3.2 : 2.4, len / 3.5);
               const arrowH = arrowLen / 3;
               const ang = Math.atan2(y2 - cy, x2 - cx);
               const cos = Math.cos(ang), sin = Math.sin(ang);
@@ -182,9 +182,11 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                     strokeWidth={l.strong ? 0.8 : 0.42}
                     strokeDasharray={l.strong ? undefined : "1.1 1.3"}
                     strokeLinecap="round" />
-                  <polygon
-                    points={`${x2.toFixed(2)},${y2.toFixed(2)} ${p1x.toFixed(2)},${p1y.toFixed(2)} ${p2x.toFixed(2)},${p2y.toFixed(2)}`}
-                    fill="#dc2626" />
+                  {len > arrowLen * 2.2 && (
+                    <polygon
+                      points={`${x2.toFixed(2)},${y2.toFixed(2)} ${p1x.toFixed(2)},${p1y.toFixed(2)} ${p2x.toFixed(2)},${p2y.toFixed(2)}`}
+                      fill="#dc2626" />
+                  )}
                 </g>
               );
             })}
