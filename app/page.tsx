@@ -353,31 +353,6 @@ export default function Home() {
           onPaintCell={i => { if (activeColor !== null) setManualColors(m => new Map(m).set(i, activeColor)); }} />
 
           </div>
-        {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
-        <div className="w-full flex-shrink-0">
-          <Panel>
-            <TitleBar>Hints</TitleBar>
-            <div className="flex items-stretch gap-2 p-2">
-              <div className="grid grid-cols-2 gap-1.5 shrink-0 content-start order-2">
-                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
-                  onClick={() => getHint()}>Next Hint</button>
-                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
-                  disabled={!hint} onClick={applyHint}>Execute</button>
-                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
-                  onClick={solveUpTo}>Solve up to</button>
-                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
-                  disabled={!hint} onClick={cancelHint}>Cancel</button>
-              </div>
-              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28 overscroll-contain scrollarea">
-                {hint ? (
-                  <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
-                ) : (
-                  <p className="text-slate-500">{msg}</p>
-                )}
-              </div>
-            </div>
-          </Panel>
-        </div>
         </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}
         <aside className="w-72 xl:w-80 shrink-0 flex flex-col gap-2 text-sm lg:overflow-y-auto lg:min-h-0 bg-[#EFEFEF] border border-[#989898] p-1.5 [&_section]:bg-transparent [&_section]:border-0">
@@ -431,7 +406,7 @@ export default function Home() {
           {/* Set Value — HoDoKu-style: 3 rows of proper squares */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Set Value:</div>
-            <div className="grid grid-cols-3 gap-1 w-fit p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || peersSee(d)}
                   className={"w-12 h-12 border text-base " + (cellLocked || peersSee(d) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}
@@ -445,7 +420,7 @@ export default function Home() {
           {/* Exclude Candidates — same block style, tint marks present candidates */}
           <Panel>
             <div className="px-2 pt-2 pb-1 text-xs font-semibold text-center text-slate-700">Exclude Candidates:</div>
-            <div className="grid grid-cols-3 gap-1 w-fit p-2">
+            <div className="grid grid-cols-3 gap-1 w-fit mx-auto p-2">
               {ALL_DIGITS.map(d => (
                 <button key={d} disabled={cellLocked || !(hasSel && game.cands[sel] & candMask(d))}
                   className={"w-12 h-12 border text-base " + (cellLocked || !(hasSel && game.cands[sel] & candMask(d)) ? "border-[#C6C6C6] bg-[#C6C6C6] text-transparent" : "border-[#989898] bg-[#E0E0E0] text-black hover:bg-[#D6D6D6] active:bg-[#CCCCCC]")}
@@ -457,7 +432,7 @@ export default function Home() {
           </Panel>
           {/* Coloring */}
           <Panel>
-            <div className="px-3 py-2">
+            <div className="px-3 py-2 pl-[calc((100%-9.5rem)/2)]">
               <ColorPalette active={activeColor} second={color2}
                 onPick={i => setActiveColor(i)} onPickSecond={i => setColor2(i)}
                 onSwap={() => { setActiveColor(color2); setColor2(c1 => (activeColor === null ? 8 : c1 === color2 ? color2 : activeColor)); }}
@@ -516,6 +491,33 @@ export default function Home() {
         </aside>
       </div>
 
+      <div className="px-4 pb-2 w-full">
+        {/* HINTS BLOCK — full width, substantial, with title bar like a panel */}
+        <div className="w-full flex-shrink-0">
+          <Panel>
+            <TitleBar>Hints</TitleBar>
+            <div className="flex items-stretch gap-2 p-2">
+              <div className="grid grid-cols-2 gap-1.5 shrink-0 content-start order-2">
+                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                  onClick={() => getHint()}>Next Hint</button>
+                <button className="h-9 px-4 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                  disabled={!hint} onClick={applyHint}>Execute</button>
+                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8]"
+                  onClick={solveUpTo}>Solve up to</button>
+                <button className="h-9 px-3 border border-[#A0A0A0] bg-[#E8E8E8] text-xs font-semibold hover:bg-[#D8D8D8] active:bg-[#C8C8C8] disabled:opacity-40"
+                  disabled={!hint} onClick={cancelHint}>Cancel</button>
+              </div>
+              <div className="flex-1 order-1 bg-white border border-[#A0A0A0] px-3 py-2 text-xs leading-relaxed min-h-20 overflow-y-auto max-h-28 overscroll-contain scrollarea">
+                {hint ? (
+                  <p><b className="text-[#1a5276]">{hint.technique}:</b> {hintMode === "vague" ? `in ${hintCells(hint)}` : hint.reason}</p>
+                ) : (
+                  <p className="text-slate-500">{msg}</p>
+                )}
+              </div>
+            </div>
+          </Panel>
+        </div>
+      </div>
       {/* Status bar — their format */}
       <footer className="bg-[#D6D9DE] text-black text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 mt-auto lg:mt-0 border-t border-[#9aa0aa]">
         <span className="px-2">Coloring: {activeColor === null ? "none" : "active"}</span>

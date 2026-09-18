@@ -180,6 +180,11 @@ chain = 3 links, deduped double links block. R = real Hodoku reset.png in a
 flat bordered well (it was a PNG all along); Set Value / Exclude are L&F-drawn
 Swing buttons (no PNG exists) so CSS squares stay, now sharing ONE left margin
 with pair / R / palette; pair box 72px for notch air.
+H10f (v14.3-h10f): hints dock = full-width row below BOTH columns (Hodoku
+image 3: text under grid, 2x2 buttons under the panel column). Set Value /
+Exclude grids centered again; coloring widget indented
+pl-[calc((100%-9.5rem)/2)] so pair/R/palette share the centered grids' left
+margin. Swap arrow 16px for notch air.
 Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
