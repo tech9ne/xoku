@@ -8,6 +8,7 @@ import { REDO_PNG } from "../lib/redoPng";
 const LEVELS: Level[] = ["Easy", "Moderate", "Hard", "Brutal", "Nightmare"];
 
 interface Props {
+  dead: boolean[];
   onNew: (l: Level) => void; onRestart: () => void; onImport: () => void; onExport: () => void;
   onUndo: () => void; onRedo: () => void; canUndo: boolean; canRedo: boolean;
   onHintVague: () => void; onHintConcrete: () => void; onHintNext: () => void;
@@ -110,29 +111,16 @@ export default function MenuBar(p: Props) {
         </select>
         <button title="Toggle filter mode (possible/excluded cells)" aria-label="Toggle filter mode" onClick={p.onToggleFilterMode} className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: p.filterMode === "possible" ? "#86F280" : "#F28686", boxShadow: p.filterMode === "possible" ? "4px 4px 0 #f2a0a0" : "4px 4px 0 #a0f2a0" }} />
         <div className="flex items-center gap-0.5 ml-2 flex-shrink-0">
-          {ALL_DIGITS.map(d => {
+          {ALL_DIGITS.map((d, di) => {
             const on = p.digitFilter === d;
-            const left = p.digitRemaining(d);
+            const dead = p.dead[di];
             return (
               <button key={d} onClick={() => p.onDigitFilter(on ? null : d)}
-                title={`Highlight candidate ${d} (${left} remaining)`}
-                className={`w-7 h-8 flex-shrink-0 flex items-center justify-center rounded transition-colors ${
-                  on ? "bg-indigo-600 text-white" : "hover:bg-slate-300 text-[#6e6e6e]"
-                } ${left === 0 && !on ? "opacity-30" : ""}`}>
-                <span className="text-base font-semibold leading-none [text-shadow:1px_2px_1px_rgba(0,0,0,0.3)]">{d}</span>
+                className={"w-8 h-8 flex items-center justify-center " + (on ? "bg-[#D6D6D6] shadow-[inset_1px_1px_2px_#707070] rounded" : "")}>
+                <img src={"hodoku/f_" + d + "c" + (dead ? "_inactive" : "") + ".png"} alt={String(d)} className="w-8 h-8" />
               </button>
             );
           })}
-          <button onClick={() => p.onDigitFilter(p.digitFilter === "xy" ? null : "xy")}
-            title="Highlight bivalue cells (exactly 2 candidates)"
-            className={`w-8 h-7 flex items-center justify-center rounded transition-colors ml-0.5 ${
-              p.digitFilter === "xy" ? "bg-purple-600 text-white" : "hover:bg-slate-300 text-[#6e6e6e]"
-            }`}>
-            <span className="inline-flex items-baseline">
-              <sup className="text-[11px] font-semibold mr-0.5 [text-shadow:1px_2px_1px_rgba(0,0,0,0.3)]">x</sup>
-              <span className="text-sm font-semibold [text-shadow:1px_2px_1px_rgba(0,0,0,0.3)]">y</span>
-            </span>
-          </button>
         </div>
         <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <div className="flex items-center gap-1 flex-shrink-0">

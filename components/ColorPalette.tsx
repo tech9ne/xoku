@@ -32,8 +32,12 @@ export default function ColorPalette(p: Props) {
           <div className="absolute left-0 top-0 w-12 h-12 border border-[#707070]"
             style={{ backgroundColor: "#" + H[c1] }} />
           <button title="swap colors" onClick={p.onSwap}
-            className="absolute top-0 right-0 w-[17px] h-auto">
-            <img src="hodoku/swap_color_arrow.png" alt="" className="w-6 h-6" />
+            className="absolute top-0 right-0 w-[18px] h-[18px]">
+            <svg viewBox="0 0 20 20" className="w-[18px] h-[18px]">
+              <path d="M6 6 H14 V14" fill="none" stroke="#9a9a9a" strokeWidth="3" />
+              <path d="M7 2 L2 6 L7 10 Z" fill="#9a9a9a" />
+              <path d="M10 13 L14 18 L18 13 Z" fill="#9a9a9a" />
+            </svg>
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
             className="absolute bottom-0 left-0 w-[18px] h-[18px] bg-white border border-[#909090] flex items-center justify-center">

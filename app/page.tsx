@@ -336,7 +336,7 @@ export default function Home() {
         onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands}
-        digitFilter={digitFilter} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
+        digitFilter={digitFilter} dead={ALL_DIGITS.map(d => !game.cands.some(m => m & candMask(d)))} onDigitFilter={(f) => { if (f === null) { setDigitFilter(null); setMsg("Highlight cleared."); } else toggleFilter(f); }}
         digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
         onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}

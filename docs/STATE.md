@@ -199,6 +199,11 @@ H10i (v14.3-h10i): coloring widget at exact clone ratios (panel 63 -> box
 18px flush bottom-left, 7px air everywhere = clone's 6px scaled). Toolbar:
 36px hint buttons around 32px PNGs, 2x17 separators, pressed = neutral inset
 bevel instead of indigo tint.
+H10j (v14.3-h10j): digit strip = Hodoku's own 32px f_*c.png icons (with
+_inactive greys for dead digits; ALL_DIGITS is numbers-only, xy button stays
+separate glyph for now); pressed filter and hint states = neutral Swing inset
+bevel (solid blue tint removed); swap arrow = 18px SVG, equal 7px arms, bend
+at midpoint, 6px air to both swatches.
 Then blue status bar with palette segments (last item).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
