@@ -94,7 +94,7 @@ export function rateGame(g: Game): Rating {
   };
 }
 
-export type Level = "Easy" | "Moderate" | "Hard" | "Brutal" | "Nightmare";
+export type Level = "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | "Moderate" | "Tough" | "Challenging" | "Irritating" | "Frustrating" | "Hard" | "Demanding" | "Expert" | "Brutal" | "Nightmare";
 
 // ---- Xoku Rating (XR) ----
 // Every technique has an XR; a puzzle's XR is the rating of the hardest
@@ -105,11 +105,21 @@ export type Level = "Easy" | "Moderate" | "Hard" | "Brutal" | "Nightmare";
 //   Hard       5.0 - 6.9   swordfish, W-wing, BUG+2/+3, jellyfish, XY-chains
 //   Brutal 7.0 - 8.4   ALS family, death blossom, kraken fish
 //   Nightmare    8.5+ / not solvable with the current engine
-const XR_BAND: Record<Exclude<Level, "Nightmare">, [number, number]> = {
-  Easy: [1.0, 2.0],
-  Moderate: [2.0, 5.0],
-  Hard: [5.0, 7.0],
-  Brutal: [7.0, 8.5],
+const XR_BAND: Record<Level, { min: number; max: number } | null> = {
+  "Extremely Easy": { min: 1.0, max: 2.0 },
+  "Very Easy": { min: 2.0, max: 2.5 },
+  "Modestly Easy": { min: 2.5, max: 3.0 },
+  "Easy": { min: 3.0, max: 3.25 },
+  "Moderate": { min: 3.25, max: 4.0 },
+  "Tough": { min: 4.0, max: 4.25 },
+  "Challenging": { min: 4.25, max: 5.0 },
+  "Irritating": { min: 5.0, max: 6.0 },
+  "Frustrating": { min: 6.0, max: 7.0 },
+  "Hard": { min: 7.0, max: 8.0 },
+  "Demanding": { min: 8.0, max: 9.0 },
+  "Expert": { min: 9.0, max: 10.0 },
+  "Brutal": { min: 10.0, max: 11.0 },
+  "Nightmare": null,
 };
 
 export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): Level {

@@ -77,7 +77,7 @@ export const pointing: Finder = (g) => {
         .map((i): Elimination => ({ cell: i, cand: d }));
       if (!elims.length) continue;
       return mk({
-        technique: "Locked Candidates Type 1 (Pointing)", category: "Locked Candidates", score: 2.3,
+        technique: "Locked Candidates Type 1 (Pointing)", category: "Locked Candidates", score: 1.5,
         reason: `In box ${b - 17}, ${d} is confined to ${unitName(target)} — remove ${d} from the rest of ${unitName(target)}.`,
         eliminations: elims, patternCells: spots,
         patternCands: spots.map(i => ({ cell: i, cand: d })),
@@ -100,7 +100,7 @@ export const claiming: Finder = (g) => {
         .map((i): Elimination => ({ cell: i, cand: d }));
       if (!elims.length) continue;
       return mk({
-        technique: "Locked Candidates Type 2 (Claiming)", category: "Locked Candidates", score: 2.4,
+        technique: "Locked Candidates Type 2 (Claiming)", category: "Locked Candidates", score: 1.5,
         reason: `In ${unitName(u)}, ${d} is confined to box ${bx + 1} — remove ${d} from the rest of box ${bx + 1}.`,
         eliminations: elims, patternCells: spots,
         patternCands: spots.map(i => ({ cell: i, cand: d })),
@@ -301,7 +301,7 @@ export const remotePairs: Finder = (g) => {
       for (let c = end; c !== start; c = parent.get(c)!) chain.unshift(c);
       chain.unshift(start);
       return mk({
-        technique: "Remote Pair", category: "Chain", score: 4.0,
+        technique: "Remote Pair", category: "Chain", score: 2.6,
         reason: `Remote Pair: ${chain.map((c, k) => bivStr(k % 2 === 0 ? p : q, k % 2 === 0 ? q : p, c)).join(" - ")} => ${conclusionStr(elims)}.`,
         eliminations: elims, patternCells: chain,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
@@ -326,7 +326,7 @@ export const xyWing: Finder = (g) => {
           .map((i): Elimination => ({ cell: i, cand: z }));
         if (!elims.length) continue;
         return mk({
-          technique: "XY-Wing", category: "Wing", score: 4.6,
+          technique: "XY-Wing", category: "Wing", score: 3.5,
           candColors: [
             { cell: a, cand: z, color: 0 },
             { cell: a, cand: x, color: 1 },
@@ -359,7 +359,7 @@ export const xyzWing: Finder = (g) => {
           .map((i): Elimination => ({ cell: i, cand: z }));
         if (!elims.length) continue;
         return mk({
-          technique: "XYZ-Wing", category: "Wing", score: 4.8,
+          technique: "XYZ-Wing", category: "Wing", score: 3.5,
           candColors: [
             ...ccOf(g, [a], z).map(c => ({ cell: c, cand: z, color: 0 })),
             ...ccOf(g, [a], x).map(c => ({ cell: c, cand: x, color: 1 })),
@@ -398,7 +398,7 @@ export const wWing: Finder = (g) => {
           : [];
         if (!elims.length) continue;
         return mk({
-          technique: "W-Wing", category: "Wing", score: 5.2,
+          technique: "W-Wing", category: "Wing", score: 5.0,
           candColors: (() => {
             const o1 = arePeers(s1, A) && arePeers(s2, B);
             const t1 = o1 ? s1 : s2;
@@ -450,7 +450,7 @@ export const uniqueRectangle1: Finder = (g) => {
         const [x, y] = candsOf(m);
         const elims = [x, y].filter(d => dm & candMask(d)).map(d => ({ cell: dIdx, cand: d }));
         return mk({
-          technique: "Unique Rectangle Type 1", category: "Uniqueness", score: 3.3,
+          technique: "Uniqueness Test 1", category: "Uniqueness", score: 3.5,
           reason: `If ${cellName(dIdx)} were ${x} or ${y}, the rectangle r${r1 + 1}/r${r2 + 1}c${c1 + 1}/c${c2 + 1} would allow two solutions — remove ${x} and ${y} from ${cellName(dIdx)}.`,
           eliminations: elims, patternCells: cells,
           patternCands: others.flatMap(i => [{ cell: i, cand: x }, { cell: i, cand: y }]),
@@ -499,7 +499,7 @@ export const xyChain: Finder = (g) => {
         return parts.join(" - ");
       })();
               return mk({
-                technique: "XY-Chain", category: "Chain", score: 6.0,
+                technique: "XY-Chain", category: "Chain", score: 5.0,
 candColors: (() => {
               // blue-first, derived from the walk: in every cell the incoming
               // digit (shared with the previous cell) is blue/OFF, the outgoing
@@ -604,7 +604,7 @@ function findBug(g: Game, n: number): Step | null {
   if (n === 1) {
     const A = tri[0], x = extra.get(A)!;
     return mk({
-      technique: "BUG+1", category: "Uniqueness", score: 3.2,
+      technique: "BUG+1", category: "Uniqueness", score: 3.5,
       reason: `All unsolved cells are bivalue except ${cellName(A)}, and every candidate appears exactly twice per house except ${x} (three times). If ${x} were false here the grid would be a BUG with two solutions — so ${cellName(A)} = ${x}.`,
       placements: [{ cell: A, value: x }],
       patternCells: [A], patternCands: [{ cell: A, cand: x }],
@@ -822,7 +822,7 @@ export const urType3: Finder = (g) => {
               }
               if (!elims.length) continue;
               return mk({
-                technique: "Unique Rectangle Type 3", category: "Uniqueness", score: 3.6,
+                technique: "Uniqueness Test 3", category: "Uniqueness", score: 3.5,
                 reason: `Roofs ${cellName(roofA)} and ${cellName(roofB)} must use a digit beyond ${x}/${y} (else the rectangle is deadly); their extras ${candsOf(E).join("/")} plus ${combo.map(cellName).join(", ")} form a naked subset in ${unitName(u)} — remove ${candsOf(E).join("/")} from the rest of ${unitName(u)}.`,
                 eliminations: elims, patternCells: cells,
                 patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
@@ -868,7 +868,7 @@ export const urType4: Finder = (g) => {
                 .map(i => ({ cell: i, cand: other }));
               if (!elims.length) continue;
               return mk({
-                technique: "Unique Rectangle Type 4", category: "Uniqueness", score: 3.7,
+                technique: "Uniqueness Test 4", category: "Uniqueness", score: 3.5,
                 reason: `In ${unitName(u)}, ${d} appears only in the roof cells ${cellName(roofA)} and ${cellName(roofB)}: one must be ${d}, and to avoid the deadly rectangle the other must be an extra digit — so ${other} can be removed from both roofs.`,
                 eliminations: elims, patternCells: cells,
                 patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(dd => ({ cell: i, cand: dd }))),
@@ -923,7 +923,7 @@ export const bugLite: Finder = (g) => {
             const w = extras[0];
             const z = candsOf(g.cands[w] & ~pairMask)[0];
             return mk({
-              technique: "BUG Lite (single extra)", category: "Uniqueness", score: 4.0,
+              technique: "BUG Lite (single extra)", category: "Uniqueness", score: 2.6,
               reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so ${cellName(w)} must break the pattern: it is ${z}.`,
               placements: [{ cell: w, value: z }],
               patternCells: S,
@@ -939,7 +939,7 @@ export const bugLite: Finder = (g) => {
               .map(i => ({ cell: i, cand: z }));
             if (elims.length) {
               return mk({
-                technique: "BUG Lite (two extras)", category: "Uniqueness", score: 4.0,
+                technique: "BUG Lite (two extras)", category: "Uniqueness", score: 2.6,
                 reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so at least one of ${cellName(extras[0])}, ${cellName(extras[1])} is ${z}, which is removed from cells seeing both.`,
                 eliminations: elims, patternCells: S,
                 patternCands: S.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1057,7 +1057,7 @@ export const alsXYWing: Finder = (g) => {
           if (!elims.length) continue;
           const patternCells = [...A.cells, ...B.cells, ...C.cells];
           return mk({
-            technique: "ALS-XY-Wing", category: "ALS", score: 7.2,
+            technique: "ALS-XY-Wing", category: "ALS", score: 7.0,
             candColors: [
             ...ccOf(g, B.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
             ...ccOf(g, B.cells, X).map(c => ({ cell: c, cand: X, color: 1 })),
@@ -1118,7 +1118,7 @@ export const alsChain: Finder = (g) => {
           if (elims.length) {
             const patternCells = path.flatMap(p => als[p].cells);
             return mk({
-              technique: "ALS Chain", category: "ALS", score: 7.4,
+              technique: "ALS Chain", category: "ALS", score: 10.0,
                             candColors: (() => {
                 const spine: { cell: number; cand: number; color: number }[] = [];
                 path.forEach((p, k) => {
@@ -1186,7 +1186,7 @@ export const deathBlossom: Finder = (g) => {
         if (!elims.length) continue;
         const patternCells = [S, ...A.cells, ...B.cells];
         return mk({
-          technique: "Death Blossom", category: "ALS", score: 7.6,
+          technique: "Death Blossom", category: "ALS", score: 8.0,
           candColors: [
             ...ccOf(g, A.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
             ...ccOf(g, A.cells, x).map(c => ({ cell: c, cand: x, color: 1 })),
@@ -1333,7 +1333,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               .map(t => ({ cell: t, cand: d }));
             if (elims.length) {
               return mk({
-                technique: "AIC Type 1", category: "Chain", score: 6.2,
+                technique: "AIC Type 1", category: "Chain", score: 4.5,
                 candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                 links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} => ${conclusionStr(elims)}.`,
@@ -1359,7 +1359,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             }
             if (elims.length) {
               return mk({
-                technique: "AIC Type 2", category: "Chain", score: 6.4,
+                technique: "AIC Type 2", category: "Chain", score: 4.5,
                 candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                 links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} => ${conclusionStr(elims)}.`,

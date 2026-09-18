@@ -529,7 +529,7 @@ export default function Home() {
         </span>
         <span className="px-2 border-l border-white/40">Coloring: {activeColor === null ? "none" : "active"}</span>
         <span className="px-2 border-l border-white/40 flex items-center gap-1">
-          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-white" style={{ backgroundColor: ({ Easy: "#FFFFFF", Moderate: "#64FF64", Hard: "#FFFF64", Brutal: "#FF9650", Nightmare: "#FF6464" } as Record<string, string>)[level] }} />
+          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-white" style={{ backgroundColor: ({ "Extremely Easy": "#7FD4FF", "Very Easy": "#64FF64", "Modestly Easy": "#A8E05F", "Easy": "#C8E040", "Moderate": "#FFFF64", "Tough": "#FFD44E", "Challenging": "#FFB04E", "Irritating": "#FF9650", "Frustrating": "#FF7A4E", "Hard": "#FF6464", "Demanding": "#FF4E86", "Expert": "#E05FE0", "Brutal": "#B05FFF", "Nightmare": "#6E4EFF" } as Record<string, string>)[level] }} />
           {level} · {progress}%
         </span>
         <span className="px-2 border-l border-white/40">Playing{hasSel ? " " + cellName(sel).toUpperCase() : ""}</span>
