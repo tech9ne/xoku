@@ -210,6 +210,7 @@ H10l (v14.3-h10l): BLUE STATUS BAR (#0084D4, white text) with left palette
 segment strip (white + 6 pair primaries + R box), segments Coloring / level
 dot + level + % / Playing + CELL / msg / build / time — Hodoku photo 4
 format. Visual parity program COMPLETE.
+H10m (v14.3-h10m): XYZ-Wing shows set colors only, no link arrows (user preference).
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
 score thresholds; path entries store band. Plus chain/link arrows overlay:
