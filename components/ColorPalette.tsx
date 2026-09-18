@@ -32,7 +32,7 @@ export default function ColorPalette(p: Props) {
           <div className="absolute left-0 top-0 w-11 h-11 border border-[#707070]"
             style={{ backgroundColor: "#" + H[c1] }} />
           <button title="swap colors" onClick={p.onSwap}
-            className="absolute top-1 right-1 w-4 h-4">
+            className="absolute top-0 right-0 w-4 h-4">
             <img src="hodoku/swap_color_arrow.png" alt="" className="w-6 h-6" />
           </button>
           <button title="reset coloring" onClick={p.onClearAll}
