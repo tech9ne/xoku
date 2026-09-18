@@ -16,7 +16,7 @@ const HINT_COLORS = [
   { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
 const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","86E8D0","CEFBED","86F280","D7FFD7","33CCFF","FFFF00"];
-const MANUAL_HEX = H;
+const MANUAL_HEX = H.map(h => "#" + h);
 
 interface Props {
   game: Game; sel: number; step: Step | null; showCands: boolean;
