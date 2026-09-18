@@ -250,12 +250,13 @@ export const singleDigitChains: Finder = (g) => {
           if (!elims.length) continue;
           const tA = unitType(ua), tB = unitType(ub);
           const weak = UNITS_OF[x].filter(u => UNITS_OF[y].includes(u)).map(unitType);
-          let technique = "Turbot Fish", score = 4.2;
+          let technique: string | null = null, score = 0;
           if (tA === tB && (tA === "row" || tA === "col") && weak.includes(tA === "row" ? "col" : "row")) {
             technique = "Skyscraper"; score = 3.8;
           } else if (tA !== tB && tA !== "box" && tB !== "box" && weak.includes("box")) {
             technique = "2-String Kite"; score = 4.0;
           }
+          if (!technique) continue;
           return mk({
             technique, category: "Single Digit Chain", score,
             candColors: [fx, x, y, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
@@ -271,57 +272,6 @@ export const singleDigitChains: Finder = (g) => {
   return null;
 };
 
-// ---------- Simple Colors ----------
-export const simpleColors: Finder = (g) => {
-  for (const d of ALL_DIGITS) {
-    const links = strongLinks(g, d);
-    if (links.length < 2) continue;
-    const adj = new Map<number, number[]>();
-    for (const [a, b] of links) {
-      if (!adj.has(a)) adj.set(a, []);
-      if (!adj.has(b)) adj.set(b, []);
-      adj.get(a)!.push(b); adj.get(b)!.push(a);
-    }
-    const color = new Map<number, 0 | 1>();
-    for (const start of adj.keys()) {
-      if (color.has(start)) continue;
-      color.set(start, 0);
-      const queue = [start];
-      const comp: number[] = [];
-      let wrap: 0 | 1 | -1 = -1;
-      while (queue.length) {
-        const i = queue.shift()!;
-        comp.push(i);
-        for (const j of adj.get(i)!) {
-          if (!color.has(j)) { color.set(j, (color.get(i)! ^ 1) as 0 | 1); queue.push(j); }
-          else if (color.get(j) === color.get(i) && wrap === -1) wrap = color.get(i)!;
-        }
-      }
-      if (wrap !== -1) {
-        return mk({
-          technique: "Simple Colors (Rule 2)", category: "Coloring", score: 4.2,
-          reason: `Coloring ${d}: two cells of the same color see each other, so that color is false — remove ${d} from all its cells.`,
-          eliminations: comp.filter(i => color.get(i) === wrap).map(i => ({ cell: i, cand: d })),
-          patternCells: comp, patternCands: comp.map(i => ({ cell: i, cand: d })),
-        });
-      }
-      const zeros = comp.filter(i => color.get(i) === 0);
-      const ones = comp.filter(i => color.get(i) === 1);
-      for (let i = 0; i < 81; i++) {
-        if (g.values[i] !== 0 || !(g.cands[i] & candMask(d)) || color.has(i)) continue;
-        if (zeros.some(z => arePeers(z, i)) && ones.some(o => arePeers(o, i))) {
-          return mk({
-            technique: "Simple Colors (Rule 4)", category: "Coloring", score: 4.2,
-            reason: `Coloring ${d}: ${cellName(i)} sees both colors of the chain — remove ${d} from ${cellName(i)}.`,
-            eliminations: [{ cell: i, cand: d }],
-            patternCells: comp, patternCands: comp.map(c => ({ cell: c, cand: d })),
-          });
-        }
-      }
-    }
-  }
-  return null;
-};
 
 // ---------- Remote Pairs ----------
 export const remotePairs: Finder = (g) => {
@@ -1655,7 +1605,6 @@ export const FINDERS: Finder[] = [
   singleDigitChains,       // XR 3.8 / 4.0 / 4.2
   bugLite,                 // XR 4.0
   remotePairs,             // XR 4.0
-  simpleColors,            // XR 4.2
   xyWing,                  // XR 4.6
   xyzWing,                 // XR 4.8
   bugPlus2,                // XR 5.0
@@ -1690,7 +1639,7 @@ export const TECHNIQUE_NAMES = [
   "Full House", "Naked Single", "Hidden Single", "Pointing", "Claiming",
   "Naked Pair/Triple/Quad", "Hidden Pair/Triple/Quad",
   "X-Wing", "Swordfish", "Jellyfish",
-  "Skyscraper", "2-String Kite", "Turbot Fish", "Simple Colors", "Remote Pair",
+  "Skyscraper", "2-String Kite",  "Remote Pair",
   "XY-Wing", "XYZ-Wing", "W-Wing",
   "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
   "X-Chain", "XY-Chain", "AIC Type 1", "AIC Type 2",
