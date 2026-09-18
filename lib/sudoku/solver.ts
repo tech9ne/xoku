@@ -132,8 +132,38 @@ export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): L
 }
 
 export function generatePuzzle(level: Level = "Easy") {
-  const cluesTarget: Record<Level, number> = { Easy: 40, Moderate: 32, Hard: 24, Brutal: 22, Nightmare: 22 };
-  const maxAttempts: Record<Level, number> = { Easy: 30, Moderate: 30, Hard: 50, Brutal: 50, Nightmare: 50 };
+  const cluesTarget: Record<Level, number> = {
+  "Extremely Easy": 40,
+  "Very Easy": 36,
+  "Modestly Easy": 33,
+  "Easy": 30,
+  "Moderate": 28,
+  "Tough": 26,
+  "Challenging": 25,
+  "Irritating": 24,
+  "Frustrating": 23,
+  "Hard": 22,
+  "Demanding": 21,
+  "Expert": 20,
+  "Brutal": 19,
+  "Nightmare": 18,
+};
+  const maxAttempts: Record<Level, number> = {
+  "Extremely Easy": 10,
+  "Very Easy": 15,
+  "Modestly Easy": 20,
+  "Easy": 25,
+  "Moderate": 30,
+  "Tough": 40,
+  "Challenging": 50,
+  "Irritating": 60,
+  "Frustrating": 70,
+  "Hard": 80,
+  "Demanding": 90,
+  "Expert": 100,
+  "Brutal": 120,
+  "Nightmare": 150,
+};
   const band = level === "Nightmare" ? null : XR_BAND[level];
   const t0 = Date.now();
 
@@ -143,7 +173,7 @@ export function generatePuzzle(level: Level = "Easy") {
   const dist = (r: Rating): number => {
     if (!band) return r.solvedByLogic ? 1000 - Math.min(r.hardest, 999) : 0;
     if (!r.solvedByLogic) return 500;
-    const [lo, hi] = band;
+    const { min: lo, max: hi } = band;
     return r.hardest < lo ? lo - r.hardest : r.hardest >= hi ? r.hardest - hi : 0;
   };
 
