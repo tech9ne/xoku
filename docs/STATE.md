@@ -167,6 +167,14 @@ H10b (v14.3-h10b): arrowheads scale per strength (strong 3.2 / weak 2.4
 viewBox units, clamped to len/3.5, skipped when len < 2.2*head — Hodoku's
 short-link guard); fixes stubby strong heads. R + swap arrow moved into the
 pair's empty notches (bottom-left / top-right) so nothing overlaps.
+H10c DONE (v14.3-h10c): arrows with exact Hodoku measurements — 1.5px
+strokes (vector-effect: non-scaling-stroke), weak dash 5/5, arrowhead
+length = cellSize/6, height = length/3, same for both strengths; short-link
+guard len > 2*arrowLen.
+H10d (v14.3-h10d): R/swap notch positioning refined; XYZ-Wing coloring —
+Set B (pivot + other pincer) candidate not involved in AIC chain = magenta
+(color 4), links added showing AIC chain (bivalue strong links + weak links
+between cells).
 Then blue status bar with palette segments.
 H9 solution-path rows colored by technique difficulty band (same RGBs as
 status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
