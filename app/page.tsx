@@ -48,13 +48,14 @@ export default function Home() {
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells">("default");
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
-  const [msg, setMsg] = useState("Generating puzzle…");
+  const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
   const [seconds, setSeconds] = useState(0);
   const [gameId, setGameId] = useState(0);
   const [generating, setGenerating] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const inited = useRef(false);
 
+  const isIdle = !game || game.given.every((g) => !g);
   const startGame = useCallback((puzzle: number[], solution?: number[], label?: string, rating?: ReturnType<typeof rateGame>) => {
     const g = newGame(puzzle, solution);
     setGame(g);
@@ -73,8 +74,8 @@ export default function Home() {
   useEffect(() => {
     if (inited.current) return;
     inited.current = true;
-    const { puzzle, solution, rating } = generatePuzzle("Easy");
-    startGame(puzzle, solution, undefined, rating);
+    startGame(Array(81).fill(0), Array(81).fill(0));
+    setMsg("Ready — pick a difficulty, then click the New Game tile.");
   }, [startGame]);
 
   const solved = !!game && isSolved(game);
@@ -529,8 +530,8 @@ export default function Home() {
         </span>
         <span className="px-2 border-l border-white/40">Coloring: {activeColor === null ? "none" : "active"}</span>
         <span className="px-2 border-l border-white/40 flex items-center gap-1">
-          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-white" style={{ backgroundColor: ({ "Extremely Easy": "#7FD4FF", "Very Easy": "#64FF64", "Modestly Easy": "#A8E05F", "Easy": "#C8E040", "Moderate": "#FFFF64", "Tough": "#FFD44E", "Challenging": "#FFB04E", "Irritating": "#FF9650", "Frustrating": "#FF7A4E", "Hard": "#FF6464", "Demanding": "#FF4E86", "Expert": "#E05FE0", "Brutal": "#B05FFF", "Nightmare": "#6E4EFF" } as Record<string, string>)[level] }} />
-          {level} · {progress}%
+          <i aria-hidden="true" className="inline-block w-3 h-3 rounded-full border border-white" style={{ backgroundColor: isIdle ? "#9AA0AA" : ({ "Extremely Easy": "#7FD4FF", "Very Easy": "#64FF64", "Modestly Easy": "#A8E05F", "Easy": "#C8E040", "Moderate": "#FFFF64", "Tough": "#FFD44E", "Challenging": "#FFB04E", "Irritating": "#FF9650", "Frustrating": "#FF7A4E", "Hard": "#FF6464", "Demanding": "#FF4E86", "Expert": "#E05FE0", "Brutal": "#B05FFF", "Nightmare": "#6E4EFF" } as Record<string, string>)[level] }} />
+          {isIdle ? "Ready" : level} · {isIdle ? 0 : progress}%
         </span>
         <span className="px-2 border-l border-white/40">Playing{hasSel ? " " + cellName(sel).toUpperCase() : ""}</span>
         <span className="px-2 border-l border-white/40 flex-1 truncate">{msg}</span>
