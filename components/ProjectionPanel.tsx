@@ -19,10 +19,10 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
     (view === "RN" ? "R" : view === "CN" ? "C" : "B") + (a + 1);
   const leftTitle = view === "CN" ? "COL" : view === "BN" ? "BOX" : "ROWS";
   return (
-    <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
+    <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-340px))] mx-auto flex flex-col gap-1">
       <div className="flex gap-1">
         <span className="w-14 shrink-0" />
-        <div className="flex-1 text-center text-[10px] font-black tracking-wider text-[#111827]">
+        <div className="flex-1 text-center text-[10px] font-black tracking-wider text-[#111827] [font-family:Arial,Helvetica,sans-serif]">
           DIGITS
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
       <div className="flex gap-1 items-stretch">
         <div className="w-14 flex items-stretch">
           <span
-            className="self-center text-[10px] font-black tracking-wider text-[#111827]"
+            className="self-center text-[10px] font-black tracking-wider text-[#111827] [font-family:Arial,Helvetica,sans-serif]"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
             {leftTitle}
           </span>

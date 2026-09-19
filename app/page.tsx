@@ -371,13 +371,13 @@ export default function Home() {
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
-          <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-auto">
+          <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-y-auto lg:overflow-y-hidden">
           
           {view === "RC" ? (
-            <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
+            <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-340px))] mx-auto flex flex-col gap-1">
           <div className="flex gap-1">
             <span className="w-14 shrink-0" />
-            <div className="flex-1 text-center text-[10px] font-black tracking-wider text-[#111827]">
+            <div className="flex-1 text-center text-[10px] font-black tracking-wider text-[#111827] [font-family:Arial,Helvetica,sans-serif]">
               COL
             </div>
           </div>
@@ -390,7 +390,7 @@ export default function Home() {
           <div className="flex gap-1 items-stretch">
             <div className="w-14 flex items-stretch">
             <span
-              className="self-center text-[10px] font-black tracking-wider text-[#111827]"
+              className="self-center text-[10px] font-black tracking-wider text-[#111827] [font-family:Arial,Helvetica,sans-serif]"
               style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
               ROWS
             </span>
