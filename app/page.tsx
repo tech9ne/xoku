@@ -45,7 +45,7 @@ export default function Home() {
   const [manualColors, setManualColors] = useState<Map<number, number>>(new Map());
   const [activeColor, setActiveColor] = useState<number | null>(8);
   const [color2, setColor2] = useState(4);
-  const [colorMode, setColorMode] = useState<"default" | "cands" | "cells">("default");
+  const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
@@ -269,7 +269,7 @@ export default function Home() {
     if (clean.length !== 81) { setMsg("Import failed: need 81 characters."); return; }
     const puzzle = [...clean].map(ch => (ch === "." ? 0 : +ch));
     if (countSolutions(puzzle, 2) !== 1) { setMsg("Import failed: invalid or non-unique puzzle."); return; }
-    startGame(puzzle, undefined, "Imported puzzle");
+    startGame(puzzle, undefined, "Imported puzzle — unique solution confirmed");
   };
 
   const toggleFilter = (f: number | "xy") => {
@@ -347,11 +347,20 @@ export default function Home() {
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
-          <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
+          <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-1 items-start">
+            <div />
+            <div className="grid grid-cols-9 text-xs text-slate-500 font-mono">
+              {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="flex items-center justify-center">{n}</span>)}
+            </div>
+            <div className="grid grid-rows-9 text-xs text-slate-500 font-mono">
+              {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="flex items-center justify-center">{n}</span>)}
+            </div>
+            <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={coloringVisible ? manualColors : new Map()} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} colorMode={colorMode}
           onPaintCell={i => { if (activeColor !== null) setManualColors(m => new Map(m).set(i, activeColor)); }} />
+          </div>
 
           </div>
         </div>

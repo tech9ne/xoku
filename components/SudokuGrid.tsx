@@ -28,7 +28,7 @@ interface Props {
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick, colorMode, onPaintCell }: Props & { colorMode: "default" | "cands" | "cells"; onPaintCell: (i: number) => void }) {
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick, colorMode, onPaintCell }: Props & { colorMode: "default" | "cands" | "cells" | "links"; onPaintCell: (i: number) => void }) {
 
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
@@ -144,7 +144,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
         })}
       </div>
 
-      {step?.links && step.links.length > 0 && (
+      {colorMode === "links" && step?.links && step.links.length > 0 && (
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-20"
           viewBox="0 0 100 100" preserveAspectRatio="none">
           {step.links

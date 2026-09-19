@@ -1,7 +1,7 @@
 "use client";
 const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2",
   "86E8D0","CEFBED","86F280","D7FFD7","33CCFF","FFFF00"];
-export type ColorMode = "default" | "cands" | "cells";
+export type ColorMode = "default" | "cands" | "cells" | "links";
 interface Props {
   active: number | null;
   second: number;
@@ -57,6 +57,10 @@ export default function ColorPalette(p: Props) {
             <input type="radio" name="cmode" className="w-3.5 h-3.5 accent-black"
               checked={p.mode === "cells"} onChange={() => p.onMode("cells")} />
             Color Cells</label>
+          <label className="flex items-center gap-1.5">
+            <input type="radio" name="cmode" className="w-3.5 h-3.5 accent-black"
+              checked={p.mode === "links"} onChange={() => p.onMode("links")} />
+            Draw Links</label>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-px w-fit bg-[#808080] border border-[#808080]">
