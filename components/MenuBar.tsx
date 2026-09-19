@@ -8,6 +8,7 @@ import { REDO_PNG } from "../lib/redoPng";
 const LEVELS: Level[] = ["Extremely Easy", "Very Easy", "Modestly Easy", "Easy", "Moderate", "Tough", "Challenging", "Irritating", "Frustrating", "Hard", "Demanding", "Expert", "Brutal", "Nightmare"];
 
 interface Props {
+  idle?: boolean;
   level: Level;
   dead: boolean[];
   onNew: (l: Level) => void; onRestart: () => void; onImport: () => void; onExport: () => void;
@@ -99,7 +100,7 @@ export default function MenuBar(p: Props) {
         <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
         <select
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
-          value={chosen}
+          value={p.idle ? "" : chosen}
           onChange={(e) => setChosen(e.target.value as Level)}>
           <option value="" disabled>— choose difficulty —</option>
           {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}

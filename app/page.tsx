@@ -333,7 +333,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen lg:h-screen bg-[#F2F2F2] text-slate-900 flex flex-col lg:overflow-hidden">
-      <MenuBar level={level} onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
+      <MenuBar idle={isIdle} level={level} onNew={newPuzzle} onRestart={restart} onImport={importPuzzle} onExport={exportPuzzle}
         onUndo={undo} onRedo={redo} canUndo={history.length > 0} canRedo={future.length > 0} onCheck={check} onAutoSolve={autoSolve}
         onHelp={() => setMsg(`Implemented: ${TECHNIQUE_NAMES.join(", ")}`)}
         showCands={showCands} setShowCands={setShowCands}
