@@ -45,7 +45,7 @@ export default function ProjectionPanel({ game, step, view, onPick }: {
             <div key={a} className={"grid grid-cols-9" + (a % 3 === 0 && a > 0 ? " border-t-2 border-t-black" : "")}>
               {[1,2,3,4,5,6,7,8,9].map(d => (
                 <div key={d}
-                  className={"h-10 grid grid-cols-3 grid-rows-3 p-0.5 border border-[#c9ced6]" + (d % 3 === 1 && d > 1 ? " border-l-2 border-l-black" : "")}>
+                  className={"h-14 grid grid-cols-3 grid-rows-3 p-0.5 border border-[#c9ced6]" + (d % 3 === 1 && d > 1 ? " border-l-2 border-l-black" : "")}>
                   {[0,1,2,3,4,5,6,7,8].map(sl => {
                     const cell = cellAt(a, sl);
                     const on = (game.cands[cell] & candMask(d)) !== 0;
