@@ -348,7 +348,7 @@ export default function Home() {
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
-          <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
+          <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-auto">
           <div className="flex gap-1 justify-center">
             {(["RC", "CN", "BN"] as const).map(v => (
               <button key={v} onClick={() => setView(v)}

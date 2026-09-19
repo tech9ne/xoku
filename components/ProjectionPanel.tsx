@@ -14,44 +14,50 @@ export default function ProjectionPanel({ game, step, view, onPick }: {
     view === "CN" ? slot * 9 + a : boxCell(a, slot);
   const rowLabel = (a: number) => (view === "CN" ? "C" : "B") + (a + 1);
   return (
-    <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto">
-      <div className="flex gap-1">
-        <span className="w-6" />
+    <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
+      <div className="flex">
+        <span className="w-7" />
         <div className="flex-1 text-center text-[10px] tracking-wider text-slate-500">
           DIGITS
         </div>
       </div>
-      <div className="flex gap-1">
-        <span className="w-6" />
+      <div className="flex">
+        <span className="w-7" />
         <div className="flex-1 grid grid-cols-9 text-xs text-slate-500 font-mono">
           {[1,2,3,4,5,6,7,8,9].map(d => (
             <span key={d} className="text-center">{d}</span>
           ))}
         </div>
       </div>
-      <div className="flex gap-1 mt-1">
-        <div className="grid grid-rows-9 w-6 text-xs text-slate-500 font-mono">
+      <div className="flex items-stretch">
+        <div className="grid grid-rows-9 w-7 text-xs text-slate-500 font-mono">
           {[0,1,2,3,4,5,6,7,8].map(a => (
             <span key={a} className="flex items-center justify-center">
               {rowLabel(a)}
             </span>
           ))}
         </div>
-        <div className="flex-1 grid grid-rows-9 gap-px bg-[#989898] border-2 border-black">
+        <div className="flex-1 grid grid-rows-9 border-2 border-black bg-white">
           {[0,1,2,3,4,5,6,7,8].map(a => (
-            <div key={a} className="grid grid-cols-9 gap-px">
+            <div key={a} className={"grid grid-cols-9" + (a % 3 === 0 && a > 0 ? " border-t-2 border-t-black" : "")}>
               {[1,2,3,4,5,6,7,8,9].map(d => (
-                <div key={d} className="bg-white grid grid-cols-3 grid-rows-3">
+                <div key={d}
+                  className={"grid grid-cols-3 grid-rows-3 p-0.5" + (d % 3 === 1 && d > 1 ? " border-l-2 border-l-black" : "")}>
                   {[0,1,2,3,4,5,6,7,8].map(sl => {
                     const cell = cellAt(a, sl);
                     const on = (game.cands[cell] & candMask(d)) !== 0;
                     const key = cell * 10 + d;
-                    const col = pat.has(key) ? "bg-[#86F280]"
-                      : elim.has(key) ? "bg-[#F7A5A7]" : "";
+                    const hi = pat.has(key) ? "bg-[#86F280] text-black"
+                      : elim.has(key) ? "bg-[#F7A5A7] text-black"
+                      : "bg-[#D6E4F5] text-[#1a5276]";
                     return (
                       <button key={sl} onClick={() => { if (on) onPick(cell); }}
-                        className={"text-[9px] leading-3 " + col}>
-                        {on ? sl + 1 : ""}
+                        className="flex items-center justify-center">
+                        {on ? (
+                          <span className={"text-[8px] leading-3 px-0.5 rounded-[2px] " + hi}>
+                            {sl + 1}
+                          </span>
+                        ) : null}
                       </button>
                     );
                   })}
