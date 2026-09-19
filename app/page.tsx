@@ -347,20 +347,39 @@ export default function Home() {
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
-          <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] gap-1 items-start">
-            <div />
-            <div className="grid grid-cols-9 text-xs text-slate-500 font-mono">
+          <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
+          <div className="flex gap-1">
+            <span
+              className="text-[10px] opacity-0"
+              style={{ writingMode: "vertical-rl" }}>
+              ROWS
+            </span>
+            <span className="w-4" />
+            <div className="flex-1 flex flex-col items-center gap-0.5">
+              <span className="text-[10px] tracking-wider text-slate-500">COL</span>
+              <div className="grid grid-cols-9 w-full text-xs text-slate-500 font-mono">
+                {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="text-center">{n}</span>)}
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-1 items-stretch">
+            <span
+              className="self-center text-[10px] tracking-wider text-slate-500"
+              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
+              ROWS
+            </span>
+            <div className="grid grid-rows-9 w-4 text-xs text-slate-500 font-mono">
               {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="flex items-center justify-center">{n}</span>)}
             </div>
-            <div className="grid grid-rows-9 text-xs text-slate-500 font-mono">
-              {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="flex items-center justify-center">{n}</span>)}
-            </div>
-            <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
+            <div className="flex-1">
+              <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={coloringVisible ? manualColors : new Map()} brush={activeColor} onPaintCand={paintCand}
           onSelect={setSel} onCandClick={toggleCand} colorMode={colorMode}
           onPaintCell={i => { if (activeColor !== null) setManualColors(m => new Map(m).set(i, activeColor)); }} />
+            </div>
           </div>
+        </div>
 
           </div>
         </div>
