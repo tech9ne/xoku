@@ -49,6 +49,7 @@ export default function Home() {
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
   const [showHintBtns, setShowHintBtns] = useState(true);
   const [showReadout, setShowReadout] = useState(true);
+  const [savepoint, setSavepoint] = useState<null | { v: number[]; c: number[] }>(null);
   const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
   const [viewOpen, setViewOpen] = useState(false);
   const caret = (
@@ -301,6 +302,25 @@ export default function Home() {
     navigator.clipboard?.writeText(rows.join("\n"));
     setMsg("Copied 729 candidate grid");
   };
+  const resetCands = () => {
+    if (!game) return;
+    startGame([...game.values], game.solution, "Candidates reset");
+  };
+  const createSavepoint = () => {
+    if (!game) return;
+    setSavepoint({ v: [...game.values], c: [...game.cands] });
+    setMsg("Savepoint created");
+  };
+  const restoreSavepoint = () => {
+    if (!game || !savepoint) { setMsg("No savepoint stored"); return; }
+    setGame({ ...game, values: [...savepoint.v], cands: [...savepoint.c] });
+    setMsg("Savepoint restored");
+  };
+  const solutionCount = () => {
+    if (!game) return;
+    const n = countSolutions([...game.values], 2);
+    setMsg(n === 1 ? "Solution count: 1 (unique)" : "Solution count: 2 or more");
+  };
 
   const importPuzzle = () => {
     const raw = window.prompt("Paste an 81-character puzzle (digits and . for empty):");
@@ -381,7 +401,7 @@ export default function Home() {
         digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
         onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
-        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} hintMode={hintMode} hasHint={!!hint} />
+        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} onResetCands={resetCands} onSavepoint={createSavepoint} onRestoreSavepoint={restoreSavepoint} onSolutionCount={solutionCount} hintMode={hintMode} hasHint={!!hint} />
 
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}

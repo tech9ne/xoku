@@ -20,6 +20,8 @@ interface Props {
   showHintBtns: boolean; onToggleHintBtns: () => void;
   showReadout: boolean; onToggleReadout: () => void;
   onCopy729: () => void;
+  onResetCands: () => void; onSavepoint: () => void;
+  onRestoreSavepoint: () => void; onSolutionCount: () => void;
   showCands: boolean; setShowCands: (v: boolean) => void;
   digitFilter: number | "xy" | null;
   onDigitFilter: (f: number | "xy" | null) => void;
@@ -61,7 +63,14 @@ export default function MenuBar(p: Props) {
     ],
     Mode: [["Solve (active)", () => {}], ["Practice (soon)", () => {}], ["Edit (soon)", () => {}]],
     Options: [toggleCands],
-    Puzzle: [["Check", p.onCheck], ["Auto solve", p.onAutoSolve]],
+    Puzzle: [
+      ["Check", p.onCheck],
+      ["Auto solve", p.onAutoSolve],
+      ["Reset candidates", p.onResetCands],
+      ["Solution count", p.onSolutionCount],
+      ["Create savepoint", p.onSavepoint],
+      ["Restore savepoint", p.onRestoreSavepoint],
+    ],
     View: [
       toggleCands,
       [p.showHintBtns ? "Hide hint buttons" : "Show hint buttons", p.onToggleHintBtns],
