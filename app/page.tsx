@@ -52,10 +52,9 @@ export default function Home() {
   const caret = (
     <div className="relative w-14 shrink-0">
       <button onClick={() => setViewOpen(o => !o)}
-        className="w-full h-7 rounded-md bg-[#1f6feb] text-white text-xs font-extrabold flex items-center justify-center gap-1">
-        {view}
+        className={"w-full h-7 rounded-md flex items-center justify-center group " + (viewOpen ? "bg-[#1f6feb]" : "hover:bg-[#1f6feb]")}>
         <svg viewBox="0 0 10 6"
-          className={"w-2.5 h-2 fill-white transition-transform " + (viewOpen ? "rotate-180" : "")}>
+          className={"w-3 h-2 transition-transform " + (viewOpen ? "rotate-180 fill-white" : "fill-black group-hover:fill-white")}>
           <path d="M0 0 L5 6 L10 0 Z" />
         </svg>
       </button>
@@ -377,18 +376,21 @@ export default function Home() {
           {view === "RC" ? (
             <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
           <div className="flex gap-1">
+            <span className="w-14 shrink-0" />
+            <div className="flex-1 text-center text-[10px] font-black tracking-wider text-[#111827]">
+              COL
+            </div>
+          </div>
+          <div className="flex gap-1">
             {caret}
-            <div className="flex-1 flex flex-col items-center gap-0.5">
-              <span className="text-[10px] tracking-wider text-slate-500">COL</span>
-              <div className="grid grid-cols-9 w-full text-xs text-slate-500 font-mono">
-                {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="text-center">{n}</span>)}
-              </div>
+            <div className="flex-1 grid grid-cols-9 text-xs text-slate-500 font-mono">
+              {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="text-center">{n}</span>)}
             </div>
           </div>
           <div className="flex gap-1 items-stretch">
             <div className="w-14 flex items-stretch">
             <span
-              className="self-center text-[10px] tracking-wider text-slate-500"
+              className="self-center text-[10px] font-black tracking-wider text-[#111827]"
               style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
               ROWS
             </span>
