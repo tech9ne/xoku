@@ -755,6 +755,17 @@ for (let a = 0; a < 81; a++) for (const p of PEERS[a]) PEER2[a * 81 + p] = 1;
 const fastPeers = (a: number, b: number) => PEER2[a * 81 + b] === 1;
 
 interface Als { cells: number[]; mask: number; byDigit: number[][]; }
+interface AlsRcc {
+  A: Als;
+  B: Als;
+  x: number; // RCC
+  z: number; // Z candidate
+  lsA: number[]; // cells in A that form the locked set when x is false
+  lsB: number[]; // cells in B that form the locked set when x is false
+  cSubset: number[]; // cells common to both lsA and lsB
+  zRestr: boolean; // is z also restricted?
+  elims: Elimination[];
+}
 
 function restrictedCommon(A: Als, B: Als, d: number): boolean {
   return A.byDigit[d].every(a => B.byDigit[d].every(b => fastPeers(a, b)));
@@ -825,6 +836,11 @@ export const alsXZ: Finder = (g) => {
           const elims = [...targets(z), ...(zRestr ? targets(x) : [])];
           if (!elims.length) continue;
           const patternCells = [...A.cells, ...B.cells];
+          // Build the full ALS_RCC record (for chain integration)
+          const lsA = A.cells.filter(c => g.cands[c] & candMask(z));
+          const lsB = B.cells.filter(c => g.cands[c] & candMask(z));
+          const cSubset = lsA.filter(c => lsB.includes(c));
+          const rccRecord: AlsRcc = { A, B, x, z, lsA, lsB, cSubset, zRestr, elims };
           return mk({
             technique: zRestr ? "ALS-XZ (doubly linked)" : "ALS-XZ",
             category: "ALS", score: 7.0,
@@ -847,6 +863,77 @@ export const alsXZ: Finder = (g) => {
   return null;
 };
 
+// ---------- AHS-XZ (Almost Hidden Set, dual of ALS) ----------
+// An AHS is a group of N digits in one unit whose placement states total N+1.
+// A placement state is a cell or a grouped set of cells for one digit.
+// AHS-XZ: two disjoint AHSs A and B with common placement state X (restricted),
+// and common placement state Z. Either X is true in A or in B, locking the
+// other and forcing Z. Z can be removed from cells that see all Z placements
+// in both AHSs.
+export const ahsXZ: Finder = (g) => {
+  const empt = emptyCells(g);
+  if (empt.length < 4) return null;
+  // Enumerate AHSs: for each unit and digit, collect cells where that digit
+  // is a candidate. If |cells| = |digits_in_cells| + 1, it's an AHS.
+  interface Ahs { cells: number[]; digits: number[]; unit: number; }
+  const ahsList: Ahs[] = [];
+  for (let u = 0; u < 27; u++) {
+    const cells = UNITS[u].filter(i => g.values[i] === 0);
+    for (let sub = 1; sub < (1 << cells.length); sub++) {
+      const set = cells.filter((_, k) => sub & (1 << k));
+      let mask = 0;
+      for (const c of set) mask |= g.cands[c];
+      const digits = candsOf(mask);
+      if (digits.length === set.length + 1) {
+        ahsList.push({ cells: set, digits, unit: u });
+      }
+    }
+  }
+  if (ahsList.length < 2) return null;
+  // Look for two AHSs with a restricted common placement state
+  for (let i = 0; i < ahsList.length; i++) {
+    const A = ahsList[i];
+    for (let j = i + 1; j < ahsList.length; j++) {
+      const B = ahsList[j];
+      if (A.unit === B.unit) continue; // must be in different units
+      const common = A.digits.filter(d => B.digits.includes(d));
+      if (common.length < 2) continue;
+      // Check if one common digit is restricted (all placements in A see all in B)
+      for (const x of common) {
+        const xA = A.cells.filter(c => g.cands[c] & candMask(x));
+        const xB = B.cells.filter(c => g.cands[c] & candMask(x));
+        const xRestr = xA.every(a => xB.every(b => fastPeers(a, b)));
+        if (!xRestr) continue;
+        // Find a second common digit z
+        for (const z of common) {
+          if (z === x) continue;
+          const zA = A.cells.filter(c => g.cands[c] & candMask(z));
+          const zB = B.cells.filter(c => g.cands[c] & candMask(z));
+          // Eliminate z from cells seeing all z placements in both AHSs
+          const elims = empt
+            .filter(t => zA.every(a => fastPeers(t, a)) && zB.every(b => fastPeers(t, b)))
+            .map(t => ({ cell: t, cand: z }));
+          if (!elims.length) continue;
+          const patternCells = [...A.cells, ...B.cells];
+          return mk({
+            technique: "AHS-XZ",
+            category: "ALS", score: 7.0,
+            candColors: [
+              ...zB.map(c => ({ cell: c, cand: z, color: 0 })),
+              ...xB.map(c => ({ cell: c, cand: x, color: 1 })),
+              ...xA.map(c => ({ cell: c, cand: x, color: 0 })),
+              ...zA.map(c => ({ cell: c, cand: z, color: 1 })),
+            ],
+            reason: `AHS ${A.cells.map(cellName).join("+")} (digits ${A.digits.join("")}) and AHS ${B.cells.map(cellName).join("+")} (digits ${B.digits.join("")}) share restricted placement state ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets.`,
+            eliminations: elims, patternCells,
+            patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+          });
+        }
+      }
+    }
+  }
+  return null;
+};
 // ---------- Unique Rectangle Types 2, 3, 4, 5 (XR 3.4 - 3.7) ----------
 // Shared geometry: four cells on two rows and two columns spanning exactly
 // two boxes. If all four took values only from the pair {x,y} the pattern is
@@ -1681,6 +1768,7 @@ export const FINDERS: Finder[] = [
   aicType1,                // XR 6.2
   aicType2,                // XR 6.4  (same-cell and cross endings)
   alsXZ,
+  ahsXZ,
   sueDeCoq,                   // XR 7.0
   alsXYWing,               // XR 7.2
   alsChain,                // XR 7.4
