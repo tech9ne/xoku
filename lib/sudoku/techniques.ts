@@ -1,3 +1,4 @@
+import { matchRule, NodeKind, WeakKind, LinkType } from './naming-table';
 import { nodeStr, setNodeStr, bivStr, conclusionStr } from "./notation";
 import { chainLens } from "./chain-engine";
 import {
@@ -235,6 +236,14 @@ function strongLinks(g: Game, d: number): [number, number, number][] {
   return links;
 }
 
+function getScoreForLevel(technique: string): number {
+  const scores: Record<string, number> = {
+    "Skyscraper": 2.6, "2-String Kite": 2.6, "Empty Rectangle": 2.6,
+    "X-Wing": 2.0, "X-Chain": 5.0
+  };
+  return scores[technique] ?? 5.0;
+}
+
 export const singleDigitChains: Finder = (g) => {
   for (const d of ALL_DIGITS) {
     const links = strongLinks(g, d);
@@ -248,15 +257,18 @@ export const singleDigitChains: Finder = (g) => {
             .filter(i => g.values[i] === 0 && g.cands[i] & candMask(d))
             .map((i): Elimination => ({ cell: i, cand: d }));
           if (!elims.length) continue;
-          const tA = unitType(ua), tB = unitType(ub);
-          const weak = UNITS_OF[x].filter(u => UNITS_OF[y].includes(u)).map(unitType);
-          let technique: string | null = null, score = 0;
-          if (tA === tB && (tA === "row" || tA === "col") && weak.includes(tA === "row" ? "col" : "row")) {
-            technique = "Skyscraper"; score = 3.8;
-          } else if (tA !== tB && tA !== "box" && tB !== "box" && weak.includes("box")) {
-            technique = "2-String Kite"; score = 4.0;
-          }
-          if (!technique) continue;
+          
+          // Tag with V/L and LinkType
+          const nodes: NodeKind[] = ['L', 'L'];
+          const weaks: WeakKind[] = ['s'];
+          const linkTypes: LinkType[] = [
+            arePeers(a1, a2) ? 0 : 1,
+            arePeers(b1, b2) ? 0 : 1
+          ];
+          const rule = matchRule(nodes, weaks, linkTypes, false);
+          const technique = rule?.name ?? "X-Chain";
+          const score = rule ? getScoreForLevel(technique) : 5.0;
+          
           return mk({
             technique, category: "Single Digit Chain", score,
             candColors: [fx, x, y, fy].map((c, k) => ({ cell: c, cand: d, color: k % 2 })),
@@ -271,9 +283,6 @@ export const singleDigitChains: Finder = (g) => {
   }
   return null;
 };
-
-
-// ---------- Remote Pairs ----------
 export const remotePairs: Finder = (g) => {
   const bi = emptyCells(g).filter(i => countCands(g.cands[i]) === 2);
   const biSet = new Set(bi);
