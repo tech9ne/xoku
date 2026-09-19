@@ -132,7 +132,7 @@ export function makeNakedSubset(n: 2 | 3 | 4): Finder {
         if (!elims.length) continue;
         return mk({
           technique: `Naked ${SUBSET_NAMES[n]}`, category: "Subset",
-          score: [0, 0, 2.0, 2.5, 2.9][n],
+          score: [0, 0, 2.0, 3.0, 4.0][n],
           reason: `${combo.map(cellName).join(", ")} in ${unitName(u)} contain only ${digits.join("/")} — remove those from the other cells of ${unitName(u)}.`,
           eliminations: elims, patternCells: combo,
           patternCands: combo.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
@@ -165,7 +165,7 @@ export function makeHiddenSubset(n: 2 | 3 | 4): Finder {
         if (!elims.length) continue;
         return mk({
           technique: `Hidden ${SUBSET_NAMES[n]}`, category: "Subset",
-          score: [0, 0, 2.1, 2.7, 3.0][n],
+          score: [0, 0, 2.0, 3.0, 4.0][n],
           reason: `In ${unitName(u)}, ${combo.join("/")} occur only in ${[...cellSet].map(cellName).join(", ")} — remove all other candidates from those cells.`,
           eliminations: elims, patternCells: [...cellSet],
           patternCands: [...cellSet].flatMap(i => candsOf(g.cands[i] & mask).map(d => ({ cell: i, cand: d }))),
@@ -212,7 +212,7 @@ export function makeBasicFish(n: 2 | 3 | 4): Finder {
           for (const l of baseLines) for (const p of posInLine[l])
             patternCells.push(useRows ? l * 9 + p : p * 9 + l);
           return mk({
-            technique: FISH_NAMES[n], category: "Fish", score: [0, 0, 3.0, 5.0, 5.4][n],
+            technique: FISH_NAMES[n], category: "Fish", score: [0, 0, 2.0, 3.0, 4.0][n],
             reason: `${FISH_NAMES[n]} on ${d}: base ${useRows ? "rows" : "columns"} ${baseLines.map(x => x + 1).join("/")} cover ${useRows ? "columns" : "rows"} ${[...covers].map(x => x + 1).join("/")} — remove ${d} from those ${useRows ? "columns" : "rows"} outside the base lines.`,
             eliminations: elims, patternCells,
             patternCands: patternCells.map(c => ({ cell: c, cand: d })),
@@ -628,7 +628,7 @@ function findBug(g: Game, n: number): Step | null {
     .map(i => ({ cell: i, cand: d }));
   if (!elims.length) return null;
   return mk({
-    technique: `BUG+${n}`, category: "Uniqueness", score: n === 2 ? 5.0 : 5.2,
+    technique: `BUG+${n}`, category: "Uniqueness", score: 3.5,
     reason: `The grid is ${n} candidates away from a BUG: at least one of ${tri.map(cellName).join(", ")} must be ${d}, so ${d} can be removed from cells seeing all of them.`,
     eliminations: elims, patternCells: tri,
     patternCands: tri.map(A => ({ cell: A, cand: d })),
@@ -782,7 +782,7 @@ export const urType2: Finder = (g) => {
         if (!elims.length) continue;
         return mk({
           technique: sameLine ? "Unique Rectangle Type 2" : "Unique Rectangle Type 5",
-          category: "Uniqueness", score: sameLine ? 3.4 : 3.5,
+          category: "Uniqueness", score: 3.5,
           reason: `${cellName(rest[0])} and ${cellName(rest[1])} are ${x}/${y}/${z} while the other two cells of the rectangle are ${x}/${y} only — if neither were ${z} the rectangle would allow two solutions, so at least one is ${z}; remove ${z} from cells seeing both.`,
           eliminations: elims, patternCells: cells,
           patternCands: cells.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
