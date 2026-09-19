@@ -310,7 +310,7 @@ export const remotePairs: Finder = (g) => {
       for (let c = end; c !== start; c = parent.get(c)!) chain.unshift(c);
       chain.unshift(start);
       return mk({
-        technique: "Remote Pair", category: "Chain", score: 2.6,
+        technique: "Remote Pair", category: "Chain", score: 5.0,
         reason: `Remote Pair: ${chain.map((c, k) => bivStr(k % 2 === 0 ? p : q, k % 2 === 0 ? q : p, c)).join(" - ")} => ${conclusionStr(elims)}.`,
         eliminations: elims, patternCells: chain,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
@@ -407,7 +407,7 @@ export const wWing: Finder = (g) => {
           : [];
         if (!elims.length) continue;
         return mk({
-          technique: "W-Wing", category: "Wing", score: 5.0,
+          technique: "W-Wing", category: "Wing", score: 6.0,
           candColors: (() => {
             const o1 = arePeers(s1, A) && arePeers(s2, B);
             const t1 = o1 ? s1 : s2;
@@ -932,7 +932,7 @@ export const bugLite: Finder = (g) => {
             const w = extras[0];
             const z = candsOf(g.cands[w] & ~pairMask)[0];
             return mk({
-              technique: "BUG Lite (single extra)", category: "Uniqueness", score: 2.6,
+              technique: "BUG Lite (single extra)", category: "Uniqueness", score: 3.5,
               reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so ${cellName(w)} must break the pattern: it is ${z}.`,
               placements: [{ cell: w, value: z }],
               patternCells: S,
@@ -948,7 +948,7 @@ export const bugLite: Finder = (g) => {
               .map(i => ({ cell: i, cand: z }));
             if (elims.length) {
               return mk({
-                technique: "BUG Lite (two extras)", category: "Uniqueness", score: 2.6,
+                technique: "BUG Lite (two extras)", category: "Uniqueness", score: 3.5,
                 reason: `${S.length} cells (${S.map(cellName).join(", ")}) all contain ${x}/${y} and every house holds exactly two of them. If all were ${x}/${y}-only the set could be swapped for a second solution — so at least one of ${cellName(extras[0])}, ${cellName(extras[1])} is ${z}, which is removed from cells seeing both.`,
                 eliminations: elims, patternCells: S,
                 patternCands: S.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
@@ -1066,7 +1066,7 @@ export const alsXYWing: Finder = (g) => {
           if (!elims.length) continue;
           const patternCells = [...A.cells, ...B.cells, ...C.cells];
           return mk({
-            technique: "ALS-XY-Wing", category: "ALS", score: 7.0,
+            technique: "ALS-XY-Wing", category: "ALS", score: 8.0,
             candColors: [
             ...ccOf(g, B.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
             ...ccOf(g, B.cells, X).map(c => ({ cell: c, cand: X, color: 1 })),
@@ -1195,7 +1195,7 @@ export const deathBlossom: Finder = (g) => {
         if (!elims.length) continue;
         const patternCells = [S, ...A.cells, ...B.cells];
         return mk({
-          technique: "Death Blossom", category: "ALS", score: 8.0,
+          technique: "Death Blossom", category: "ALS", score: 9.0,
           candColors: [
             ...ccOf(g, A.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
             ...ccOf(g, A.cells, x).map(c => ({ cell: c, cand: x, color: 1 })),
@@ -1325,7 +1325,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               .map(t => ({ cell: t, cand: d }));
             if (elims.length) {
               return mk({
-                technique: "X-Chain", category: "Single Digit Chain", score: 5.8,
+                technique: "X-Chain", category: "Single Digit Chain", score: 5.0,
                 candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                 links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `X-Chain: ${chainStr(path)} => ${conclusionStr(elims)}.`,
