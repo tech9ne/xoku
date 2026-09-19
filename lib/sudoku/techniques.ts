@@ -224,6 +224,62 @@ export function makeBasicFish(n: 2 | 3 | 4): Finder {
   };
 }
 
+export function makeFinnedFish(n: 2 | 3 | 4): Finder {
+  return (g) => {
+    for (const d of ALL_DIGITS) {
+      for (const useRows of [true, false]) {
+        const posInLine: number[][] = [];
+        for (let l = 0; l < 9; l++) {
+          const ps: number[] = [];
+          for (let x = 0; x < 9; x++) {
+            const cell = useRows ? l * 9 + x : x * 9 + l;
+            if (g.values[cell] === 0 && g.cands[cell] & candMask(d)) ps.push(x);
+          }
+          posInLine.push(ps);
+        }
+        for (const baseLines of combinations([0, 1, 2, 3, 4, 5, 6, 7, 8], n)) {
+          const allPos = [...new Set(baseLines.flatMap(l => posInLine[l]))].sort((a, b) => a - b);
+          const extra = allPos.length - n;
+          if (extra < 1 || extra > 2) continue;
+          for (const coverSubset of combinations(allPos, n)) {
+            const covers = new Set(coverSubset);
+            const finCols = allPos.filter(p => !covers.has(p));
+            const fins: number[] = [];
+            for (const l of baseLines) for (const p of posInLine[l])
+              if (finCols.includes(p)) fins.push(useRows ? l * 9 + p : p * 9 + l);
+            if (!fins.length || fins.length > 2) continue;
+            let degenerate = false, emptyBody = false;
+            for (const l of baseLines) {
+              const inCover = posInLine[l].filter(p => covers.has(p)).length;
+              if (inCover === 0) { emptyBody = true; break; }
+              if (inCover < 2) degenerate = true;
+            }
+            if (emptyBody) continue;
+            const elims: Elimination[] = [];
+            for (const cv of coverSubset) for (let l = 0; l < 9; l++) {
+              if (baseLines.includes(l)) continue;
+              const cell = useRows ? l * 9 + cv : cv * 9 + l;
+              if (g.values[cell] !== 0 || !(g.cands[cell] & candMask(d))) continue;
+              if (fins.every(f => fastPeers(cell, f))) elims.push({ cell, cand: d });
+            }
+            if (!elims.length) continue;
+            const technique = `${degenerate ? "Sashimi" : "Finned"} ${FISH_NAMES[n]}`;
+            const score = n === 2 ? 2.6 : n === 3 ? 3.5 : 4.5;
+            const patternCells = [...new Set(baseLines.flatMap(l => posInLine[l].map(p => useRows ? l * 9 + p : p * 9 + l)))];
+            return mk({
+              technique, category: "Fish", score,
+              reason: `${technique} on ${d}: base ${useRows ? "rows" : "columns"} ${baseLines.map(x => x + 1).join("/")} cover ${useRows ? "columns" : "rows"} ${coverSubset.map(x => x + 1).join("/")} with fin(s) ${fins.map(cellName).join("+")} — cover candidates outside the base that see every fin are removed.`,
+              eliminations: elims, patternCells,
+              patternCands: patternCells.map(c => ({ cell: c, cand: d })),
+              candColors: fins.map(f => ({ cell: f, cand: d, color: 1 })),
+            });
+          }
+        }
+      }
+    }
+    return null;
+  };
+}
 // ---------- Skyscraper / 2-String Kite / Turbot Fish ----------
 const unitType = (u: number) => (u < 9 ? "row" : u < 18 ? "col" : "box");
 
@@ -1529,7 +1585,8 @@ export const FINDERS: Finder[] = [
   makeHiddenSubset(3),     // XR 2.7
   makeNakedSubset(4),      // XR 2.9
   makeHiddenSubset(4),     // XR 3.0
-  makeBasicFish(2),        // XR 3.0  X-Wing
+  makeBasicFish(2),
+  makeFinnedFish(2),        // XR 3.0  X-Wing
   bugPlus1,                // XR 3.2  BUG+1
   uniqueRectangle1,        // XR 3.3  UR Type 1
   urType2,                 // XR 3.4 / 3.5  UR Types 2 and 5
@@ -1541,10 +1598,12 @@ export const FINDERS: Finder[] = [
   xyWing,                  // XR 4.6
   xyzWing,                 // XR 4.8
   bugPlus2,                // XR 5.0
-  makeBasicFish(3),        // XR 5.0  Swordfish
+  makeBasicFish(3),
+  makeFinnedFish(3),        // XR 5.0  Swordfish
   wWing,                   // XR 5.2
   bugPlus3,                // XR 5.2
-  makeBasicFish(4),        // XR 5.4  Jellyfish
+  makeBasicFish(4),
+  makeFinnedFish(4),        // XR 5.4  Jellyfish
   xChain,                  // XR 5.8
   xyChain,                 // XR 6.0
   aicType1,                // XR 6.2
