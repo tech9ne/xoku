@@ -124,10 +124,9 @@ const XR_BAND: Record<Level, { min: number; max: number } | null> = {
 
 export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): Level {
   if (!r.solvedByLogic) return "Nightmare";
-  if (r.hardest < 2.0) return "Easy";
-  if (r.hardest < 5.0) return "Moderate";
-  if (r.hardest < 7.0) return "Hard";
-  if (r.hardest < 8.5) return "Brutal";
+  for (const [lvl, band] of Object.entries(XR_BAND) as [Level, { min: number; max: number } | null][]) {
+    if (band && r.hardest >= band.min && r.hardest < band.max) return lvl;
+  }
   return "Nightmare";
 }
 

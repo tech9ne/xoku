@@ -486,6 +486,41 @@ export const xyChain: Finder = (g) => {
         if (--budget < 0) return null;
         const { cell, out, path } = stack.pop()!;
         for (const j of PEERS[cell]) {
+          if (j === start && path.length >= 4 && (g.cands[j] & candMask(out))) {
+            const w = candsOf(g.cands[j]).find(dd => dd !== out && candsOf(g.cands[start]).includes(dd));
+            if (w !== undefined) {
+              const ringCells = [...path, j];
+              const inRing = new Set(ringCells);
+              const elims: Elimination[] = [];
+              const weakPairs: [number, number, number][] = [];
+              let incoming = z;
+              for (let k = 0; k + 1 < ringCells.length; k++) {
+                const aa = ringCells[k], bb = ringCells[k + 1];
+                const outgoing = candsOf(g.cands[aa] & g.cands[bb]).find(x => x !== incoming)!;
+                weakPairs.push([aa, bb, outgoing]);
+                incoming = outgoing;
+              }
+              weakPairs.push([j, start, w]);
+              for (const [aa, bb, dd] of weakPairs) {
+                for (const i of commonPeers(aa, bb)) {
+                  if (inRing.has(i)) continue;
+                  if (g.values[i] === 0 && g.cands[i] & candMask(dd)) elims.push({ cell: i, cand: dd });
+                }
+              }
+              if (elims.length) {
+                const samePair = ringCells.every(c => g.cands[c] === g.cands[start]);
+                const technique = samePair ? "Remote Pair - ring" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
+                return mk({
+                  technique, category: "Chain", score: 5.5,
+                  candColors: ringCells.flatMap((c, k) => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: k % 2 }))),
+                  links: weakPairs.map(([aa, bb, dd]) => ({ from: { cell: aa, cand: dd }, to: { cell: bb, cand: dd }, strong: false })),
+                  reason: `${technique}: closed XY loop of ${ringCells.length} cells => ${conclusionStr(elims)}.`,
+                  eliminations: elims, patternCells: ringCells,
+                  patternCands: ringCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+                });
+              }
+            }
+          }
           if (!biSet.has(j) || path.includes(j)) continue;
           if (!(g.cands[j] & candMask(out))) continue;
           const other = candsOf(g.cands[j]).find(d => d !== out)!;
