@@ -520,7 +520,7 @@ export const uniqueRectangle1: Finder = (g) => {
         const [x, y] = candsOf(m);
         const elims = [x, y].filter(d => dm & candMask(d)).map(d => ({ cell: dIdx, cand: d }));
         return mk({
-          technique: "Uniqueness Test 1", category: "Uniqueness", score: 3.5,
+          technique: "Avoidable Rectangle (Type 1)", category: "Uniqueness", score: 3.5,
           reason: `If ${cellName(dIdx)} were ${x} or ${y}, the rectangle r${r1 + 1}/r${r2 + 1}c${c1 + 1}/c${c2 + 1} would allow two solutions — remove ${x} and ${y} from ${cellName(dIdx)}.`,
           eliminations: elims, patternCells: cells,
           patternCands: others.flatMap(i => [{ cell: i, cand: x }, { cell: i, cand: y }]),
@@ -1346,6 +1346,87 @@ export const alsXYWing: Finder = (g) => {
 // x1; that kills x1 in A2, which locks and places x2; ... until An locks
 // and places Z (Z <> x_{n-1}). So Z must be true in A1 or in An, and Z is
 // removed from cells seeing every Z in both end sets.
+// ---------- WXYZ-Wing (BARNS size 4, 1 RCC) ----------
+// A 4-cell ALS chain with 4 digits {W,X,Y,Z} and 1 restricted common.
+// Structure: hinge cell (3-4 digits) + 3 bivalue wings forming a chain.
+// RCC is restricted between hinge and one wing; eliminations are the
+// other restricted digit from cells seeing all instances in the structure.
+export const wxyzWing: Finder = (g) => {
+  const empt = emptyCells(g);
+  if (empt.length < 4) return null;
+  // Find all bivalue cells
+  const bi = empt.filter(i => countCands(g.cands[i]) === 2);
+  // Find cells with 3-4 candidates (potential hinges)
+  const hinges = empt.filter(i => {
+    const c = countCands(g.cands[i]);
+    return c === 3 || c === 4;
+  });
+  for (const h of hinges) {
+    const hDigits = candsOf(g.cands[h]);
+    if (hDigits.length < 3) continue;
+    // Try all combinations of 3 bivalue wings seeing the hinge
+    for (let i = 0; i < bi.length; i++) {
+      const w1 = bi[i];
+      if (!fastPeers(h, w1)) continue;
+      for (let j = i + 1; j < bi.length; j++) {
+        const w2 = bi[j];
+        if (!fastPeers(w1, w2) || !fastPeers(h, w2)) continue;
+        for (let k = j + 1; k < bi.length; k++) {
+          const w3 = bi[k];
+          if (!fastPeers(w2, w3)) continue;
+          const wings = [w1, w2, w3];
+          const allCells = [h, ...wings];
+          let mask = 0;
+          for (const c of allCells) mask |= g.cands[c];
+          const digits = candsOf(mask);
+          if (digits.length !== 4) continue;
+          // Check if this forms a valid WXYZ-Wing:
+          // - Hinge has 3-4 of the digits
+          // - Each wing is bivalue
+          // - There's a restricted common (RCC) between hinge and w1
+          // - Eliminations are the digit restricted between w2 and w3
+          const hCands = g.cands[h];
+          const w1Cands = g.cands[w1];
+          const w2Cands = g.cands[w2];
+          const w3Cands = g.cands[w3];
+          // Find RCC: digit in both h and w1 that's restricted
+          let rcc = -1;
+          for (const d of candsOf(hCands & w1Cands)) {
+            // Check if d is restricted (all h's d see all w1's d)
+            // Since they're single cells, they see each other if peers
+            if (fastPeers(h, w1)) {
+              rcc = d;
+              break;
+            }
+          }
+          if (rcc === -1) continue;
+          // Find elimination digit: digit in w3 that's not in w2
+          const elimDig = candsOf(w3Cands & ~w2Cands);
+          if (elimDig.length !== 1) continue;
+          const z = elimDig[0];
+          // Eliminate z from cells seeing all z in the structure
+          const zCells = allCells.filter(c => g.cands[c] & candMask(z));
+          const elims = empt
+            .filter(t => zCells.every(zc => fastPeers(t, zc)))
+            .map(t => ({ cell: t, cand: z }));
+          if (!elims.length) continue;
+          return mk({
+            technique: "WXYZ-Wing",
+            category: "Wing", score: 4.5,
+            candColors: allCells.flatMap((c, idx) =>
+              candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: idx }))
+            ),
+            reason: `WXYZ-Wing: hinge ${cellName(h)} (${hDigits.join("")}) with wings ${wings.map(cellName).join(", ")} (${w1Cands}, ${w2Cands}, ${w3Cands}) — restricted common ${rcc} between hinge and first wing forces ${z} to be placed in one of the wings, so ${z} can be removed from cells seeing all ${z} in the structure.`,
+            eliminations: elims,
+            patternCells: allCells,
+            patternCands: allCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+          });
+        }
+      }
+    }
+  }
+  return null;
+};
 export const alsChain: Finder = (g) => {
   const als = enumerateAls(g);
   if (als.length < 3) return null;
@@ -1770,7 +1851,8 @@ export const FINDERS: Finder[] = [
   alsXZ,
   ahsXZ,
   sueDeCoq,                   // XR 7.0
-  alsXYWing,               // XR 7.2
+  alsXYWing,
+  wxyzWing,               // XR 7.2
   alsChain,                // XR 7.4
   deathBlossom,            // XR 7.6
   chainLens,               // Stage 1a: master chain engine (runs last)
