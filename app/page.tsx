@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import MenuBar from "@/components/MenuBar";
+import ProjectionPanel from "@/components/ProjectionPanel";
 import SudokuGrid from "@/components/SudokuGrid";
 import ColorPalette from "@/components/ColorPalette";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
@@ -46,6 +47,7 @@ export default function Home() {
   const [activeColor, setActiveColor] = useState<number | null>(8);
   const [color2, setColor2] = useState(4);
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
+  const [view, setView] = useState<"RC" | "CN" | "BN">("RC");
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
@@ -347,7 +349,16 @@ export default function Home() {
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
-          <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
+          <div className="flex gap-1 justify-center">
+            {(["RC", "CN", "BN"] as const).map(v => (
+              <button key={v} onClick={() => setView(v)}
+                className={"px-2 h-7 text-xs font-semibold border border-[#A0A0A0] " + (view === v ? "bg-[#C8C8C8]" : "bg-[#E8E8E8]")}>
+                {v}
+              </button>
+            ))}
+          </div>
+          {view === "RC" ? (
+            <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
           <div className="flex gap-1">
             <span
               className="text-[10px] opacity-0"
@@ -380,7 +391,11 @@ export default function Home() {
             </div>
           </div>
         </div>
-
+          ) : (
+            <ProjectionPanel game={game}
+              step={hintMode === "concrete" ? hint : null} view={view}
+              onPick={(c) => { setSel(c); setView("RC"); }} />
+          )}
           </div>
         </div>
         {/* RIGHT PANEL — wide like HoDoKu's, sections with real size */}

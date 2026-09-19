@@ -1640,7 +1640,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
         const { cur, path } = stack.pop()!;
         // ---- ring closure: weak inference from cur back to start ----
         // checked before open-chain endings so ring owns the report.
-        if (path.length >= 6 && path.length % 2 === 0) {
+        if (path.length >= 4 && path.length % 2 === 0) {
           const sCell = i, sDig = d;
           const cCell = nodeCell(cur), cDig = nodeDigit(cur);
           const weakBack =
@@ -1662,13 +1662,20 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
                   if (g.values[t] === 0 && g.cands[t] & candMask(sDig)) elims.push({ cell: t, cand: sDig });
                 }
               }
-              if (elims.length) {
+              const seenK = new Set<number>();
+              const uniq = elims.filter(e => {
+                const kk = e.cell * 10 + e.cand;
+                if (seenK.has(kk)) return false;
+                seenK.add(kk);
+                return true;
+              });
+              if (uniq.length) {
                 return mk({
                   technique: "X-Chain - ring", category: "Single Digit Chain", score: 5.5,
                   candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                   links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
-                  reason: `X-Chain - ring: closed loop on digit ${sDig} => ${conclusionStr(elims)}.`,
-                  eliminations: elims,
+                  reason: `X-Chain - ring: closed loop on digit ${sDig} => ${conclusionStr(uniq)}.`,
+                  eliminations: uniq,
                   patternCells: [...new Set(path.map(nodeCell))],
                   patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
                 });
@@ -1676,10 +1683,16 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             } else {
               for (let k = 0; k < ringEdges.length; k++) {
                 const [a, b] = ringEdges[k];
-                if (a === b) continue;
                 const idxInPath = k;
                 const nA = idxInPath < path.length ? nodeDigit(path[idxInPath]) : sDig;
                 const nB = idxInPath + 1 < path.length ? nodeDigit(path[idxInPath + 1]) : cDig;
+                if (a === b) {
+                  for (const q of candsOf(g.cands[a])) {
+                    if (q === nA || q === nB) continue;
+                    elims.push({ cell: a, cand: q });
+                  }
+                  continue;
+                }
                 if (nA === nB) {
                   for (const t of commonPeers(a, b)) {
                     if (ringCells.has(t)) continue;
@@ -1690,14 +1703,21 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
                   if (g.cands[b] & candMask(nA)) elims.push({ cell: b, cand: nA });
                 }
               }
-              if (elims.length) {
+              const seenK = new Set<number>();
+              const uniq = elims.filter(e => {
+                const kk = e.cell * 10 + e.cand;
+                if (seenK.has(kk)) return false;
+                seenK.add(kk);
+                return true;
+              });
+              if (uniq.length) {
                 const techName = mode === "type1" ? "AIC Type 1 - ring" : "AIC Type 2 - ring";
                 return mk({
                   technique: techName, category: "Chain", score: 5.0,
                   candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                   links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
-                  reason: `${techName}: closed loop => ${conclusionStr(elims)}.`,
-                  eliminations: elims,
+                  reason: `${techName}: closed loop => ${conclusionStr(uniq)}.`,
+                  eliminations: uniq,
                   patternCells: [...new Set(path.map(nodeCell))],
                   patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),
                 });
