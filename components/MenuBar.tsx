@@ -21,6 +21,7 @@ interface Props {
   showReadout: boolean; onToggleReadout: () => void;
   onCopy729: () => void;
   onResetCands: () => void; onSavepoint: () => void;
+  wingFilter: number; onWing: (n: number) => void;
   onRestoreSavepoint: () => void; onSolutionCount: () => void;
   showCands: boolean; setShowCands: (v: boolean) => void;
   digitFilter: number | "xy" | null;
@@ -61,7 +62,16 @@ export default function MenuBar(p: Props) {
       ["Copy 81 (values to clipboard)", p.onExport],
       ["Copy 729 (candidates to clipboard)", p.onCopy729],
     ],
-    Mode: [["Solve (active)", () => {}], ["Practice (soon)", () => {}], ["Edit (soon)", () => {}]],
+    Mode: [
+      ["Solve (active)", () => {}],
+      ["Practice (soon)", () => {}],
+      ["Edit (soon)", () => {}],
+      [p.wingFilter === 0 ? "✓ Wing filter: off" : "Wing filter: off", () => p.onWing(0)],
+      [p.wingFilter === 1 ? "✓ Wing filter: X (singles)" : "Wing filter: X (singles)", () => p.onWing(1)],
+      [p.wingFilter === 2 ? "✓ Wing filter: XY (bivalue)" : "Wing filter: XY (bivalue)", () => p.onWing(2)],
+      [p.wingFilter === 3 ? "✓ Wing filter: XYZ" : "Wing filter: XYZ", () => p.onWing(3)],
+      [p.wingFilter === 4 ? "✓ Wing filter: WXYZ" : "Wing filter: WXYZ", () => p.onWing(4)],
+    ],
     Options: [toggleCands],
     Puzzle: [
       ["Check", p.onCheck],

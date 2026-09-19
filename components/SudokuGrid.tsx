@@ -28,7 +28,8 @@ interface Props {
   onSelect: (i: number) => void; onCandClick: (cell: number, d: number) => void;
 }
 
-export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick, colorMode, onPaintCell }: Props & { colorMode: "default" | "cands" | "cells" | "links"; onPaintCell: (i: number) => void }) {
+export default function SudokuGrid({ game, sel, step, showCands, digitFilter, filterMode, manualColors, brush, onPaintCand, onSelect, onCandClick, colorMode, onPaintCell, wingFilter }: Props & { colorMode: "default" | "cands" | "cells" | "links";
+  wingFilter: number; onPaintCell: (i: number) => void }) {
 
   const nodeOf = new Map<number, number>();
   if (step?.candColors)
@@ -95,7 +96,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                   {value}
                 </span>
               ) : showCands ? (
-                <div className="grid grid-cols-3 grid-rows-3 w-full h-full text-[#646464] text-[9px] sm:text-[11px] leading-none">
+                <div className={"grid grid-cols-3 grid-rows-3 w-full h-full text-[#646464] text-[9px] sm:text-[11px] leading-none " + (wingFilter > 0 && (game.cands[i].toString(2).match(/1/g)?.length ?? 0) !== wingFilter ? "opacity-25" : "")}>
                   {ALL_DIGITS.map(d => {
                     const on = (game.cands[i] & candMask(d)) !== 0;
                     const elim = step?.eliminations.some(e => e.cell === i && e.cand === d);

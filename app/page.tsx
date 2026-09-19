@@ -49,6 +49,7 @@ export default function Home() {
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
   const [showHintBtns, setShowHintBtns] = useState(true);
   const [showReadout, setShowReadout] = useState(true);
+  const [wingFilter, setWingFilter] = useState(0);
   const [savepoint, setSavepoint] = useState<null | { v: number[]; c: number[] }>(null);
   const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
   const [viewOpen, setViewOpen] = useState(false);
@@ -401,7 +402,7 @@ export default function Home() {
         digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
         onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
-        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} onResetCands={resetCands} onSavepoint={createSavepoint} onRestoreSavepoint={restoreSavepoint} onSolutionCount={solutionCount} hintMode={hintMode} hasHint={!!hint} />
+        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} wingFilter={wingFilter} onWing={setWingFilter} onResetCands={resetCands} onSavepoint={createSavepoint} onRestoreSavepoint={restoreSavepoint} onSolutionCount={solutionCount} hintMode={hintMode} hasHint={!!hint} />
 
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
@@ -437,7 +438,7 @@ export default function Home() {
               <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
           digitFilter={digitFilter}
           manualColors={coloringVisible ? manualColors : new Map()} brush={activeColor} onPaintCand={paintCand}
-          onSelect={setSel} onCandClick={toggleCand} colorMode={colorMode}
+          onSelect={setSel} onCandClick={toggleCand} colorMode={colorMode} wingFilter={wingFilter}
           onPaintCell={i => { if (activeColor !== null) setManualColors(m => new Map(m).set(i, activeColor)); }} />
             </div>
           </div>
