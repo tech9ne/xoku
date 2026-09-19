@@ -49,12 +49,13 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
             ))}
           </div>
         </div>
-        <div className="flex-1 grid grid-rows-9 border-2 border-black bg-white">
+        <div className="flex-1 min-w-0 relative aspect-square">
+        <div className="absolute inset-0 grid grid-rows-9 border-2 border-black bg-white">
           {[0,1,2,3,4,5,6,7,8].map(a => (
             <div key={a} className={"grid grid-cols-9" + (a % 3 === 0 && a > 0 ? " border-t-2 border-t-black" : "")}>
               {[1,2,3,4,5,6,7,8,9].map(d => (
                 <div key={d}
-                  className={"aspect-square grid grid-cols-3 grid-rows-3 p-0.5 border border-[#c9ced6]" + (d % 3 === 1 && d > 1 ? " border-l-2 border-l-black" : "")}>
+                  className={"overflow-hidden grid grid-cols-3 grid-rows-3 p-px border border-[#c9ced6]" + (d % 3 === 1 && d > 1 ? " border-l-2 border-l-black" : "")}>
                   {[0,1,2,3,4,5,6,7,8].map(sl => {
                     const cell = cellAt(a, sl);
                     const on = (game.cands[cell] & candMask(d)) !== 0;
@@ -69,7 +70,7 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
                         className="flex items-center justify-center"
                         onClick={() => { if (on) onPick(cell); }}>
                         {on ? (
-                          <span className={"text-[8px] leading-3 px-0.5 sm:text-[10px] sm:leading-4 sm:px-1 rounded-[3px] " + hi}>
+                          <span className={"text-[7px] leading-[9px] px-0.5 sm:text-[10px] sm:leading-4 sm:px-1 rounded-[2px] sm:rounded-[3px] " + hi}>
                             {sl + 1}
                           </span>
                         ) : null}
@@ -80,6 +81,7 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
               ))}
             </div>
           ))}
+        </div>
         </div>
       </div>
     </div>
