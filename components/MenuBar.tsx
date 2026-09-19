@@ -43,7 +43,7 @@ const RedoIcon = () => (
 export default function MenuBar(p: Props) {
   const [open, setOpen] = useState<string | null>(null);
   const [chosen, setChosen] = useState<Level | "">("");
-  useEffect(() => { setChosen(p.currentLevel); }, [p.currentLevel]);
+  useEffect(() => { if (!p.idle) setChosen(p.currentLevel); }, [p.currentLevel, p.idle]);
   const toggleCands: [string, () => void] = [
     p.showCands ? "Hide candidates" : "Show candidates",
     () => p.setShowCands(!p.showCands),
