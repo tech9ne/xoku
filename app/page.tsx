@@ -48,7 +48,6 @@ export default function Home() {
   const [color2, setColor2] = useState(4);
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
   const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
-  const [viewMenu, setViewMenu] = useState(false);
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
@@ -351,23 +350,14 @@ export default function Home() {
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-auto">
           <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto">
-            <div className="relative inline-block">
-              <button onClick={() => setViewMenu(o => !o)}
-                className="h-7 px-2 rounded bg-[#1f8fef] text-white text-xs font-bold">
-                {view} ▾
-              </button>
-              {viewMenu && (
-                <div className="absolute z-30 mt-1 flex flex-col border border-[#707070] bg-white shadow">
-                  {(["RC", "RN", "CN", "BN"] as const).map(v => (
-                    <button key={v}
-                      onClick={() => { setView(v); setViewMenu(false); }}
-                      className={"px-3 h-7 text-xs text-left " + (view === v ? "bg-[#1f8fef] text-white" : "hover:bg-[#E4E4E4]")}>
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <select value={view} title="Vantage Point" aria-label="Vantage Point"
+              onChange={(e) => setView(e.target.value as "RC" | "RN" | "CN" | "BN")}
+              className="min-w-[58px] py-[6px] pl-[10px] pr-[26px] rounded border border-[#1f6feb] bg-[#1f6feb] text-white text-xs font-extrabold cursor-pointer">
+              <option value="RC">RC</option>
+              <option value="RN">RN</option>
+              <option value="CN">CN</option>
+              <option value="BN">BN</option>
+            </select>
           </div>
           {view === "RC" ? (
             <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
