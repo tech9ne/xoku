@@ -48,6 +48,30 @@ export default function Home() {
   const [color2, setColor2] = useState(4);
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
   const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
+  const [viewOpen, setViewOpen] = useState(false);
+  const caret = (
+    <div className="relative w-14 shrink-0">
+      <button onClick={() => setViewOpen(o => !o)}
+        className="w-full h-7 rounded-md bg-[#1f6feb] text-white text-xs font-extrabold flex items-center justify-center gap-1">
+        {view}
+        <svg viewBox="0 0 10 6"
+          className={"w-2.5 h-2 fill-white transition-transform " + (viewOpen ? "rotate-180" : "")}>
+          <path d="M0 0 L5 6 L10 0 Z" />
+        </svg>
+      </button>
+      {viewOpen && (
+        <div className="absolute z-40 mt-1 left-0 w-full border border-white bg-[#1f6feb] flex flex-col shadow">
+          {(["RC", "RN", "CN", "BN"] as const).map(v => (
+            <button key={v}
+              onClick={() => { setView(v); setViewOpen(false); }}
+              className={"h-7 text-xs font-bold text-left px-2 " + (view === v ? "bg-[#5a626b] text-white" : "text-white hover:bg-[#3b82f6]")}>
+              {v}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
@@ -349,25 +373,11 @@ export default function Home() {
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-auto">
-          <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto">
-            <select value={view} title="Vantage Point" aria-label="Vantage Point"
-              onChange={(e) => setView(e.target.value as "RC" | "RN" | "CN" | "BN")}
-              className="min-w-[58px] py-[6px] pl-[10px] pr-[26px] rounded border border-[#1f6feb] bg-[#1f6feb] text-white text-xs font-extrabold cursor-pointer">
-              <option value="RC">RC</option>
-              <option value="RN">RN</option>
-              <option value="CN">CN</option>
-              <option value="BN">BN</option>
-            </select>
-          </div>
+          
           {view === "RC" ? (
             <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
           <div className="flex gap-1">
-            <span
-              className="text-[10px] opacity-0"
-              style={{ writingMode: "vertical-rl" }}>
-              ROWS
-            </span>
-            <span className="w-4" />
+            {caret}
             <div className="flex-1 flex flex-col items-center gap-0.5">
               <span className="text-[10px] tracking-wider text-slate-500">COL</span>
               <div className="grid grid-cols-9 w-full text-xs text-slate-500 font-mono">
@@ -376,13 +386,15 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-1 items-stretch">
+            <div className="w-14 flex items-stretch">
             <span
               className="self-center text-[10px] tracking-wider text-slate-500"
               style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
               ROWS
             </span>
-            <div className="grid grid-rows-9 w-4 text-xs text-slate-500 font-mono">
+            <div className="grid grid-rows-9 flex-1 text-xs text-slate-500 font-mono">
               {[1,2,3,4,5,6,7,8,9].map(n => <span key={n} className="flex items-center justify-center">{n}</span>)}
+            </div>
             </div>
             <div className="flex-1">
               <SudokuGrid game={game} sel={sel} step={hintMode === "concrete" ? hint : null} showCands={showCands} filterMode={filterMode}
@@ -396,7 +408,7 @@ export default function Home() {
           ) : (
             <ProjectionPanel game={game}
               step={hintMode === "concrete" ? hint : null} view={view}
-              onPick={(c) => { setSel(c); setView("RC"); }} />
+              onPick={(c) => { setSel(c); setView("RC"); }} corner={caret} />
           )}
           </div>
         </div>
