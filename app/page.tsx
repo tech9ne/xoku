@@ -47,7 +47,8 @@ export default function Home() {
   const [activeColor, setActiveColor] = useState<number | null>(8);
   const [color2, setColor2] = useState(4);
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
-  const [view, setView] = useState<"RC" | "CN" | "BN">("RC");
+  const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
+  const [viewMenu, setViewMenu] = useState(false);
   const [coloringVisible, setColoringVisible] = useState(true);
   const [digitFilter, setDigitFilter] = useState<number | "xy" | null>(null);
   const [msg, setMsg] = useState("Ready — pick a difficulty, then click the New Game tile.");
@@ -349,13 +350,24 @@ export default function Home() {
         {/* GRID — generous, centered */}
         <div className="w-[94vw] shrink-0 flex flex-col gap-2 lg:min-h-0 lg:w-auto lg:flex-1 lg:shrink">
           <div className="flex flex-col items-center justify-center gap-1 lg:flex-1 lg:min-h-0 overflow-auto">
-          <div className="flex gap-1 justify-center">
-            {(["RC", "CN", "BN"] as const).map(v => (
-              <button key={v} onClick={() => setView(v)}
-                className={"px-2 h-7 text-xs font-semibold border border-[#A0A0A0] " + (view === v ? "bg-[#C8C8C8]" : "bg-[#E8E8E8]")}>
-                {v}
+          <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto">
+            <div className="relative inline-block">
+              <button onClick={() => setViewMenu(o => !o)}
+                className="h-7 px-2 rounded bg-[#1f8fef] text-white text-xs font-bold">
+                {view} ▾
               </button>
-            ))}
+              {viewMenu && (
+                <div className="absolute z-30 mt-1 flex flex-col border border-[#707070] bg-white shadow">
+                  {(["RC", "RN", "CN", "BN"] as const).map(v => (
+                    <button key={v}
+                      onClick={() => { setView(v); setViewMenu(false); }}
+                      className={"px-3 h-7 text-xs text-left " + (view === v ? "bg-[#1f8fef] text-white" : "hover:bg-[#E4E4E4]")}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           {view === "RC" ? (
             <div className="w-[min(92vw,540px)] lg:w-[min(100%,calc(100vh-280px))] mx-auto flex flex-col gap-1">
