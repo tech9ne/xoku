@@ -263,12 +263,17 @@ export function makeFinnedFish(n: 2 | 3 | 4): Finder {
               if (fins.every(f => fastPeers(cell, f))) elims.push({ cell, cand: d });
             }
             if (!elims.length) continue;
+            const present: string[] = [], missing: string[] = [];
+            for (const l of baseLines) for (const cv of coverSubset) {
+              const cc = useRows ? l * 9 + cv : cv * 9 + l;
+              (g.values[cc] === 0 && g.cands[cc] & candMask(d) ? present : missing).push(cellName(cc));
+            }
             const technique = `${degenerate ? "Sashimi" : "Finned"} ${FISH_NAMES[n]}`;
             const score = n === 2 ? 2.6 : n === 3 ? 3.5 : 4.5;
             const patternCells = [...new Set(baseLines.flatMap(l => posInLine[l].map(p => useRows ? l * 9 + p : p * 9 + l)))];
             return mk({
               technique, category: "Fish", score,
-              reason: `${technique} on ${d}: base ${useRows ? "rows" : "columns"} ${baseLines.map(x => x + 1).join("/")} cover ${useRows ? "columns" : "rows"} ${coverSubset.map(x => x + 1).join("/")} with fin(s) ${fins.map(cellName).join("+")} — cover candidates outside the base that see every fin are removed.`,
+              reason: `${technique} on ${d}: base ${useRows ? "rows" : "columns"} ${baseLines.map(x => x + 1).join("/")} cover ${useRows ? "columns" : "rows"} ${coverSubset.map(x => x + 1).join("/")} with fin(s) ${fins.map(cellName).join("+")}; body corners ${present.join("+")}${missing.length ? `, missing ${missing.join("+")}` : ""} — cover candidates outside the base that see every fin are removed.`,
               eliminations: elims, patternCells,
               patternCands: patternCells.map(c => ({ cell: c, cand: d })),
               candColors: fins.map(f => ({ cell: f, cand: d, color: 1 })),
