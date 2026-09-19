@@ -70,7 +70,9 @@ export default function ProjectionPanel({ game, step, view, onPick, corner }: {
                         className="flex items-center justify-center"
                         onClick={() => { if (on) onPick(cell); }}>
                         {on ? (
-                          <span className={"text-[7px] leading-[9px] px-0.5 sm:text-[10px] sm:leading-4 sm:px-1 rounded-[2px] sm:rounded-[3px] " + hi}>
+                          <span
+                            className={"leading-none px-0.5 rounded-[2px] " + hi}
+                            style={{ fontSize: "clamp(6px, min(calc((92vw - 60px)/36), calc((100vh - 400px)/36)), 10px)" }}>
                             {sl + 1}
                           </span>
                         ) : null}
