@@ -96,7 +96,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                   {value}
                 </span>
               ) : showCands ? (
-                <div className={"grid grid-cols-3 grid-rows-3 w-full h-full text-[#646464] text-[9px] sm:text-[11px] leading-none " + (wingFilter > 0 && (game.cands[i].toString(2).match(/1/g)?.length ?? 0) !== wingFilter ? "opacity-25" : "")}>
+                <div className={"grid grid-cols-3 grid-rows-3 w-full h-full text-[#646464] text-[9px] sm:text-[11px] leading-none " + (wingFilter > 0 && (game.cands[i].toString(2).match(/1/g)?.length ?? 0) === wingFilter ? "bg-[#86F280]" : "")}>
                   {ALL_DIGITS.map(d => {
                     const on = (game.cands[i] & candMask(d)) !== 0;
                     const elim = step?.eliminations.some(e => e.cell === i && e.cand === d);
