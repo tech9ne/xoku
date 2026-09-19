@@ -1128,6 +1128,73 @@ function alsGraph(als: Als[]): { j: number; d: number }[][] {
 //   X false in A -> A locks -> Y placed in A -> Y false in C -> C locks -> Z placed in C
 // Either way Z is placed in a pincer -> Z is removed from cells seeing
 // every Z in B and every Z in C.
+// ---------- Sue de Coq (ALS DOF family, per StrmCkr: NOT an ALS-XZ 2-RCC rule) ----------
+// Core = cells at box/line intersection; two disjoint ALS flanks (one in the
+// box outside the line, one in the line outside the box) whose digits partition
+// the core's digits, with |digits(core)| = |core| + |A| + |B|.
+export const sueDeCoq: Finder = (g) => {
+  const empt = emptyCells(g);
+  if (empt.length < 5) return null;
+  const regionAls = (cells: number[]) => {
+    const out: { cells: number[]; mask: number }[] = [];
+    const n = cells.length;
+    for (let sub = 1; sub < (1 << n); sub++) {
+      let mask = 0, size = 0;
+      for (let k = 0; k < n; k++) if (sub & (1 << k)) { mask |= g.cands[cells[k]]; size++; }
+      if (size < 1 || size > 2) continue;
+      if (countCands(mask) !== size + 1) continue;
+      out.push({ cells: cells.filter((_, k) => sub & (1 << k)), mask });
+    }
+    return out;
+  };
+  for (let b = 0; b < 9; b++) {
+    const br = Math.floor(b / 3) * 3, bc = (b % 3) * 3;
+    for (let li = 0; li < 3; li++) for (const orient of [0, 1]) {
+      const line = orient === 0 ? br + li : bc + li;
+      const unit = orient === 0 ? line : 9 + line;
+      const inLine = (c: number) => (orient === 0 ? rowOf(c) === line : colOf(c) === line);
+      const core0 = UNITS[18 + b].filter(c => g.values[c] === 0 && inLine(c));
+      const boxSide = UNITS[18 + b].filter(c => g.values[c] === 0 && !inLine(c));
+      const lineSide = UNITS[unit].filter(c => g.values[c] === 0 && boxOf(c) !== b);
+      if (!core0.length || !boxSide.length || !lineSide.length) continue;
+      const As = regionAls(boxSide), Bs = regionAls(lineSide);
+      for (let cs = 1; cs < (1 << core0.length); cs++) {
+        const core = core0.filter((_, k) => cs & (1 << k));
+        let maskCore = 0;
+        for (const c of core) maskCore |= g.cands[c];
+        const dCore = candsOf(maskCore);
+        for (const A of As) {
+          if (A.mask & ~maskCore) continue;
+          for (const B of Bs) {
+            if (B.mask & ~maskCore) continue;
+            if (B.mask & A.mask) continue;
+            if ((A.mask | B.mask) !== maskCore) continue;
+            if (dCore.length !== core.length + A.cells.length + B.cells.length) continue;
+            const elims: Elimination[] = [];
+            const aSet = new Set(A.cells), bSet = new Set(B.cells);
+            const dA = candsOf(A.mask), dB = candsOf(B.mask);
+            for (const c of boxSide) if (!aSet.has(c)) for (const d of dA) if (g.cands[c] & candMask(d)) elims.push({ cell: c, cand: d });
+            for (const c of lineSide) if (!bSet.has(c)) for (const d of dB) if (g.cands[c] & candMask(d)) elims.push({ cell: c, cand: d });
+            if (!elims.length) continue;
+            return mk({
+              technique: "Sue de Coq", category: "ALS DOF", score: 8.5,
+              reason: `Sue de Coq: core ${core.map(cellName).join("+")} holds digits ${dCore.join("")}, split between box flank ${A.cells.map(cellName).join("+")} (${dA.join("")}) and line flank ${B.cells.map(cellName).join("+")} (${dB.join("")}) — box cells outside the line lose the box flank digits, line cells outside the box lose the line flank digits.`,
+              eliminations: elims,
+              patternCells: [...core, ...A.cells, ...B.cells],
+              patternCands: [...core, ...A.cells, ...B.cells].flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
+              candColors: [
+                ...core.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 0 }))),
+                ...A.cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 1 }))),
+                ...B.cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 2 }))),
+              ],
+            });
+          }
+        }
+      }
+    }
+  }
+  return null;
+};
 export const alsXYWing: Finder = (g) => {
   const als = enumerateAls(g);
   if (als.length < 3) return null;
@@ -1286,7 +1353,7 @@ export const deathBlossom: Finder = (g) => {
         if (!elims.length) continue;
         const patternCells = [S, ...A.cells, ...B.cells];
         return mk({
-          technique: "Death Blossom", category: "ALS", score: 9.0,
+          technique: "Death Blossom", category: "ALS DOF", score: 9.0,
           candColors: [
             ...ccOf(g, A.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
             ...ccOf(g, A.cells, x).map(c => ({ cell: c, cand: x, color: 1 })),
@@ -1608,7 +1675,8 @@ export const FINDERS: Finder[] = [
   xyChain,                 // XR 6.0
   aicType1,                // XR 6.2
   aicType2,                // XR 6.4  (same-cell and cross endings)
-  alsXZ,                   // XR 7.0
+  alsXZ,
+  sueDeCoq,                   // XR 7.0
   alsXYWing,               // XR 7.2
   alsChain,                // XR 7.4
   deathBlossom,            // XR 7.6

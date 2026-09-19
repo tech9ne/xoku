@@ -7,7 +7,7 @@ export interface Placement { cell: number; value: Digit; }
 
 export type StepCategory =
   | "Single" | "Locked Candidates" | "Subset" | "Fish"
-  | "Single Digit Chain" | "Coloring" | "Wing" | "Chain" | "Uniqueness" | "ALS" | "Brute Force";
+  | "Single Digit Chain" | "Coloring" | "Wing" | "Chain" | "Uniqueness" | "ALS" | "ALS DOF" | "Brute Force";
 
 export interface Step {
   technique: string;
