@@ -586,7 +586,7 @@ export default function Home() {
                   <button className="w-full text-left py-0.5 px-1 border-b border-[#F0F0F0] last:border-0"
                     style={{ backgroundColor: BAND_HEX(st.score) }}
                     onClick={() => { setHint(st); setHintMode("concrete"); setMsg(`${st.technique} — ${st.reason}`); }}>
-                    <span className="text-slate-500 mr-1.5">{i + 1}.</span>{st.technique}: {st.reason}
+                    <span className="text-slate-500 mr-1.5">{i + 1}.</span>{st.technique} <span className="text-slate-400 text-[10px]">XR {st.score.toFixed(1)}</span> — {st.reason}
                   </button>
                 </li>
               ))}

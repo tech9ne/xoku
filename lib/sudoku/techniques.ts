@@ -1833,6 +1833,116 @@ export const aicType2: Finder = (g) => findAic(g, "type2");
 
 
 // ---------- Registry (ordered by XR, easiest first) ----------
+
+function subsets<T>(arr: T[], k: number): T[][] {
+  if (k === 0) return [[]];
+  if (arr.length < k) return [];
+  const [first, ...rest] = arr;
+  return [...subsets(rest, k - 1).map(x => [first, ...x]), ...subsets(rest, k)];
+}
+const row = (i: number) => Math.floor(i / 9);
+const col = (i: number) => i % 9;
+const box = (i: number) => Math.floor(row(i) / 3) * 3 + Math.floor(col(i) / 3);
+
+
+function findFranken(g: Game, size: number): Step | null {
+  const candsByDig: number[][] = Array.from({ length: 10 }, () => []);
+  for (let i = 0; i < 81; i++) {
+    if (g.values[i] !== 0) continue;
+    const m = g.cands[i];
+    for (let d = 1; d <= 9; d++) if (m & (1 << (d - 1))) candsByDig[d].push(i);
+  }
+  for (let d = 1; d <= 9; d++) {
+    const cands = candsByDig[d];
+    if (cands.length < 2) continue;
+    // Base = rows, cover = cols or boxes
+    const rows = [...new Set(cands.map(row))];
+    if (rows.length >= size) {
+      for (const baseRows of subsets(rows, size)) {
+        const baseCands = cands.filter(c => baseRows.includes(row(c)));
+        const pool: { type: "c" | "b"; idx: number; covers: number[] }[] = [];
+        for (let c = 0; c < 9; c++) {
+          const cov = baseCands.filter(x => col(x) === c);
+          if (cov.length) pool.push({ type: "c", idx: c, covers: cov });
+        }
+        for (let b = 0; b < 9; b++) {
+          const cov = baseCands.filter(x => box(x) === b);
+          if (cov.length) pool.push({ type: "b", idx: b, covers: cov });
+        }
+        for (const cov of subsets(pool, size)) {
+          if (new Set(cov.map(u => u.type)).size !== 2) continue;
+          const covered = new Set(cov.flatMap(u => u.covers));
+          const fins = baseCands.filter(c => !covered.has(c));
+          if (fins.length === 0 || fins.length > 3) continue;
+          if (new Set(fins.map(box)).size !== 1) continue;
+          const elims: { cell: number; cand: number }[] = [];
+          for (const u of cov) {
+            const cells = u.type === "c"
+              ? cands.filter(c => col(c) === u.idx && !baseRows.includes(row(c)))
+              : cands.filter(c => box(c) === u.idx && !baseRows.includes(row(c)));
+            for (const cell of cells) if (fins.every(f => arePeers(cell, f))) elims.push({ cell, cand: d });
+          }
+          if (elims.length === 0) continue;
+          return {
+            technique: `Finned Franken ${size === 2 ? "X-Wing" : "Swordfish"}`,
+            score: size === 2 ? 5.0 : 6.0,
+            patternCands: baseCands.map(c => ({ cell: c, cand: d })),
+            eliminations: elims,
+            category: "Fish",
+            placements: [],
+            patternCells: baseCands,
+            reason: `Digit ${d}, base rows ${baseRows.map(r => "r" + (r + 1)).join(",")}, cover ${cov.map(u => (u.type === "c" ? "c" : "b") + (u.idx + 1)).join("/")}, ${elims.length} elims`,
+          };
+        }
+      }
+    }
+    // Base = cols, cover = rows or boxes
+    const cols = [...new Set(cands.map(col))];
+    if (cols.length >= size) {
+      for (const baseCols of subsets(cols, size)) {
+        const baseCands = cands.filter(c => baseCols.includes(col(c)));
+        const pool: { type: "r" | "b"; idx: number; covers: number[] }[] = [];
+        for (let r = 0; r < 9; r++) {
+          const cov = baseCands.filter(x => row(x) === r);
+          if (cov.length) pool.push({ type: "r", idx: r, covers: cov });
+        }
+        for (let b = 0; b < 9; b++) {
+          const cov = baseCands.filter(x => box(x) === b);
+          if (cov.length) pool.push({ type: "b", idx: b, covers: cov });
+        }
+        for (const cov of subsets(pool, size)) {
+          if (new Set(cov.map(u => u.type)).size !== 2) continue;
+          const covered = new Set(cov.flatMap(u => u.covers));
+          const fins = baseCands.filter(c => !covered.has(c));
+          if (fins.length === 0 || fins.length > 3) continue;
+          if (new Set(fins.map(box)).size !== 1) continue;
+          const elims: { cell: number; cand: number }[] = [];
+          for (const u of cov) {
+            const cells = u.type === "r"
+              ? cands.filter(c => row(c) === u.idx && !baseCols.includes(col(c)))
+              : cands.filter(c => box(c) === u.idx && !baseCols.includes(col(c)));
+            for (const cell of cells) if (fins.every(f => arePeers(cell, f))) elims.push({ cell, cand: d });
+          }
+          if (elims.length === 0) continue;
+          return {
+            technique: `Finned Franken ${size === 2 ? "X-Wing" : "Swordfish"}`,
+            score: size === 2 ? 5.0 : 6.0,
+            patternCands: baseCands.map(c => ({ cell: c, cand: d })),
+            eliminations: elims,
+            category: "Fish",
+            placements: [],
+            patternCells: baseCands,
+            reason: `Digit ${d}, base cols ${baseCols.map(c => "c" + (c + 1)).join(",")}, cover ${cov.map(u => (u.type === "r" ? "r" : "b") + (u.idx + 1)).join("/")}, ${elims.length} elims`,
+          };
+        }
+      }
+    }
+  }
+  return null;
+}
+export const frankenFish2: Finder = (g) => findFranken(g, 2);
+export const frankenFish3: Finder = (g) => findFranken(g, 3);
+
 export const FINDERS: Finder[] = [
   fullHouse,               // XR 1.0
   nakedSingle,             // XR 1.0
@@ -1860,6 +1970,8 @@ export const FINDERS: Finder[] = [
   bugPlus2,                // XR 5.0
   makeBasicFish(3),
   makeFinnedFish(3),        // XR 5.0  Swordfish
+  frankenFish2,              // XR 5.0  Finned Franken X-Wing
+  frankenFish3,              // XR 6.0  Finned Franken Swordfish
   wWing,                   // XR 5.2
   bugPlus3,                // XR 5.2
   makeBasicFish(4),
