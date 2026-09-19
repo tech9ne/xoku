@@ -41,7 +41,7 @@ const RedoIcon = () => (
 
 export default function MenuBar(p: Props) {
   const [open, setOpen] = useState<string | null>(null);
-  const [chosen, setChosen] = useState<Level>(p.currentLevel);
+  const [chosen, setChosen] = useState<Level | "">("");
   useEffect(() => { setChosen(p.currentLevel); }, [p.currentLevel]);
   const toggleCands: [string, () => void] = [
     p.showCands ? "Hide candidates" : "Show candidates",
@@ -92,7 +92,7 @@ export default function MenuBar(p: Props) {
           className="w-8 h-8 flex items-center justify-center">
           <span aria-hidden="true" className="inline-block w-8 h-8" style={{ backgroundColor: p.canRedo ? "#55BB55" : "#A8A8A8", WebkitMaskImage: `url(${REDO_PNG})`, maskImage: `url(${REDO_PNG})`, WebkitMaskSize: "contain", maskSize: "contain", WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat", WebkitMaskPosition: "center", maskPosition: "center" }} />
         </button>
-        <button title={"New game — " + chosen} onClick={() => p.onNew(chosen)}
+        <button title={chosen ? "New game — " + chosen : "Pick a difficulty first"} disabled={chosen === ""} onClick={() => { if (chosen) p.onNew(chosen); }}
             className="w-9 h-9 flex items-center justify-center flex-shrink-0" aria-label="New game">
             <svg viewBox="0 0 64 64" className="w-8 h-8"><rect width="64" height="64" rx="14" fill="#0F172A"/><rect x="9" y="9" width="14" height="14" rx="3.5" fill="#3B82F6"/><rect x="25" y="9" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="9" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="9" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="25" y="25" width="14" height="14" rx="3.5" fill="#1E293B" stroke="#334155"/><rect x="41" y="25" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="9" y="41" width="14" height="14" rx="3.5" fill="#EF4444"/><rect x="25" y="41" width="14" height="14" rx="3.5" fill="#F8FAFC"/><rect x="41" y="41" width="14" height="14" rx="3.5" fill="#3B82F6"/></svg>
           </button>
@@ -101,6 +101,7 @@ export default function MenuBar(p: Props) {
           className="h-9 px-2 text-xs border border-[#808080] bg-gradient-to-b from-white to-[#e0e0e0] rounded-sm shadow-[inset_1px_1px_0_#ffffff,1px_1px_1px_rgba(0,0,0,0.2)]"
           value={chosen}
           onChange={(e) => setChosen(e.target.value as Level)}>
+          <option value="" disabled>— choose difficulty —</option>
           {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
         <button title="Toggle filter mode (possible/excluded cells)" aria-label="Toggle filter mode" onClick={p.onToggleFilterMode} className="w-7 h-7 flex-shrink-0 border border-[#808080]" style={{ backgroundColor: p.filterMode === "possible" ? "#86F280" : "#F28686", boxShadow: p.filterMode === "possible" ? "4px 4px 0 #f2a0a0" : "4px 4px 0 #a0f2a0" }} />
