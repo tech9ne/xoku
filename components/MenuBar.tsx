@@ -17,6 +17,9 @@ interface Props {
   onHintExecute: () => void; onHintAbort: () => void;
   hintMode: "vague" | "concrete"; hasHint: boolean;
   onCheck: () => void; onAutoSolve: () => void; onHelp: () => void;
+  showHintBtns: boolean; onToggleHintBtns: () => void;
+  showReadout: boolean; onToggleReadout: () => void;
+  onCopy729: () => void;
   showCands: boolean; setShowCands: (v: boolean) => void;
   digitFilter: number | "xy" | null;
   onDigitFilter: (f: number | "xy" | null) => void;
@@ -53,12 +56,17 @@ export default function MenuBar(p: Props) {
       
       ["Restart", p.onRestart],
       ["Import…", p.onImport],
-      ["Export (copy to clipboard)", p.onExport],
+      ["Copy 81 (values to clipboard)", p.onExport],
+      ["Copy 729 (candidates to clipboard)", p.onCopy729],
     ],
     Mode: [["Solve (active)", () => {}], ["Practice (soon)", () => {}], ["Edit (soon)", () => {}]],
     Options: [toggleCands],
     Puzzle: [["Check", p.onCheck], ["Auto solve", p.onAutoSolve]],
-    View: [toggleCands],
+    View: [
+      toggleCands,
+      [p.showHintBtns ? "Hide hint buttons" : "Show hint buttons", p.onToggleHintBtns],
+      [p.showReadout ? "Hide puzzle readout" : "Show puzzle readout", p.onToggleReadout],
+    ],
     Help: [
       ["Implemented techniques…", p.onHelp],
       ["Keys: 1-9 set · Shift+1-9 candidate · arrows · Del · Ctrl+Z undo · Ctrl+Y redo · Esc deselect", () => {}],
@@ -123,6 +131,7 @@ export default function MenuBar(p: Props) {
           </button>
         </div>
         <div className="w-0.5 h-[17px] bg-[#B0B0B0] mx-1" />
+        {p.showHintBtns && (
         <div className="flex items-center gap-1 flex-shrink-0">
           <button title="Vague hint (technique + region only)" aria-label="Vague hint" onClick={p.onHintVague}
             className={"w-8 h-8 flex items-center justify-center " + (p.hintMode === "vague" ? "bg-[#D6D6D6] shadow-[inset_1px_1px_2px_#707070] rounded" : "")}>
@@ -140,6 +149,7 @@ export default function MenuBar(p: Props) {
             className="w-8 h-8 flex items-center justify-center disabled:opacity-40">
             <img src="hodoku/abortHint.png" alt="" className="w-8 h-8" /></button>
         </div>
+        )}
       </div>
     </nav>
   );

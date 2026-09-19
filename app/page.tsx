@@ -47,6 +47,8 @@ export default function Home() {
   const [activeColor, setActiveColor] = useState<number | null>(8);
   const [color2, setColor2] = useState(4);
   const [colorMode, setColorMode] = useState<"default" | "cands" | "cells" | "links">("default");
+  const [showHintBtns, setShowHintBtns] = useState(true);
+  const [showReadout, setShowReadout] = useState(true);
   const [view, setView] = useState<"RC" | "RN" | "CN" | "BN">("RC");
   const [viewOpen, setViewOpen] = useState(false);
   const caret = (
@@ -286,6 +288,19 @@ export default function Home() {
     navigator.clipboard?.writeText(s);
     setMsg(`Copied: ${s}`);
   };
+  const copy729 = () => {
+    if (!game) return;
+    const rows: string[] = [];
+    for (let r = 0; r < 9; r++) {
+      rows.push(Array.from({ length: 9 }, (_, c2) => {
+        const i2 = r * 9 + c2;
+        if (game.values[i2] !== 0) return String(game.values[i2]);
+        return candsOf(game.cands[i2]).join("");
+      }).join(" "));
+    }
+    navigator.clipboard?.writeText(rows.join("\n"));
+    setMsg("Copied 729 candidate grid");
+  };
 
   const importPuzzle = () => {
     const raw = window.prompt("Paste an 81-character puzzle (digits and . for empty):");
@@ -366,7 +381,7 @@ export default function Home() {
         digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
         onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
-        hintMode={hintMode} hasHint={!!hint} />
+        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} hintMode={hintMode} hasHint={!!hint} />
 
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
@@ -422,6 +437,16 @@ export default function Home() {
             ))}
           </div>
           <div className="h-6 shrink-0 flex items-center justify-center bg-[#0084D4] text-white text-xs font-bold">{TABS.find(t => t[0] === panelTab)![1]}</div>
+          {showReadout && game && (
+            <div className="bg-white border border-[#A0A0A0] px-2 py-1 text-xs flex flex-col gap-0.5">
+              <div className="flex justify-between"><span>Givens</span>
+                <b>{game.given.filter(Boolean).length}</b></div>
+              <div className="flex justify-between"><span>Pencilmarks</span>
+                <b>{game.cands.reduce((acc, m, i) => acc + (game.values[i] === 0 ? candsOf(m).length : 0), 0)}</b></div>
+              <div className="flex justify-between"><span>Rating category</span>
+                <b>{isIdle ? "—" : level}</b></div>
+            </div>
+          )}
           {panelTab === "summary" && (<>
           {/* Summary */}
           <Panel>
