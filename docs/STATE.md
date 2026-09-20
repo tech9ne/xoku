@@ -279,3 +279,17 @@ Selection = 3px yellow ring outline only, never a fill.
 New-game button: inline SVG viewBox 32, full-bleed 3x3 grid lines #C7CCD1 plus
 X strokes indigo #4F46E5 and coral #E8604C, round caps, in MenuBar.
 Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped at H11.
+
+## 6b. External references and authorities
+- StrmCkr: person. 20+ year Sudoku-forum contributor; collaborated with
+  hobiwan (late Hodoku developer) and peers who shaped modern technique
+  theory. Author of StormDoku and StormDoku2 (web trainer; human-play
+  parity with Hodoku added recently). His directives are xoku engine
+  authority: chain-first philosophy (H13), 14-tier ladder (H14),
+  declarative naming table + V/L tagging (H15a/b), score alignment (H15b2).
+- V/L tagging: StrmCkr's strong/weak link labeling scheme. Exact semantics
+  live in the techniques.ts naming table; source forum messages are NOT in
+  assistant context — owner re-pastes on demand (consider docs/strmckr.md).
+- Reference clones: /tmp/hodoku-src (PseudoFish Hodoku, HEAD c37fe90),
+  /tmp/hodoku2-src (wyzelli Hodoku2), StormDoku2 clone path: CONFIRM.
+- Copy 729 (H20g) = 729-char candidate-grid string.
