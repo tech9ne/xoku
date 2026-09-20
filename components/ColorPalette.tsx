@@ -1,6 +1,5 @@
 "use client";
-const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2",
-  "86E8D0","CEFBED","86F280","D7FFD7","33CCFF","FFFF00"];
+const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","B22222","8B4513","808000","4B0082","708090","FFFF00"];
 export type ColorMode = "default" | "cands" | "cells" | "links";
 interface Props {
   active: number | null;

@@ -306,3 +306,10 @@ Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped 
   missing one mark (gap); eliminations must peer the fin/gap witness.
 - Discipline: run the subset eye down each digit column of RN, CN, BN;
   the panel where closure happens names the fish class.
+H22 (v14.3-h22): PALETTE REWORK — manual swatches rebuilt for ALS marking
+without colliding with chain-link colors: firebrick B22222 (eliminations),
+saddle 8B4513, olive 808000, indigo 4B0082, slate 708090 replace the
+teal/mint/green/pale-green/cyan swatches that masqueraded as links;
+chain-link blue deepened to royal #4169E4 with white text (green #3FDA65
+kept); status-bar six-swatch indicator updated to match. Saved color
+indices now map to the new hues by position.

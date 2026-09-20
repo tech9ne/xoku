@@ -8,14 +8,14 @@ export type DigitFilter = number | "xy" | null;
 const FILTER_BG = "bg-[#B9FFB9]";
 const FILTER_BG_X = "bg-[#FFB9B9]";
 const HINT_COLORS = [
-  { node: "bg-[#7FBBFF] text-black", cell: "bg-[#7FBBFF]/20" },
+  { node: "bg-[#4169E4] text-white", cell: "bg-[#4169E4]/20" },
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
   { node: "bg-[#FF8800] text-black", cell: "bg-[#FF8800]/20" },
   { node: "bg-[#9D4EDD] text-white", cell: "bg-[#9D4EDD]/20" },
   { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
   { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
-const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","86E8D0","CEFBED","86F280","D7FFD7","33CCFF","FFFF00"];
+const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","B22222","8B4513","808000","4B0082","708090","FFFF00"];
 const MANUAL_HEX = H.map(h => "#" + h);
 
 interface Props {
