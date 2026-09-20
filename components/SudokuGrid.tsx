@@ -15,7 +15,7 @@ const HINT_COLORS = [
   { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
   { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
-const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","F7A5A7","FFD2D2","B22222","8B4513","808000","4B0082","708090","FFFF00"];
+const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","B22222","86F280","1E4BE8","4B0082","FFFF00"];
 const MANUAL_HEX = H.map(h => "#" + h);
 
 interface Props {

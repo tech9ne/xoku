@@ -317,3 +317,8 @@ H22a (v14.3-h22a): SWAP-ARROW ELBOW CURVED — the palette swap glyph's
 sharp 90-degree bend (M6 6 H14 V14) replaced with a quadratic sweep
 (M6 6 H11 Q14 6 14 9 V14, round linecap); arrowheads and endpoints
 unchanged, position identical. Revert key: /tmp/ColorPalette.bak-h22.
+H22b (v14.3-h22b): PALETTE FINAL NINE per user — pinks (F7A5A7, FFD2D2),
+earthies (8B4513, 808000) and ambiguous slate (708090) removed; bright
+green 86F280 restored; cobalt 1E4BE8 (shade from user's upload-button
+photo) added. Final: FFC059, F7DE8F, B1A5F3, DCD4FC, B22222, 86F280,
+1E4BE8, 4B0082, FFFF00. Removed hues recoverable in one line if missed.
