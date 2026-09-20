@@ -63,18 +63,190 @@ Selection = 3px yellow ring outline only, never a fill.
   12 swatches at H10.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
-## 5. Milestones (git log is truth; tags v14.3-h6k..h8a)
-H6k filter-mode toggle swatch. H6l TS fixes (LayoutProps, dup prop).
-H6m logo D (X-Wing two-tone X on nonet). H6n logo full-bleed (no slate frame).
-H7a ALS/Wing emitters emit candColors; deleted cell-tint branch.
-H7b candidate-only dots: placements+patternCands as dots; deleted bg-sky-100/green-200.
-H7c flat dots (white ring removed). H7d category palettes (superseded by H7f).
-H7e ALS spine + per-set members. H7f HINT_COLORS 6-slot unification, nc %6.
-H7g vibrant members + version-tag fix. H7h spine order fixes (XY-Wing pivot middle,
-XYZ-Wing true spine). H7i copper (rejected). H7j fuchsia+maroon.
-H7k H7 UI completion: toolbar vague/concrete/next/execute/abort; dock Solve up to/Cancel; vague = name+region no dots; solve-up-to stops at first non-Single/Subset and shows step (v14.3-h8).
-H8a app shell frame: fixed desktop viewport, left column = grid+all-steps+dock, right column internal scroll, status bar pinned (v14.3-h8a).
-VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, re-apply H7 UI (toolbar hint group + dock Solve up to/Cancel + vague/concrete logic) before anything else.
+## 5. Milestones (auto-regen from git log; newest first)
+- H20i path XR polish + H21 Frankin fish (X-Wing + Swordfish); v14.3-h21
+- H20h2: wing filters use FILTER_BG (#B9FFB9), same shade as digit filter; v14.3-h20h2
+- H20h1: wing filters highlight matching cells green (digit-filter language); v14.3-h20h1
+- H20h: Mode-menu wing filters (X/XY/XYZ/WXYZ dimming); v14.3-h20h
+- H20g2: fluid chip sizing (clamp) fixes iPad-landscape squish; v14.3-h20g2
+- H20g1: Reset candidates, Solution count, Savepoints (Hodoku borrowings); v14.3-h20g1
+- H20g: View/File menu toggles, Copy 729, puzzle readout panel; v14.3-h20g
+- H20f7: content-proof square frame for projections; slot-scaled chips; v14.3-h20f7
+- H20f6: height budget + no desktop scrollbar + Arial 900 axis titles; v14.3-h20f6
+- H20f5: invariant view frame, bold axis titles, bare arrowhead selector, mobile chip scale; v14.3-h20f5
+- H20f4: custom reverse-caret dropdown in grid corner; board size invariant; v14.3-h20f4
+- chore: sync version tag to v14.3-h20f3
+- H20f3: projection panels match RC board footprint (aspect-square cells)
+- H20f2: projection rows h-14 (chips no longer squished)
+- H20f1: native vantage select (clone spec) + panel lattice; v14.3-h20f1
+- H20f: StormDoku2 projection parity (RC/RN/CN/BN + caret dropdown); v14.3-h20f
+- H20e: CN/BN v2 (StormDoku chips, box borders, centered tab stack)
+- H20d+H15e: RC/CN/BN projection panels + 4-node ring correctness; v14.3-h20d
+- H20a: gutter rebuild with COL/ROWS titles and stretch alignment; v14.3-h20a
+- H20: Draw Links radio + overlay gate, RC gutters, import polish; v14.3-h20
+- H19: port Empty Rectangle (verified), Avoidable Rectangle, WXYZ-Wing; v14.3-h19
+- H18b: ALS_RCC record with C-subset + AHS duality; v14.3-h18b
+- H18a1: finned/sashimi reason lines report body corners and missing corners
+- H18a: Sue de Coq (ALS DOF family); Death Blossom recategorized; v14.3-h18a
+- docs: README rewrite — unified engine, StrmCkr ladder, credits
+- H17: finned + sashimi fish lens (K>0 base/cover arithmetic); v14.3-h17
+- H15d: Type 3 rings on findAic (X-Chain/AIC rings with +0.5); v14.3-h15d
+- H16c+H15c: levelOfRating via XR_BAND; Type 3 XY rings with +0.5; v14.3-h15c
+- H16b: idle-prop drives empty combo, latch effect guarded; v14.3-h16b
+- H16b: idle-prop drives empty combo display (Hodoku posture); v14.3-h16b
+- H16a: dropdown empty until difficulty chosen; Grid X disabled while idle; v14.3-h16a
+- H16: Hodoku-style fresh launch (empty all-candidates board, idle status); v14.3-h16
+- H15b2: complete StrmCkr score alignment (literals + templates); v14.3-h15b2
+- H15b2: name-anchored score alignment to StrmCkr ladder; v14.3-h15b2
+- H15b: singleDigitChains uses naming table (V/L tagging); v14.3-h15b
+- H15a: StrmCkr declarative naming table & chain taxonomy; v14.3-h15a
+- H14a: fix cluesTarget/maxAttempts/band destructuring for 14-tier ladder
+- H14: StrmCkr 14-tier ladder rewire (Extremely Easy → Nightmare); v14.3-h14
+- H13: remove AIC with ALS nodes (StrmCkr chain-first philosophy); v14.3-h13
+- H12: remove obsolete Turbot Fish + Simple Colors (StrmCkr subsumption); v14.3-h12
+- H11d: logo new-game uses MenuBar local chosen difficulty; v14.3-h11d
+- H11c: commit missed page.tsx level prop (CI TS2741); v14.3-h11c
+- H11b: wordmark replaces plain H1 in README; v14.3-h11b
+- H11a: theme-aware wordmark (picture + dark variant); v14.3-h11a
+- H11: brand identity - Grid X mark + woven-X wordmark + favicon; v14.3-h11
+- H10m: XYZ-Wing colors only, no link arrows; v14.3-h10m
+- H10l: blue status bar with palette segments (Hodoku format); visual parity complete; v14.3-h10l
+- H10k: restore xy filter button with f_xyc.png (swallowed by H10j surgery); v14.3-h10k
+- H10j: Hodoku digit icons + neutral pressed bevel + equal-arm swap arrow; v14.3-h10j
+- H10i: clone-exact coloring geometry + toolbar sizing/pressed bevel; v14.3-h10i
+- H10h: fix manualColors key collision; permanent hint scrollbar; R well; arrow aspect; v14.3-h10h
+- H10g: swap arrow pinned clear of both swatches; v14.3-h10g
+- H10f: full-width hints dock under both columns; centered grids + indented palette; arrow air; v14.3-h10f
+- H10e: XYZ-Wing magenta both Set B cells + 3-link chain; R = reset.png; one left margin; v14.3-h10e
+- H10c+d: arrows (Hodoku exact) + R/swap notch + XYZ-Wing magenta/links; v14.3-h10d
+- H10b: scaled arrowheads with short-link guard + R/swap notch placement; v14.3-h10b
+- H10a: link arrows retrofit (arrowheads at chain/fish endpoints, Hodoku geometry); v14.3-h10a
+- H9d: hoist Panel/TitleBar to module scope (fixes 1s-timer remount scroll reset); v14.3-h9d
+- H9c: contained fixed-height list scrollers (phone scroll fix) + coloring spacing; v14.3-h9c
+- H9b: Summary stats table + scroll regions + Find all steps/Add to solution; v14.3-h9b
+- H9a: ship manual paint hex fix (missed by H9 commit); v14.3-h9a
+- H9: solution path parity - notation rows, XR band tints, click-to-hint; v14.3-h9
+- H8k: real Hodoku PNG hint cluster after xy + swap/eye icons; STATE; v14.3-h8k
+- H8j: manual paints via inline styles (fix invisible colors); Swing bevel R/eye; v14.3-h8j
+- H8i: grey blended right panel + working color modes (no accidental paint); v14.3-h8i
+- H8h: coloring widget Hodoku geometry (overlap pair, arrow, R, radios, palette+eye); compact value squares; v14.3-h8h
+- H8g: coloring widget parity (12 Hodoku colors, pair view, R, eye); STATE; v14.3-h8g
+- H8f: Set Value/Exclude as Hodoku gray squares with per-digit availability; STATE locks difficulty-band path colors; v14.3-h8f
+- H8e: all-steps list uses panel scroller (fix touch snap-back); STATE renumber; v14.3-h8e
+- H8d: right-panel 2x2 tab switcher with blue active bar (Hodoku parity); STATE; v14.3-h8d
+- H8c: main-row sizing - desktop board fill + mobile x-axis pan; STATE; v14.3-h8c
+- H8b: unlock phone scrolling (height lock was lg-only intent); STATE renumber; v14.3-h8b
+- H8a: app shell frame (fixed desktop viewport, dock under grid, pinned status bar); STATE rescope + v14.3-h8a
+- H7: hint UI complete (vague/concrete toolbar + dock Solve up to/Cancel); STATE + v14.3-h8
+- docs: STATE.md resume doc (workflow rules, coloring system, queue)
+- version: v14.3-h7j (checkpoint: H7j fuchsia+maroon)
+- ALS slots: fuchsia #FF00FF + maroon #800000; elim stays red-500 (H7j)
+- version: v14.3-h7i (checkpoint: H7i copper)
+- ALS member slot 4: cyan -> copper #B87333 (no blue clash) (H7i)
+- version: v14.3-h7h (checkpoint: H7h spine order)
+- fix ALS-XY-Wing pivot-middle spine order; XYZ-Wing true 6-dot spine (H7h)
+- vibrant per-ALS member colors (orange/violet/cyan/magenta); fix stuck version tag (H7g)
+- SudokuGrid: HINT_COLORS 6-slot + MANUAL_COLORS, nc %6 (H7f)
+- ALS emitters: blue/green spine per set + per-ALS member pastels (H7e)
+- SudokuGrid: Hodoku palette - CHAIN(blue/green) + ALS(4 pastels) by category (H7d)
+- SudokuGrid: hint colors match Hodoku palette (ALS 4-color, eliminations #FF7684) (H7d)
+- SudokuGrid: hint dots flat (drop white ring) to match Hodoku fillOval (H7c)
+- version: v14.3-h7b (checkpoint: H7b candidate-only hints)
+- hints candidate-only: placements+patternCands render as dots, delete cell tints (H7b)
+- version: v14.3-h7a (checkpoint: H7a candidate-only hints)
+- candidate-only technique highlighting: ALS/Wing emitters use candColors for working digit; delete cell-tint branch (H7a)
+- version: v14.3-h6n (checkpoint: H6n logo full-bleed)
+- MenuBar: logo full-bleed - drop slate frame, grid+X to edges (H6n)
+- version: v14.3-h6m (checkpoint: H6m logo D)
+- MenuBar: new-game glyph = X-Wing two-tone X on nonet (logo D) (H6m)
+- version: v14.3-h6l (checkpoint: H6k filter toggle working)
+- fix duplicate filterMode prop + Next.js 16 LayoutProps type (H6k fix)
+- version: v14.3-h6k (checkpoint: H6k filter toggle)
+- wire swatch as red/green filter-mode toggle; pink offset 4px (H6k)
+- version: v14.3-h6j (checkpoint: H6j level names + menu cleanup)
+- MenuBar: drop New prefix from combo; remove difficulty entries from File menu (H6j)
+- version: v14.3-h6i (checkpoint: H6h logo + H6i levels)
+- rename difficulty bands to Stormdoku2 ladder: Moderate/Brutal/Nightmare (H6i)
+- MenuBar: logo icon second red strand + blue candidate dots; swatch pink offset 3px (H6h)
+- version: v14.3-h6g (checkpoint: H6g new-game + shadow)
+- MenuBar: new-game logo button + choose-only level combo (H6g)
+- MenuBar: digit drip shadow dark, not white halo (H6g)
+- version: v14.3-h6f (checkpoint: H6e clear removed + H6f chrome)
+- MenuBar: drop clear button - digit re-click toggles filter off (H6e); swatch offset shadow + beveled combo (H6f)
+- version: v14.3-h6d (checkpoint: H6d emboss)
+- MenuBar: embossed drip-shadow digits+xy like Hodoku toolbar (H6d)
+- version: v14.3-h6c (checkpoint: H6c menus+ring)
+- MenuBar: menus wrap not scroll (H6c); SudokuGrid: active cell ring 3px
+- version: v14.3-h6b (checkpoint: H6b nav strips)
+- MenuBar: restore row-1 close; menu bar white+scroll, toolbar gray wrap (H6b)
+- version: v14.3-h6 (checkpoint: H6 status bar)
+- page: status bar to Hodoku light-gray chrome with level-colored dot (H6)
+- version: v14.3-h5 (checkpoint: H5 toolbar)
+- MenuBar: digits+xy+swatch onto toolbar row 2 (H5); SudokuGrid: active cell border-only (H3b)
+- version: v14.3-h4d (checkpoint: H3b border-only active cell)
+- SudokuGrid: active cell border-only - thick yellow rectangle, no fill (H3b)
+- version: v14.3-h4c (checkpoint: H4c smooth arrows)
+- MenuBar: undo/redo as antialiased PNG masks (smooth curves, tintable) (H4c)
+- version: v14.3-h4b (checkpoint: H4b fat arrows)
+- MenuBar: undo/redo icons traced from Hodoku 32x32 silhouettes (H4b)
+- version: v14.3-h4 (checkpoint: H1-H4)
+- MenuBar: bare Hodoku undo/redo icons - blue undo, green redo, gray disabled (H4)
+- SudokuGrid: candidates #646464, active cell solid #FFFF96 + bright yellow ring (H2b+H3)
+- SudokuGrid: user-entered values blue #0000FF (H2a)
+- version: v14.3-h1 (checkpoint: queue a + H1)
+- SudokuGrid: Hodoku grid lines - black outer/box, #C0C0C0 inner (H1)
+- MenuBar: strip digits to w-7 h-8 text-base, drop font-serif (queue a)
+- MenuBar: old undo/redo removed from digit strip
+- Active cell: yellow outline coexisting with highlights; menu cleanup; lilac undo/redo; bigger digits
+- HoDoKu fixes: thick active-cell outline; toolbar row 2 with big undo/redo + difficulty select
+- HoDoKu layout: four zones, wide panel, titled sections, bottom hints block, solution path panel
+- HoDoKu layout: four zones, bottom Hints block with Next Hint/Execute, Summary/Active Cell/Set Value/Exclude/Coloring/Solution path panel, their status bar format
+- Chain lens certified: digit-scoped guards + audit (sound AND complete); cross-T2 restored, 111 chains green
+- NAND discipline: membership guards on both weak-hop directions (cand->set, set->cand); audit v3 green at 908+
+- Engine fix (set digits from tables) + soundness audit v2 with per-ending validation
+- Stage 1a: chain lens - master engine, parity-verified additive registration
+- Stage 0: foundation - slice tables with ERi tags, Move record, rule table seed, notation rulings, census harness
+- Notation wave 2: wings, remote pair, skyscraper/kite/turbot in chain grammar
+- Eliminations: red circle only, strikethrough removed
+- Fold hierarchy: bivalue pairs dual-natured (parity picks the face); trivalue+ pairs weak-only; strong folds throw on invalid chains
+- Dual-natured folds: connector by chain role (parity), not cell nature; weak passages fold as (4 - 5)r3c5
+- Fold truth: bivalue cells render = only when genuinely strong, - when serving as passage
+- Notation complete: (d)cell nodes, folded bivalues, => conclusions across all chain engines
+- Notation wave 1 + ALS chain grammar with enforced continuity
+- Wings: XY single-chain parity, W-Wing 6-node orientation-aware chain, XYZ two-ALS tints
+- Wings final: XY 2-branch chain colors, W-Wing full 6-node chain, XYZ 2-tint sets
+- XY-Chain: role-based blue/green coloring derived from off/on walk; links join opposite colors
+- Wing taxonomy final: XY-Wing chain dress (both branches), XYZ-Wing ALS tints
+- Turbot walk fx-x-y-fy; XY-Chain flat emitter; wing colors (XY/XYZ tint sets, W-Wing alternating)
+- Chain parity: blue-first convention for turbot + XY-Chain coloring, rebuilt walks
+- Curved offset links; node contrast (darker fills + white ring); dedupe XY-Chain links
+- Fix menu dropdowns (unclip header row); exclude build output from tsc
+- Background puzzle generation (web worker) + main-thread fallback
+- Single header row: menus, undo/redo, digit strip (two-part paste)
+- Digit strip: inline HoDoKu keyboard style (brace-walk replacement)
+- HoDoKu-style menu bar: no title, light bar, toolbar undo/redo icons with redo stack; smaller top digits
+- Turbot family: color/link emission follows chain walk order; restore remote-pair circles
+- Palette: red replaces amber, ringed to distinguish from eliminations
+- Fix selection (guard stopPropagation); palette orange -> amber, red reserved for eliminations
+- Candidate coloring (HoDoKu-style circles) + single-line digit row
+- Fix paintCell scope: extract from undo() body to component scope
+- Top-row digits: drop counts, larger glyph
+- Premium bare-style buttons: digit over count, no borders (HoDoKu keyboard look)
+- Superscript x: larger (13px) with proper spacing
+- Bivalue button: HoDoKu-style superscript x before y
+- v14.2: arrow contrast (thick solid vs thin dashed), XY-Chain link fix, build tag, error instrumentation
+- Weak-link arrows red (matching strong), thinner dashed stroke
+- v14: arrows for all chain families, red weak links, rich fields re-applied cleanly
+- Fix: rich-highlight fields placed in xyChain/remotePairs (anchor bug)
+- Rich highlighting: ALS set colors, chain circles, strong/weak arrows; UI polish (x^y)
+- AIC with ALS nodes (XR 7.6)
+- AIC Types 1/2 (cross-elimination ending merged into Type 2)
+- AIC engine: X-Chain, AIC Type 1/2 (XR 5.8-6.4)
+- ALS-XY-Wing, ALS Chain, Death Blossom (XR 7.2-7.6)
+- UR types 2-5 + BUG Lite (XR 3.4-4.0)
+- GitHub Pages: auto-deploy workflow + basePath
+- ALS-XZ (XR 7.0): Diabolical is now reachable
+- Xoku v1: HoDoKu-style Sudoku trainer, 25 techniques, XR ratings, BUG+n, candidate highlight row, port 3002
 
 ## 6. Hodoku reference pointers (/tmp/hodoku-src)
 - SudokuPanel.java ~2574-2678: hintColor decision tree — chain strong=green back,
@@ -98,146 +270,12 @@ VERIFY: git log --oneline -5 and grep BUILD_TAG lib/version.ts — if tag < h8, 
 - `getHint` accepts `unknown` first arg so React click events cannot enter the hint-mode union.
 - Locked decisions: 1a vague = name+region only; 2 solve-up-to boundary = Single/Subset + show stopping step.
 
-## 8. Queue after H7 (rescoped at H8a: shell-parity program)
-H8a DONE (v14.3-h8a): app shell — desktop fixed 100vh frame, no page scroll;
-phone scrolls. Left column = grid + all-steps + hints dock; right column
-internal scroll; status bar pinned.
-H8b mobile/layout fix: phone scrolls (height lock removed), desktop keeps
-fixed frame; dock under grid on both. (v14.3-h8b)
-H8c DONE (v14.3-h8c): main-row sizing — desktop board fills left column
-(lg:w-[min(100%,calc(100vh-280px))]); mobile main row pans on x-axis
-(board+dock left, panel right) like Hodoku under termux:X11.
-H8d DONE (v14.3-h8d): right-panel 2x2 tab switcher (Summary | Solution path /
-All possible steps | Active Cell) + blue active bar #0084D4. Groups:
-active = Active Cell+Set Value+Exclude+Coloring; steps = show-all button +
-all-steps list (moved from left column); path = auto-solve + Solution path.
-H8e DONE (v14.3-h8e): all-steps list scrolls with the panel (removed nested
-max-h-48 scroller that snapped back on touch).
-H8f DONE (v14.3-h8f): Set Value / Exclude = Hodoku gray squares, centered
-labels, per-digit availability (peersSee), solid-gray unavailable cells.
-H8g coloring widget: 12-swatch COLORING_COLORS palette + R + eye; swatch pair
-+ mouse-mode radios wired at H10.
-H8h DONE (v14.3-h8h): coloring widget fidelity — overlapping pair (defaults
-green #86F280 / pink #F7A5A7 like Hodoku toolbar swatch), curved swap arrow
-top-right, R bottom-left, mouse-mode radios (visual now, behavior at H8i),
-6x2 palette with eye as 7th cell of row 1 (eye wired: hides coloring);
-Set Value/Exclude = centered 44px Hodoku squares.
-H8i wire color modes into grid: cands = click paints candidate,
-cells = click paints cell background, default = current behavior.
-H8j DONE (v14.3-h8j): manual paints render via inline styles (Tailwind JIT
-cannot see runtime-built bg-[#hex] classes — that was the invisible-paint
-bug); R/eye get Swing bevel; bolder swap arrow.
-H8k DONE (v14.3-h8k): toolbar hint cluster = real Hodoku PNGs (vageHint/
-concreteHint/nextHint/executeHint/abortHint) placed after xy behind a
-separator; palette swap = swap_color_arrow.png; eye = visibility_on/off PNGs.
-H9 additions from termux screenshots: H9b Summary tab = technique statistics
-table (count + technique + band-colored rows + Total); H9c all-steps panel
-buttons move below list, renamed Find all steps / Add to solution. Optional
-later: 4th radio Draw Links (Hodoku2).
-H9 DONE (v14.3-h9): solution path = Step[] rows with notation, band-tinted by
-step XR (<2 #FFFFFF, <5 #64FF64, <7 #FFFF64, <8.5 #FF9650, else #FF6464 —
-same RGBs as status-bar dot); click = step into hint dock (concrete) + dots.
-Manual placements no longer enter the path (Hodoku parity).
-H9a (v14.3-h9a): shipped manual-paint hex fix (SudokuGrid missed by H9 commit).
-H9b DONE (v14.3-h9b): Summary tab = technique statistics table (count |
-technique | XR, rows band-tinted, Total row, own scroll); Level/Time/Progress
-already in status bar, Build added there; scroll regions: path list, steps
-list (x+y), dock textarea kept; steps buttons moved below list and renamed
-Find all steps / Add to solution (Add appends current hint step to path). Optional
-later: 4th radio Draw Links (Hodoku2).
-H9 DONE (v14.3-h9): solution path = Step[] rows with notation, band-tinted by
-step XR (<2 #FFFFFF, <5 #64FF64, <7 #FFFF64, <8.5 #FF9650, else #FF6464 —
-same RGBs as status-bar dot); click = step into hint dock (concrete) + dots.
-Manual placements no longer enter the path (Hodoku parity).
-H9a (v14.3-h9a): shipped manual-paint hex fix (SudokuGrid missed by H9 commit).
-H9b Summary tab = technique statistics table (count + technique + band rows +
-Total). H9c all-steps buttons below list: Find all steps / Add to solution.
-H9c (v14.3-h9c): list boxes are fixed-height scrollers on phone (h-64) with
-overscroll-contain + touch-pan-y (kills touch snap-back / scroll chaining);
-desktop keeps lg:max-h-72. .scrollarea CSS = thin persistent bar where the
-platform allows (desktop); phones show OS overlay indicator while dragging.
-Coloring header strip removed; swap arrow raised; R clear of palette.
-H9d (v14.3-h9d): ROOT CAUSE of scroll drag-back — Panel/TitleBar were
-defined inside the page component, so the 1s timer remounted every Panel
-subtree and reset scrollTop. Hoisted both to module scope. Never define
-components inside the render body (STATE rule).
-H10 link arrows: existing chain/fish link lines get Hodoku arrowheads
-(solid red strong, dashed weak); geometry from SudokuPanel draw code.
-H10b (v14.3-h10b): arrowheads scale per strength (strong 3.2 / weak 2.4
-viewBox units, clamped to len/3.5, skipped when len < 2.2*head — Hodoku's
-short-link guard); fixes stubby strong heads. R + swap arrow moved into the
-pair's empty notches (bottom-left / top-right) so nothing overlaps.
-H10c DONE (v14.3-h10c): arrows with exact Hodoku measurements — 1.5px
-strokes (vector-effect: non-scaling-stroke), weak dash 5/5, arrowhead
-length = cellSize/6, height = length/3, same for both strengths; short-link
-guard len > 2*arrowLen.
-H10d (v14.3-h10d): R/swap notch positioning refined; XYZ-Wing coloring —
-Set B (pivot + other pincer) candidate not involved in AIC chain = magenta
-(color 4), links added showing AIC chain (bivalue strong links + weak links
-between cells).
-H10e (v14.3-h10e): XYZ-Wing — magenta non-involved cand in BOTH Set B cells,
-chain = 3 links, deduped double links block. R = real Hodoku reset.png in a
-flat bordered well (it was a PNG all along); Set Value / Exclude are L&F-drawn
-Swing buttons (no PNG exists) so CSS squares stay, now sharing ONE left margin
-with pair / R / palette; pair box 72px for notch air.
-H10f (v14.3-h10f): hints dock = full-width row below BOTH columns (Hodoku
-image 3: text under grid, 2x2 buttons under the panel column). Set Value /
-Exclude grids centered again; coloring widget indented
-pl-[calc((100%-9.5rem)/2)] so pair/R/palette share the centered grids' left
-margin. Swap arrow 16px for notch air.
-H10g (v14.3-h10g): swap arrow pinned top-0 right-0 of the 72px pair box
-(12px clearance both swatches). Notes: iPad-landscape panel scroll is
-intended (lg desktop frame = Hodoku JScrollPane parity); portrait = phone
-page-scroll mode. Hint dock textarea scrolls with .scrollarea bar.
-H10h (v14.3-h10h): manualColors key collision fixed (candidate keys now
-100+cell*10+d; cell keys 0-80 no longer overlap — painting a candidate was
-tinting an unrelated cell and vice versa). Hint dock = overflow-y-scroll
-(permanent track like Hodoku JScrollPane). R = glyph inside white bordered
-well. Swap arrow rendered h-auto (natural aspect, equal arms).
-H10i (v14.3-h10i): coloring widget at exact clone ratios (panel 63 -> box
-72: swatch 48, secondary at half-offset, arrow 17px flush top-right, R well
-18px flush bottom-left, 7px air everywhere = clone's 6px scaled). Toolbar:
-36px hint buttons around 32px PNGs, 2x17 separators, pressed = neutral inset
-bevel instead of indigo tint.
-H10j (v14.3-h10j): digit strip = Hodoku's own 32px f_*c.png icons (with
-_inactive greys for dead digits; ALL_DIGITS is numbers-only, xy button stays
-separate glyph for now); pressed filter and hint states = neutral Swing inset
-bevel (solid blue tint removed); swap arrow = 18px SVG, equal 7px arms, bend
-at midpoint, 6px air to both swatches.
-H10k (v14.3-h10k): xy filter button restored with f_xyc.png (it was inside
-the region H10j replaced).
-H10l (v14.3-h10l): BLUE STATUS BAR (#0084D4, white text) with left palette
-segment strip (white + 6 pair primaries + R box), segments Coloring / level
-dot + level + % / Playing + CELL / msg / build / time — Hodoku photo 4
-format. Visual parity program COMPLETE.
-H10m (v14.3-h10m): XYZ-Wing shows set colors only, no link arrows (user preference).
-H11 (v14.3-h11): BRAND IDENTITY — Grid X on dark tile (#0F172A, cells
-#3B82F6/#EF4444/#F8FAFC, dark knot) = New Game button (click = new game at
-current level, tooltip shows level) + app/icon.svg favicon + launcher;
-woven-X wordmark (red over blue) in README; chain-x.svg reserved for
-about/empty states. Grout by gap, no strokes at small sizes. Wordmark ships light+dark variants via README <picture> (GitHub dark-mode fix).
-H11c (v14.3-h11c): CI red root-caused — page.tsx level-prop fix was never
-committed (git add list omitted it); CI builds the committed tree, local tsc
-saw the working tree. NEW RULE: run git status --short before every commit
-and add every modified file it lists.
-H11d (v14.3-h11d): difficulty select lives in MenuBar LOCAL state
-(const [chosen, setChosen]); H11's button rewrite lost the closure and used
-the computed level. Logo now calls onNew(chosen) + tooltip shows chosen.
-H9 solution-path rows colored by technique difficulty band (same RGBs as
-status-bar level dot: #FFFFFF/#64FF64/#FFFF64/#FF9650/#FF6464); band from XR
-score thresholds; path entries store band. Plus chain/link arrows overlay:
-solid red strong, dashed red weak (refs: Hodoku2 Draw Links, SudokuPanel).
-H9 chain/link arrows overlay: solid red = strong link, dashed red = weak link
-(refs: Hodoku2 Draw Links, SudokuPanel drawing); solution-path band colors
-(green/yellow/orange by technique class).
-H10 round glossy toolbar buttons (yellow ?/? green ! orange check red X);
-blue status bar with palette segments + R; coloring palette wiring
-(COLORING_COLORS 12, primary/secondary swatches, R reset, mode radios).
-Decisions locked at H8a: desktop fixed frame no scroll; phone scroll + tabs;
-selection stays ring-only (no #FFFF96 fill).
-Optional: favicon app/icon.svg from logo.
+## 8. Queue (hand-maintained; owner defines next)
+- TBD: H22 not yet defined.
+- Maintenance: run python3 docs/regen_state.py each session;
+  never hand-edit section 5. Sections 1-4, 6-9 hand-written.
 
 ## 9. Logo
 New-game button: inline SVG viewBox 32, full-bleed 3x3 grid lines #C7CCD1 plus
 X strokes indigo #4F46E5 and coral #E8604C, round caps, in MenuBar.
-Chosen from concepts A/D/J family (X-Wing identity). Favicon not yet done.
+Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped at H11.
