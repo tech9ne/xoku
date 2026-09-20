@@ -322,3 +322,9 @@ earthies (8B4513, 808000) and ambiguous slate (708090) removed; bright
 green 86F280 restored; cobalt 1E4BE8 (shade from user's upload-button
 photo) added. Final: FFC059, F7DE8F, B1A5F3, DCD4FC, B22222, 86F280,
 1E4BE8, 4B0082, FFFF00. Removed hues recoverable in one line if missed.
+H22c (v14.3-h22c): PALETTE BACK TO TWELVE — H22b broke the replace-every-
+removal rule (5 out, 2 in); now orangered FF4500 (vibrant), silver C0C0C0
+and charcoal 333333 (neutrals, out of blue/green's way) fill the vacated
+slots. Final twelve: FFC059, F7DE8F, B1A5F3, DCD4FC, B22222, FF4500,
+86F280, 1E4BE8, 4B0082, FFFF00, C0C0C0, 333333. Cobalt and green kept;
+pinks and earthies remain retired with replacements in place.

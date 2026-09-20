@@ -628,7 +628,7 @@ export default function Home() {
       <footer className="bg-[#0084D4] text-white text-[11px] px-1 py-1 flex items-center flex-wrap shrink-0 mt-auto lg:mt-0 border-t border-[#0060A0]">
         <span className="px-1 flex items-center gap-px">
           <i className="w-3 h-3 bg-white border border-black/40 inline-block" />
-          {["FFC059","B1A5F3","B22222","86F280","1E4BE8","4B0082"].map(h => (
+          {["FFC059","B1A5F3","B22222","FF4500","86F280","1E4BE8"].map(h => (
             <i key={h} className="w-3 h-3 inline-block border border-black/40" style={{ backgroundColor: "#" + h }} />
           ))}
           <i className="w-3 h-3 bg-[#E8E8E8] border border-black/40 inline-block text-black text-[8px] text-center leading-3">R</i>
