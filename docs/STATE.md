@@ -293,3 +293,16 @@ Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped 
 - Reference clones: /tmp/hodoku-src (PseudoFish Hodoku, HEAD c37fe90),
   /tmp/hodoku2-src (wyzelli Hodoku2), StormDoku2 source: ~/refs/stormdoku (canonical); /tmp/stormdoku (git clone).
 - Copy 729 (H20g) = 729-char candidate-grid string.
+
+## 10. Projection reading discipline (owner insight, verified at H21)
+- RN cell (row,digit) = column list; CN (col,digit) = row list;
+  BN (box,digit) = mini-cell list; RC = board.
+- Fish ARE subsets in projection space: row-base fish on d = naked subset
+  among row slots in RN digit-column d (X-Wing = naked pair, Swordfish =
+  triple, Jellyfish = quad). Column-base fish = hidden subset in RN
+  (columns confined to N row slots), naked in CN. Mirror in CN.
+  Franken/mutant close only in BN (box covers become contained slots).
+- Finned = almost-subset with one extra mark (fin); sashimi = base slot
+  missing one mark (gap); eliminations must peer the fin/gap witness.
+- Discipline: run the subset eye down each digit column of RN, CN, BN;
+  the panel where closure happens names the fish class.
