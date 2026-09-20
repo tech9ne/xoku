@@ -291,5 +291,5 @@ Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped 
   live in the techniques.ts naming table; source forum messages are NOT in
   assistant context — owner re-pastes on demand (consider docs/strmckr.md).
 - Reference clones: /tmp/hodoku-src (PseudoFish Hodoku, HEAD c37fe90),
-  /tmp/hodoku2-src (wyzelli Hodoku2), StormDoku2 clone: /tmp/stormdoku.
+  /tmp/hodoku2-src (wyzelli Hodoku2), StormDoku2 source: ~/refs/stormdoku (canonical); /tmp/stormdoku (git clone).
 - Copy 729 (H20g) = 729-char candidate-grid string.
