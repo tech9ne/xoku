@@ -8,14 +8,14 @@ export type DigitFilter = number | "xy" | null;
 const FILTER_BG = "bg-[#B9FFB9]";
 const FILTER_BG_X = "bg-[#FFB9B9]";
 const HINT_COLORS = [
-  { node: "bg-[#4169E4] text-white", cell: "bg-[#4169E4]/20" },
+  { node: "bg-[#33CCFF] text-black", cell: "bg-[#33CCFF]/20" },
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
   { node: "bg-[#FF8800] text-black", cell: "bg-[#FF8800]/20" },
   { node: "bg-[#9D4EDD] text-white", cell: "bg-[#9D4EDD]/20" },
   { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
   { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
 ];
-const H = ["FFC059","F7DE8F","B1A5F3","DCD4FC","B22222","FF4500","86F280","1E4BE8","4B0082","FFFF00","C0C0C0","333333"];
+const H = ["FFC059","FF4500","86F280","33CCFF","FFFF00","F7DE8F","FF00FF","DA70D6","DCD4FC","B1A5F3","D9D9D9","FFB347"];
 const MANUAL_HEX = H.map(h => "#" + h);
 
 interface Props {
@@ -109,7 +109,7 @@ export default function SudokuGrid({ game, sel, step, showCands, digitFilter, fi
                     );
                     const manualNode = manualColors.get(100 + i * 10 + d);
                     const candCls = elim
-                      ? "bg-[#FF7684] text-black rounded-full font-bold"
+                      ? "bg-[#FF4500] text-white rounded-full font-bold"
                       : nc !== undefined
                         ? cls(PALETTE[nc].node, "rounded-full font-bold")
                         : pat || plc
