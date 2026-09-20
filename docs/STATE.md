@@ -313,3 +313,7 @@ teal/mint/green/pale-green/cyan swatches that masqueraded as links;
 chain-link blue deepened to royal #4169E4 with white text (green #3FDA65
 kept); status-bar six-swatch indicator updated to match. Saved color
 indices now map to the new hues by position.
+H22a (v14.3-h22a): SWAP-ARROW ELBOW CURVED — the palette swap glyph's
+sharp 90-degree bend (M6 6 H14 V14) replaced with a quadratic sweep
+(M6 6 H11 Q14 6 14 9 V14, round linecap); arrowheads and endpoints
+unchanged, position identical. Revert key: /tmp/ColorPalette.bak-h22.

@@ -33,7 +33,7 @@ export default function ColorPalette(p: Props) {
           <button title="swap colors" onClick={p.onSwap}
             className="absolute top-0 right-0 w-[18px] h-[18px]">
             <svg viewBox="0 0 20 20" className="w-[18px] h-[18px]">
-              <path d="M6 6 H14 V14" fill="none" stroke="#9a9a9a" strokeWidth="3" />
+              <path d="M6 6 H11 Q14 6 14 9 V14" fill="none" stroke="#9a9a9a" strokeWidth="3" strokeLinecap="round" />
               <path d="M7 2 L2 6 L7 10 Z" fill="#9a9a9a" />
               <path d="M10 13 L14 18 L18 13 Z" fill="#9a9a9a" />
             </svg>
