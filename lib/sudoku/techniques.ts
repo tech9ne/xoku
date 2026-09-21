@@ -1283,15 +1283,9 @@ export const alsXYWing: Finder = (g) => {
           return mk({
             technique: "ALS-XY-Wing", category: "ALS", score: 8.0,
             candColors: [
-            ...ccOf(g, B.cells, Z).map(c => ({ cell: c, cand: Z, color: 0 })),
-            ...ccOf(g, B.cells, X).map(c => ({ cell: c, cand: X, color: 1 })),
-            ...ccOf(g, A.cells, X).map(c => ({ cell: c, cand: X, color: 0 })),
-            ...ccOf(g, A.cells, Y).map(c => ({ cell: c, cand: Y, color: 1 })),
-            ...ccOf(g, C.cells, Y).map(c => ({ cell: c, cand: Y, color: 0 })),
-            ...ccOf(g, C.cells, Z).map(c => ({ cell: c, cand: Z, color: 1 })),
-            ...memOf(g, A.cells, [X, Y], 2),
-            ...memOf(g, B.cells, [Z, X], 3),
-            ...memOf(g, C.cells, [Y, Z], 4),
+            ...A.cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 0 }))),
+            ...B.cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 1 }))),
+            ...C.cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: 0 }))),
           ],
             reason: `Pivot ALS ${A.cells.map(cellName).join("+")} (${candsOf(A.mask).join("/")}) is linked by restricted candidate ${X} to pincer ${B.cells.map(cellName).join("+")} and by restricted ${Y} to pincer ${C.cells.map(cellName).join("+")}. If ${X} is true in the pivot, the first pincer locks and must place ${Z}; if ${X} is false, the pivot locks, places ${Y}, and the second pincer must place ${Z}. Either way ${Z} is placed in one of the pincers — removed from cells seeing all of it in both.`,
             eliminations: elims, patternCells,
@@ -1427,11 +1421,8 @@ export const alsChain: Finder = (g) => {
                             candColors: (() => {
                 const spine: { cell: number; cand: number; color: number }[] = [];
                 path.forEach((p, k) => {
-                  const ent = k === 0 ? Z : vias[k - 1];
-                  const ext = k === path.length - 1 ? Z : vias[k];
-                  spine.push(...ccOf(g, als[p].cells, ent).map(c => ({ cell: c, cand: ent, color: 0 })));
-                  spine.push(...ccOf(g, als[p].cells, ext).map(c => ({ cell: c, cand: ext, color: 1 })));
-                  spine.push(...memOf(g, als[p].cells, [ent, ext], 2 + (k % 4)));
+                  const parity = k % 2;
+                  spine.push(...als[p].cells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: parity }))));
                 });
                 return spine;
               })(),
