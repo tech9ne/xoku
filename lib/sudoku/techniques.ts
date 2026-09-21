@@ -573,7 +573,17 @@ export const xyChain: Finder = (g) => {
               const technique = samePair ? "Remote Pair - ring" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
               return mk({
                 technique, category: "Chain", score: 5.5,
-                candColors: ringCells.flatMap((c, k) => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: k % 2 }))),
+                candColors: (() => {
+                  const nodeColor = new Map<number, number>();
+                  let t = 0, inc = z;
+                  for (let k = 0; k < ringCells.length; k++) {
+                    const outD = weakPairs[k][2];
+                    nodeColor.set(ringCells[k] * 10 + inc, t % 2);
+                    nodeColor.set(ringCells[k] * 10 + outD, (t + 1) % 2);
+                    t += 2; inc = outD;
+                  }
+                  return [...nodeColor.entries()].map(([key, color]) => ({ cell: Math.floor(key / 10), cand: key % 10, color }));
+                })(),
                 links: weakPairs.map(([aa, bb, dd]) => ({ from: { cell: aa, cand: dd }, to: { cell: bb, cand: dd }, strong: false })),
                 reason: `${technique}: closed XY loop of ${ringCells.length} cells => ${conclusionStr(elims)}.`,
                 eliminations: elims, patternCells: ringCells,
