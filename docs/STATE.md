@@ -328,3 +328,46 @@ and charcoal 333333 (neutrals, out of blue/green's way) fill the vacated
 slots. Final twelve: FFC059, F7DE8F, B1A5F3, DCD4FC, B22222, FF4500,
 86F280, 1E4BE8, 4B0082, FFFF00, C0C0C0, 333333. Cobalt and green kept;
 pinks and earthies remain retired with replacements in place.
+
+H27 (v14.3-h27): CANNIBALISM UNBLOCKED — ring eliminations no longer skip
+in-ring cells; doctrinally legal cannibalistic eliminations (Hodoku's
+continuous-loop and AIC examples eliminate chain members) now fire.
+H27b (v14.3-h27b): REMOTE PAIR + RING RENAME — eliminates from any
+opposite-polarity pair along the chain (not just ends); same-pair cycles
+renamed from "Remote Pair - ring" to "Continuous Nice Loop"; alternation
+candColors 0/1 added.
+H27c (v14.3-h27c): WHOLE-ALS PARITY — ALS-XY-Wing and ALS-Chain paint
+every candidate in each ALS node with its parity color (0/1), not split
+link digits from body; each ALS is one node.
+H27d (v14.3-h27d): XY/XYZ-WING WHOLE-CELL PARITY — each cell one node,
+all its candidates painted with the cell's parity color.
+H27e (v14.3-h27e): W-WING WHOLE-CELL PARITY — bivalue wings painted
+whole-cell (0/1); bridge nodes (t1, t2) painted single-digit on d with
+alternating parity.
+H28 (v14.3-h28): STORMDOKU ADOPTED AS ENGINE BIBLE — cloned StrmCkr's
+StormDoku webpage demo to ~/stormdoku (GPL-3.0-or-later; tech9ne listed
+contributor). Decree: face=Hodoku (names, pedagogy, display), engine=
+StormDoku (chain walker, five strong-link buckets BILOCAL/CELL_TO_GROUP/
+GROUP_TO_GROUP/ERI/ALS, ALS/AHS DOF+FOX, NxN+K fish, 18-tier rating
+ladder, generation discipline). Every future fix cross-checks ~/stormdoku
+sources first. Ported code carries GPL-3.0-or-later obligations; LICENSE
+decision queued with port.
+H29 (v14.3-h29): DEGENERATE RING + GENERATION TIER — ring finder requires
+>=3 distinct cells (2 cells = naked pair, not a ring; StormDoku chain.ts:
+258-259 isRing/isTerminal distinction). Generator returns {failed: true,
+attempts, level} when no candidate matches the requested XR band; worker
+handler and both main-thread fallbacks keep current game unchanged and
+warn (StormDoku index.html:13354 discipline).
+H30 (v14.3-h30): UNIQUENESS FAMILY REMOVED — bugPlus1/2/3, bugLite,
+uniqueRectangle1, urType2/3/4 withdrawn from FINDERS and their names
+from TECHNIQUE_NAMES; band comments cleaned. Decree: StrmCkr's manifesto
+carries no uniqueness technique and his engine proves without the unique-
+solution assumption; xoku mirrors his engine and taxonomy. U-ledger rows
+(G8, Type 6, Hidden/Avoidable Rectangles) cancelled. Import-time
+countSolutions===1 validity check retained. Dead finder bodies still
+present in techniques.ts; H30b deletes them.
+H31 queued: port classifyChain (chain.ts:2207) with V/L pattern grammar
+and name literals (XY-Wing, W-Wing, S-Wing, H(n)-Wing, M(n)-Wing,
+L(n)-Wing/Ring, W-Ring, Y-Ring, H(2)-Ring, M(2)-Ring, Strong-Ring,
+AIC Ring, Transport, T-ALS-XZ/XY, inverted i*-names; WEAK_TYPE_NAMES
+LOCAL/SECTOR).
