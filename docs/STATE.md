@@ -394,3 +394,16 @@ in Irritating [5.0,6.0), matching the Bible's ladder (X-Chains above
 four nodes, ring forms +0.5). User board-verified: the digit-7 closed
 loop eliminating r6c3/r6c4 sits under Irritating. Reason string
 de-duplicated to "L(1)-Ring: closed loop on digit N => ...".
+H32 (v14.3-h32): STORMDOKU CLASSIFIER PORTED — lib/sudoku/storm-names.ts
+adapts findAic paths to StormDoku steps (steps = strong-link nodes: V =
+bivalve cell linkType 4, L = bilocation linkType 0; weak edges LOCAL/S or
+SECTOR/C per WEAK_TYPE_NAMES chain.ts:10) and ports classifyChain
+(chain.ts:2207-2279): ring grammar (Y-Ring, W-Ring, H(2)-Ring, M(2)-Ring,
+Strong-Ring, L(n)-Ring, AIC Ring), inverted families (iW-Wing, iS-Wing,
+iM3-Wing, iH2-Wing, iH3-Wing, iW-Ring per chain.ts:2079-2124), open
+grammar (Skyscraper, 2-String Kite, X-Chain, XY-Wing, W-Wing, H(n)-Wing,
+M(n)-Wing, L(n)-Wing, XY-Chain, AIC). Wired at findAic's ring/xchain/
+AIC sites. Inert in xoku: ERI/grouped/ALS branches (no linkType 1/2/3 or
+ALS steps yet) - they activate when H33 ports the five strong-link
+buckets. Guards hasWRingValueNodes/isSplitWingRing/isBivalveSplitWing
+deferred (chain.ts:2040/2198/2188).
