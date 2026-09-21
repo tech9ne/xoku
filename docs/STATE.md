@@ -64,6 +64,8 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- docs: provenance credit + rewrite ledger (H35a)
+- docs: regen section 5 from git log; header the H22-H34 narrative appendix
 - H34: Remote Pair + Hidden Remote Pair + chain scores per StormDoku chainMathScore; v14.3-h34
 - H33: type1/type2 ring closures routed through StormDoku classifier; v14.3-h33
 - H32: StormDoku classifier ported (steps=strong links, V/L grammar); v14.3-h32
@@ -455,3 +457,10 @@ two cells (Bible does); the Irritating row label "above four nodes"
 ported (index.html:10402-10428): bilocation strong links alternating on
 two digits. chainLens classify now speaks StormDoku for all bivalue and
 hidden-pair chain shapes.
+
+H36a (v14.3-h36a): ERI GEOMETRY DETECTION — replaced boolean eriTag with
+rich eriGeometry metadata in slices.ts; detectERI algorithm ported from
+StormDoku strong-link.ts eriGeometries (4-5 candidate box rule, empty
+rectangle validation, active/linked cell split); chain-tables.ts updated
+to consume new geometry field. ERI now provides intersectionCell,
+activeCells, linkedCells for directional row↔column swapping in chains.

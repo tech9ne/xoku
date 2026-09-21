@@ -57,7 +57,7 @@ export function buildChainTables(g: Game): ChainTables {
     const a = nodeOf(l.digit, l.aCells);
     const b = nodeOf(l.digit, l.bCells);
     add(a, b);
-    if (l.eri) {
+    if (l.eriGeometry) {
       if (isSetKey(a)) eriSets.add(a);
       if (isSetKey(b)) eriSets.add(b);
     }

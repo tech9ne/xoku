@@ -20,7 +20,7 @@ export interface SliceLink {
   bCells: number[];
   // the base sector both live in
   sector: number; // 0-26
-  eri: boolean;   // ERi tag (type 2/3 with box-level geometry)
+  eriGeometry: { intersectionCell: number; activeCells: number[]; linkedCells: number[] } | null;   // ERi geometry (type 2/3 with box-level geometry)
 }
 
 const boxOfRow = (r: number) => Math.floor(r / 3) * 3 + Math.floor(0 / 3); // unused, kept for clarity below
@@ -59,16 +59,24 @@ function boxSliceSets(g: Game, d: number, box: number, byRows: boolean): number[
 // ERi tag (R1): for a box link of type 2 or 3, ERi validity per the wiki
 // count rule: digit confined to exactly one row-slice AND one col-slice of
 // the box, both non-empty, intersection not the sole active cell.
-function eriTag(g: Game, d: number, box: number): boolean {
-  const cells = UNITS[18 + box].filter(i => g.values[i] === 0 && g.cands[i] & candMask(d));
-  if (cells.length < 2 || cells.length > 5) return false;
-  const rows = new Set<number>(), cols = new Set<number>();
-  for (const c of cells) { rows.add(rowOfCell(c)); cols.add(colOfCell(c)); }
-  if (rows.size !== 1 || cols.size !== 1) return false;
-  const r = [...rows][0], k = [...cols][0];
-  const inter = r * 9 + k;
-  if (cells.includes(inter) && cells.length < 2) return false;
-  return true;
+function eriGeometry(g: Game, d: number, box: number): { intersectionCell: number; activeCells: number[]; linkedCells: number[] } | null {
+  const boxRow = Math.floor(box / 3) * 3;
+  const boxCol = (box % 3) * 3;
+  const boxCells = UNITS[18 + box].filter(i => g.values[i] === 0 && g.cands[i] & candMask(d));
+  if (boxCells.length < 4 || boxCells.length > 5) return null;
+  for (let r = boxRow; r < boxRow + 3; r++) {
+    for (let c = boxCol; c < boxCol + 3; c++) {
+      const intersectionCell = r * 9 + c;
+      const emptyCells = boxCells.filter(cell => Math.floor(cell / 9) !== r && cell % 9 !== c);
+      const hasDigitInEmpty = emptyCells.some(cell => g.cands[cell] & candMask(d));
+      if (hasDigitInEmpty) continue;
+      const activeCells = boxCells.filter(cell => Math.floor(cell / 9) === r);
+      const linkedCells = boxCells.filter(cell => cell % 9 === c);
+      if (activeCells.length === 0 || linkedCells.length === 0) continue;
+      return { intersectionCell, activeCells, linkedCells };
+    }
+  }
+  return null;
 }
 
 export function buildSliceLinks(g: Game): SliceLink[] {
@@ -83,7 +91,7 @@ export function buildSliceLinks(g: Game): SliceLink[] {
       links.push({
         digit: d, type: s < 9 ? 0 : 1,
         aCells: occupied[0], bCells: occupied[1],
-        sector: s, eri: false,
+        sector: s, eriGeometry: null,
       });
     }
     // types 2,3: boxes sliced by rows / cols, with ERi tagging
@@ -92,11 +100,11 @@ export function buildSliceLinks(g: Game): SliceLink[] {
         const parts = boxSliceSets(g, d, b, byRows);
         const occupied = parts.filter(p => p.length > 0);
         if (occupied.length !== 2) continue;
-        const eri = eriTag(g, d, b);
+        const geom = eriGeometry(g, d, b);
         links.push({
           digit: d, type: byRows ? 2 : 3,
           aCells: occupied[0], bCells: occupied[1],
-          sector: 18 + b, eri,
+          sector: 18 + b, eriGeometry: geom,
         });
       }
     }
