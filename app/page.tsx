@@ -140,7 +140,12 @@ export default function Home() {
         workerRef.current = null;
         w.terminate();
         setGenerating(false);
-        startGame(e.data.puzzle, e.data.solution, `${lvl} puzzle`, e.data.rating);
+        const data = e.data;
+        if ('failed' in data) {
+          setMsg(`Could not generate a ${lvl} puzzle after ${data.attempts} attempts. Current puzzle unchanged.`);
+        } else {
+          startGame(data.puzzle, data.solution, `${lvl} puzzle`, data.rating);
+        }
       };
       w.onerror = () => {
         workerRef.current = null;
@@ -148,7 +153,11 @@ export default function Home() {
         setTimeout(() => {
           setGenerating(false);
           const res = generatePuzzle(lvl);
-          startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+          if ('failed' in res) {
+            setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
+          } else {
+            startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+          }
         }, 30);
       };
       w.postMessage({ level: lvl });
@@ -156,7 +165,11 @@ export default function Home() {
       setTimeout(() => {
         setGenerating(false);
         const res = generatePuzzle(lvl);
-        startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+        if ('failed' in res) {
+          setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
+        } else {
+          startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
+        }
       }, 30);
     }
   };

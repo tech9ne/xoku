@@ -197,5 +197,9 @@ export function generatePuzzle(level: Level = "Easy") {
     if (d === 0) return candidate;
     if (d < bestDist) { best = candidate; bestDist = d; }
   }
-  return best!;
+  // StormDoku index.html:13354 - if no perfect match found, report failure
+  if (!best || dist(best.rating) !== 0) {
+    return { failed: true, attempts: maxAttempts[level], level };
+  }
+  return best;
 }
