@@ -363,15 +363,29 @@ export const remotePairs: Finder = (g) => {
     const [p, q] = candsOf(mask);
     for (const [end, dd] of [...dist.entries()]) {
       if (dd < 3 || dd % 2 === 0) continue;
-      const elims = commonPeers(start, end)
-        .filter(i => g.values[i] === 0 && g.cands[i] & mask)
-        .flatMap(i => candsOf(g.cands[i] & mask).map(c => ({ cell: i, cand: c })));
+      const elims: Elimination[] = [];
+      const seen = new Set<number>();
+      for (const [end2, dd] of [...dist.entries()]) {
+        if (dd < 1 || dd % 2 === 0) continue;
+        for (const [end3, dd3] of [...dist.entries()]) {
+          if (dd3 % 2 !== dd % 2 || end2 === end3) continue;
+          const pairPeers = commonPeers(end2, end3)
+            .filter(i => g.values[i] === 0 && g.cands[i] & mask);
+          for (const i of pairPeers) {
+            const key = i * 10 + p;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            for (const c of candsOf(g.cands[i] & mask)) elims.push({ cell: i, cand: c });
+          }
+        }
+      }
       if (!elims.length) continue;
       const chain: number[] = [];
       for (let c = end; c !== start; c = parent.get(c)!) chain.unshift(c);
       chain.unshift(start);
       return mk({
         technique: "Remote Pair", category: "Chain", score: 5.0,
+        candColors: chain.flatMap((c, k) => [{ cell: c, cand: p, color: k % 2 }, { cell: c, cand: q, color: (k + 1) % 2 }]),
         reason: `Remote Pair: ${chain.map((c, k) => bivStr(k % 2 === 0 ? p : q, k % 2 === 0 ? q : p, c)).join(" - ")} => ${conclusionStr(elims)}.`,
         eliminations: elims, patternCells: chain,
         patternCands: chain.flatMap(i => [{ cell: i, cand: p }, { cell: i, cand: q }]),
@@ -568,7 +582,7 @@ export const xyChain: Finder = (g) => {
               }
               if (elims.length === 0) continue;
               const samePair = ringCells.every(c => g.cands[c] === g.cands[start]);
-              const technique = samePair ? "Remote Pair - ring" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
+              const technique = samePair ? "Continuous Nice Loop" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
               return mk({
                 technique, category: "Chain", score: 5.5,
                 candColors: (() => {
