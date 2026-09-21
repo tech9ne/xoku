@@ -64,6 +64,41 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H34: Remote Pair + Hidden Remote Pair + chain scores per StormDoku chainMathScore; v14.3-h34
+- H33: type1/type2 ring closures routed through StormDoku classifier; v14.3-h33
+- H32: StormDoku classifier ported (steps=strong links, V/L grammar); v14.3-h32
+- H31b: L(1)-Ring score 5.5 (Irritating), reason de-duplicated; v14.3-h31b
+- H31: StormDoku name translations slice 1 (honest minimum); v14.3-h31
+- H30b: dead uniqueness finder bodies deleted; v14.3-h30b
+- STATE: record H27-H30 entries (cannibalism, parity painting, StormDoku adoption, uniqueness removal)
+- H30: uniqueness family removed from engine and names (mirror StrmCkr); v14.3-h30
+- H29: degenerate ring rejection + generation tier discipline (StormDoku port); v14.3-h29
+- H28: StormDoku adopted as engine Bible (face=Hodoku, engine=StormDoku); v14.3-h28
+- H27e: W-Wing whole-cell parity; v14.3-h27e
+- H27e: W-Wing whole-cell parity; v14.3-h27e
+- H27d: XY-Wing / XYZ-Wing whole-cell parity; v14.3-h27d
+- H27c: whole-ALS parity painting; v14.3-h27c
+- H27b: Remote Pair parity-pair elims, ring rename, alternation; v14.3-h27b
+- H27: ring cannibalism unblocked; master ledger opened; v14.3-h27
+- H26: ring closure, palette decollide, WXYZ absorption into ALS-XZ; v14.3-h26
+- H25: ring closure on entry digit, true closing edge, findAllSteps dedupe; v14.3-h25
+- H24: tier truth (status bar and dropdown sync to measured rating); v14.3-h24
+- H23c: XY-ring soundness (bivalue-only nodes, true weak links); v14.3-h23c
+- H23b: ring coloring per node (alternation restored, bystanders uncolored); v14.3-h23b
+- H23: engine audit (no blanks, presence checks, alternation); v14.3-h23
+- H22e: palette final form (violet/turquoise/hot pink succeed lavender/mist/yellow-orange); v14.3-h22e
+- H22d: palette unification (Hodoku chain trio, final twelve); v14.3-h22d
+- H22c: palette back to twelve (orangered/silver/charcoal replace removals); v14.3-h22c
+- H22b: palette final nine (pinks/earthies/slate out, green back, cobalt in); v14.3-h22b
+- H22a: swap-arrow elbow curved (quadratic bend, same position); v14.3-h22a
+- H22: palette rework (firebrick elim red, royal chain blue, ALS-safe swatches); v14.3-h22
+- docs: projection reading discipline - fish = subsets in RN/CN/BN (owner insight)
+- docs: strmckr.md - V/L tagging, AHS XOR structures, fishing guide, AIC 101, XOR gate formation
+- docs: strmckr.md - ERi hyper-XOR, AIC XOR/NAND chain theorem, ALS DOF/RCC rules
+- docs: STATE.md 6b - StormDoku2 path corrected to ~/refs/stormdoku
+- docs: STATE.md 6b - StrmCkr authority + reference clone paths
+- docs: STATE.md 6b - StrmCkr/StormDoku2 authority + reference clones
+- docs: STATE.md section 5 auto-regen from git log; queue reset; favicon note fixed
 - H20i path XR polish + H21 Frankin fish (X-Wing + Swordfish); v14.3-h21
 - H20h2: wing filters use FILTER_BG (#B9FFB9), same shade as digit filter; v14.3-h20h2
 - H20h1: wing filters highlight matching cells green (digit-filter language); v14.3-h20h1
@@ -306,6 +341,7 @@ Chosen from concepts A/D/J family (X-Wing identity). Favicon + launcher shipped 
   missing one mark (gap); eliminations must peer the fin/gap witness.
 - Discipline: run the subset eye down each digit column of RN, CN, BN;
   the panel where closure happens names the fish class.
+## 11. Milestone notes H22-H34 (narrative, hand-maintained)
 H22 (v14.3-h22): PALETTE REWORK — manual swatches rebuilt for ALS marking
 without colliding with chain-link colors: firebrick B22222 (eliminations),
 saddle 8B4513, olive 808000, indigo 4B0082, slate 708090 replace the
