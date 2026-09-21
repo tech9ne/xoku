@@ -482,10 +482,9 @@ export const wWing: Finder = (g) => {
             const t1 = o1 ? s1 : s2;
             const t2 = o1 ? s2 : s1;
             return [
-              { cell: A, cand: o, color: 0 },
               ...candsOf(g.cands[A]).map(d => ({ cell: A, cand: d, color: 0 })),
-              ...candsOf(g.cands[t1]).map(d => ({ cell: t1, cand: d, color: 1 })),
-              ...candsOf(g.cands[t2]).map(d => ({ cell: t2, cand: d, color: 0 })),
+              { cell: t1, cand: d, color: 1 },
+              { cell: t2, cand: d, color: 0 },
               ...candsOf(g.cands[B]).map(d => ({ cell: B, cand: d, color: 1 })),
             ];
           })(),
