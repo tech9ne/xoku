@@ -1331,7 +1331,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
                 return true;
               });
               if (uniq.length) {
-                const techName = mode === "type1" ? "AIC Type 1 - ring" : "AIC Type 2 - ring";
+                const techName = classifyStormChain(path, true);
                 return mk({
                   technique: techName, category: "Chain", score: 5.0,
                   candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
