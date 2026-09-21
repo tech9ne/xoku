@@ -1290,10 +1290,10 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               });
               if (uniq.length) {
                 return mk({
-                  technique: "L(1)-Ring", category: "Single Digit Chain", score: 6.0,
+                  technique: "L(1)-Ring", category: "Single Digit Chain", score: 5.5,
                   candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                   links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
-                  reason: `X-Chain - ring: closed loop on digit ${sDig} => ${conclusionStr(uniq)}.`,
+                  reason: `L(1)-Ring: closed loop on digit ${sDig} => ${conclusionStr(uniq)}.`,
                   eliminations: uniq,
                   patternCells: [...new Set(path.map(nodeCell))],
                   patternCands: path.map(n => ({ cell: nodeCell(n), cand: nodeDigit(n) })),

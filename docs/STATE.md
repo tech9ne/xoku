@@ -386,3 +386,11 @@ chain-builder node-merging rules (PublicChainStep merges bridge cells
 into single 'L' nodes); porting the grammar honestly requires studying
 his chain.ts builder first. This slice renames without changing
 detection logic.
+H31b (v14.3-h31b): L(1)-RING SCORE CORRECTED TO 5.5 — the +0.5 ring
+modifier replaces the open-chain premium per StormDoku's score equation
+("base + length excess + unique-digit excess + Open 0.25 or Ring 0.5"),
+it does not stack on the old 5.5 ring score. 5.0 base + 0.5 = 5.5 lands
+in Irritating [5.0,6.0), matching the Bible's ladder (X-Chains above
+four nodes, ring forms +0.5). User board-verified: the digit-7 closed
+loop eliminating r6c3/r6c4 sits under Irritating. Reason string
+de-duplicated to "L(1)-Ring: closed loop on digit N => ...".
