@@ -407,3 +407,15 @@ AIC sites. Inert in xoku: ERI/grouped/ALS branches (no linkType 1/2/3 or
 ALS steps yet) - they activate when H33 ports the five strong-link
 buckets. Guards hasWRingValueNodes/isSplitWingRing/isBivalveSplitWing
 deferred (chain.ts:2040/2198/2188).
+H34 (v14.3-h34): REMOTE PAIR RE-EARNED FROM STORMDOKU — predicate ported
+(index.html:10388): every node bivalue with the same two candidates (the
+user doctrine: an even number of cells carrying the same two candidates).
+Score now via chainMathScore(5, chain, 4, 2) = 5 + lengthExcess +
+digitExcess + 0.25 open / 0.5 ring, replacing chain-engine's bare
+xr-4.0 shortcut that bypassed naming-table minNodes:4. Name survives at
+two cells (Bible does); the Irritating row label "above four nodes"
+(index.html:8446) is display-only. XY-Wing (3,3,3 -> 3.25) and XY-Chain
+(5,4,2) scores ported on the same curve. Hidden Remote Pair branch
+ported (index.html:10402-10428): bilocation strong links alternating on
+two digits. chainLens classify now speaks StormDoku for all bivalue and
+hidden-pair chain shapes.

@@ -163,8 +163,30 @@ function classify(path: number[], t: ChainTables): { name: string; xr: number } 
       allBiv = false;
       break;
     }
+  // StormDoku chainMathScore: base + lengthExcess + digitExcess + closure
+  // (0.25 open / 0.5 ring). Remote Pair (5,4,2); XY-Wing (3,3,3); XY-Chain (5,4,2).
+  const steps = Math.ceil(path.length / 2);
+  const cms = (base: number, canonLen: number, canonDigits: number) =>
+    base + Math.max(0, steps - canonLen) + Math.max(0, digits.size - canonDigits) + 0.25;
   if (digits.size === 1) return hasSet ? { name: "Grouped X-Chain", xr: 6.6 } : { name: "X-Chain", xr: 5.8 };
-  if (allBiv) return digits.size === 2 ? { name: "Remote Pair", xr: 4.0 } : { name: "XY-Chain", xr: 6.0 };
+  if (allBiv) {
+    if (digits.size === 2) return { name: "Remote Pair", xr: cms(5, 4, 2) };
+    if (steps === 3) return { name: "XY-Wing", xr: cms(3, 3, 3) };
+    return { name: "XY-Chain", xr: cms(5, 4, 2) };
+  }
+  // Hidden Remote Pair (index.html:10402-10428): bilocation strong links
+  // alternating on two digits.
+  if (digits.size === 2) {
+    const linkDigits: number[] = [];
+    let ok = true;
+    for (let k = 0; k + 1 < path.length; k += 2) {
+      if (keyCell(path[k]) === keyCell(path[k + 1])) { ok = false; break; }
+      const d = keyDigit(path[k]);
+      if (linkDigits.length && linkDigits[linkDigits.length - 1] === d) { ok = false; break; }
+      linkDigits.push(d);
+    }
+    if (ok && linkDigits.length >= 2) return { name: "Hidden Remote Pair", xr: cms(5, 4, 2) };
+  }
   return hasSet ? { name: "Grouped AIC", xr: 6.6 } : { name: "AIC", xr: 6.2 };
 }
 
