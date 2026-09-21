@@ -537,6 +537,7 @@ export const xyChain: Finder = (g) => {
   const biSet = new Set(bi);
   let budget = 150_000;
   for (const start of bi) {
+    if (countCands(g.cands[start]) !== 2) continue;
     const [d1, d2] = candsOf(g.cands[start]);
     for (const z of [d1, d2]) {
       const firstOut = d1 === z ? d2 : d1;
@@ -591,8 +592,10 @@ export const xyChain: Finder = (g) => {
               });
             }
           }
-          const other = candsOf(g.cands[j]).find(dd => dd !== out);
-          if (other !== undefined && path.length < 15) stack.push({ cell: j, out: other, path: [...path, j] });
+          if (countCands(g.cands[j]) === 2 && (g.cands[j] & candMask(out))) {
+            const other = candsOf(g.cands[j]).find(dd => dd !== out)!;
+            if (path.length < 15) stack.push({ cell: j, out: other, path: [...path, j] });
+          }
         }
       }
     }
