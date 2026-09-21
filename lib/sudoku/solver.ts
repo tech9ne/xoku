@@ -100,9 +100,9 @@ export type Level = "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | 
 // Every technique has an XR; a puzzle's XR is the rating of the hardest
 // technique its solve path actually requires. Levels are bands over XR:
 //   Easy       1.0 - 1.9   singles only
-//   Moderate     2.0 - 4.9   locked candidates, subsets, X-Wing, UR, BUG+1,
+//   Moderate     2.0 - 4.9   locked candidates, subsets, X-Wing,
 //                          skyscraper/kite/turbot, colors, remote pairs, XY/XYZ-wings
-//   Hard       5.0 - 6.9   swordfish, W-wing, BUG+2/+3, jellyfish, XY-chains
+//   Hard       5.0 - 6.9   swordfish, W-wing, jellyfish, XY-chains
 //   Brutal 7.0 - 8.4   ALS family, death blossom, kraken fish
 //   Nightmare    8.5+ / not solvable with the current engine
 const XR_BAND: Record<Level, { min: number; max: number } | null> = {

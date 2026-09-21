@@ -557,6 +557,8 @@ export const xyChain: Finder = (g) => {
           if (j === start && path.length >= 4) {
             if (out === z) {
               const ringCells = [...path, j];
+              const distinctCells = new Set(ringCells).size;
+              if (distinctCells < 3) continue; // degenerate: 2 distinct cells = naked pair, not a ring (StormDoku chain.ts:258-259 isRing requires proper closure)
               const inRing = new Set(ringCells);
               const elims: Elimination[] = [];
               const weakPairs: [number, number, number][] = [];
@@ -1905,23 +1907,15 @@ export const FINDERS: Finder[] = [
   makeHiddenSubset(4),     // XR 3.0
   makeBasicFish(2),
   makeFinnedFish(2),        // XR 3.0  X-Wing
-  bugPlus1,                // XR 3.2  BUG+1
-  uniqueRectangle1,        // XR 3.3  UR Type 1
-  urType2,                 // XR 3.4 / 3.5  UR Types 2 and 5
-  urType3,                 // XR 3.6
-  urType4,                 // XR 3.7
   singleDigitChains,       // XR 3.8 / 4.0 / 4.2
-  bugLite,                 // XR 4.0
   remotePairs,             // XR 4.0
   xyWing,                  // XR 4.6
   xyzWing,                 // XR 4.8
-  bugPlus2,                // XR 5.0
   makeBasicFish(3),
   makeFinnedFish(3),        // XR 5.0  Swordfish
   frankenFish2,              // XR 5.0  Finned Franken X-Wing
   frankenFish3,              // XR 6.0  Finned Franken Swordfish
   wWing,                   // XR 5.2
-  bugPlus3,                // XR 5.2
   makeBasicFish(4),
   makeFinnedFish(4),        // XR 5.4  Jellyfish
   xChain,                  // XR 5.8
@@ -1966,7 +1960,6 @@ export const TECHNIQUE_NAMES = [
   "X-Wing", "Swordfish", "Jellyfish",
   "Skyscraper", "2-String Kite",  "Remote Pair",
   "XY-Wing", "XYZ-Wing", "W-Wing",
-  "Unique Rectangle Types 1-5", "BUG Lite", "BUG+1", "BUG+2", "BUG+3",
   "X-Chain", "XY-Chain", "AIC Type 1", "AIC Type 2",
   "ALS-XZ", "ALS-XY-Wing", "ALS Chain", "Death Blossom", "AIC (ALS nodes)",
 
