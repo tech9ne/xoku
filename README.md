@@ -42,3 +42,13 @@ general chain logic and are now expressed as chains.
 ## Versioning
 Build tags follow `v<major>.<minor>-h<commit>`; every milestone is recorded
 in `docs/STATE.md`.
+
+## Provenance & license
+- Engine logic, technique taxonomy and names follow StrmCkr's StormDoku
+  (~/stormdoku), used with his permission; tech9ne is a named StormDoku
+  contributor (15/30 commits). Logic and names are reimplemented in xoku's
+  own code; docs/rewrite-ledger.md lists files that currently mirror
+  StormDoku source and their rewrite status.
+- UI/pedagogy follow HoDoKu (PseudoFish fork); binary assets (hint PNGs,
+  digit icons, reset.png) originate from that fork.
+- xoku license: GPL-3.0-or-later (see LICENSE file).
