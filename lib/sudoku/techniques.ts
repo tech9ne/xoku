@@ -568,82 +568,21 @@ export const xyChain: Finder = (g) => {
                   if (g.values[i] === 0 && g.cands[i] & candMask(dd)) elims.push({ cell: i, cand: dd });
                 }
               }
-              if (elims.length) {
-                const samePair = ringCells.every(c => g.cands[c] === g.cands[start]);
-                const technique = samePair ? "Remote Pair - ring" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
-                return mk({
-                  technique, category: "Chain", score: 5.5,
-                  candColors: ringCells.flatMap((c, k) => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: k % 2 }))),
-                  links: weakPairs.map(([aa, bb, dd]) => ({ from: { cell: aa, cand: dd }, to: { cell: bb, cand: dd }, strong: false })),
-                  reason: `${technique}: closed XY loop of ${ringCells.length} cells => ${conclusionStr(elims)}.`,
-                  eliminations: elims, patternCells: ringCells,
-                  patternCands: ringCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
-                });
-              }
-            }
-          }
-          if (!biSet.has(j) || path.includes(j)) continue;
-          if (!(g.cands[j] & candMask(out))) continue;
-          const other = candsOf(g.cands[j]).find(d => d !== out)!;
-          if (other === z && path.length + 1 >= 4) {
-            const elims = commonPeers(start, j)
-              .filter(i => g.values[i] === 0 && g.cands[i] & candMask(z))
-              .map((i): Elimination => ({ cell: i, cand: z }));
-            if (elims.length) {
-              const chain = [...path, j];
-      const xyNot = (() => {
-        const parts: string[] = [];
-        let incoming = z;
-        for (let k = 0; k + 1 < chain.length; k++) {
-          const a = chain[k], b = chain[k + 1];
-          const outgoing = candsOf(g.cands[a] & g.cands[b]).find(x => x !== incoming)!;
-          parts.push(bivStr(incoming, outgoing, a));
-          incoming = outgoing;
-        }
-        parts.push(bivStr(incoming, z, chain[chain.length - 1]));
-        return parts.join(" - ");
-      })();
+              if (elims.length === 0) continue;
+              const samePair = ringCells.every(c => g.cands[c] === g.cands[start]);
+              const technique = samePair ? "Remote Pair - ring" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
               return mk({
-                technique: "XY-Chain", category: "Chain", score: 5.0,
-candColors: (() => {
-              // blue-first, derived from the walk: in every cell the incoming
-              // digit (shared with the previous cell) is blue/OFF, the outgoing
-              // digit (shared with the next) is green/ON. Endpoints: chain[0]:z
-              // is the OFF assumption (blue), chain[last]:z the derived ON (green).
-              const out: { cell: number; cand: number; color: number }[] = [];
-              out.push({ cell: chain[0], cand: z, color: 0 });
-              let incoming = z;
-              for (let k = 0; k + 1 < chain.length; k++) {
-                const a = chain[k], b = chain[k + 1];
-                const outgoing = candsOf(g.cands[a] & g.cands[b]).find(x => x !== incoming)!;
-                out.push({ cell: a, cand: outgoing, color: 1 });
-                out.push({ cell: b, cand: outgoing, color: 0 });
-                incoming = outgoing;
-              }
-              out.push({ cell: chain[chain.length - 1], cand: z, color: 1 });
-              return out;
-            })(),
-            links: (() => {
-              const L: { from: { cell: number; cand: number }; to: { cell: number; cand: number }; strong: boolean }[] = [];
-              let incoming = z;
-              for (let k = 0; k + 1 < chain.length; k++) {
-                const a = chain[k], b = chain[k + 1];
-                const outgoing = candsOf(g.cands[a] & g.cands[b]).find(x => x !== incoming)!;
-                L.push({ from: { cell: a, cand: incoming }, to: { cell: a, cand: outgoing }, strong: true });
-                L.push({ from: { cell: a, cand: outgoing }, to: { cell: b, cand: outgoing }, strong: false });
-                incoming = outgoing;
-              }
-              L.push({ from: { cell: chain[chain.length - 1], cand: incoming }, to: { cell: chain[chain.length - 1], cand: z }, strong: true });
-              return L;
-            })(),
-                                                                    
-                reason: `XY-Chain: ${xyNot} => ${conclusionStr(elims)}.`,
-                eliminations: elims, patternCells: chain,
-                patternCands: chain.flatMap(i => candsOf(g.cands[i]).map(d => ({ cell: i, cand: d }))),
+                technique, category: "Chain", score: 5.5,
+                candColors: ringCells.flatMap((c, k) => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d, color: k % 2 }))),
+                links: weakPairs.map(([aa, bb, dd]) => ({ from: { cell: aa, cand: dd }, to: { cell: bb, cand: dd }, strong: false })),
+                reason: `${technique}: closed XY loop of ${ringCells.length} cells => ${conclusionStr(elims)}.`,
+                eliminations: elims, patternCells: ringCells,
+                patternCands: ringCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
               });
             }
           }
-          if (path.length < 15) stack.push({ cell: j, out: other, path: [...path, j] });
+          const other = candsOf(g.cands[j]).find(dd => dd !== out);
+          if (other !== undefined && path.length < 15) stack.push({ cell: j, out: other, path: [...path, j] });
         }
       }
     }
@@ -911,9 +850,9 @@ export const ahsXZ: Finder = (g) => {
           const zB = B.cells.filter(c => g.cands[c] & candMask(z));
           // Eliminate z from cells seeing all z placements in both AHSs
           const elims = empt
-            .filter(t => zA.every(a => fastPeers(t, a)) && zB.every(b => fastPeers(t, b)))
+            .filter(t => (g.cands[t] & candMask(z)) !== 0 && zA.every(a => fastPeers(t, a)) && zB.every(b => fastPeers(t, b)))
             .map(t => ({ cell: t, cand: z }));
-          if (!elims.length) continue;
+          if (elims.length === 0) continue;
           const patternCells = [...A.cells, ...B.cells];
           return mk({
             technique: "AHS-XZ",
@@ -1407,9 +1346,9 @@ export const wxyzWing: Finder = (g) => {
           // Eliminate z from cells seeing all z in the structure
           const zCells = allCells.filter(c => g.cands[c] & candMask(z));
           const elims = empt
-            .filter(t => zCells.every(zc => fastPeers(t, zc)))
+            .filter(t => (g.cands[t] & candMask(z)) !== 0 && zCells.every(zc => fastPeers(t, zc)))
             .map(t => ({ cell: t, cand: z }));
-          if (!elims.length) continue;
+          if (elims.length === 0) continue;
           return mk({
             technique: "WXYZ-Wing",
             category: "Wing", score: 4.5,
@@ -1991,7 +1930,7 @@ export const FINDERS: Finder[] = [
 ];
 
 export function findNextStep(g: Game): Step | null {
-  for (const f of FINDERS) { const s = f(g); if (s) return s; }
+  for (const f of FINDERS) { const s = f(g); if (s && (s.eliminations.length > 0 || s.placements.length > 0)) return s; }
   return null;
 }
 
