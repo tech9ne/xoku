@@ -548,9 +548,8 @@ export const xyChain: Finder = (g) => {
         if (--budget < 0) return null;
         const { cell, out, path } = stack.pop()!;
         for (const j of PEERS[cell]) {
-          if (j === start && path.length >= 4 && (g.cands[j] & candMask(out))) {
-            const w = candsOf(g.cands[j]).find(dd => dd !== out && candsOf(g.cands[start]).includes(dd));
-            if (w !== undefined) {
+          if (j === start && path.length >= 4) {
+            if (out === z) {
               const ringCells = [...path, j];
               const inRing = new Set(ringCells);
               const elims: Elimination[] = [];
@@ -562,7 +561,7 @@ export const xyChain: Finder = (g) => {
                 weakPairs.push([aa, bb, outgoing]);
                 incoming = outgoing;
               }
-              weakPairs.push([j, start, w]);
+              weakPairs.push([ringCells[ringCells.length - 1], start, z]);
               for (const [aa, bb, dd] of weakPairs) {
                 for (const i of commonPeers(aa, bb)) {
                   if (inRing.has(i)) continue;
@@ -1948,7 +1947,18 @@ export function findNextStep(g: Game): Step | null {
 }
 
 export function findAllSteps(g: Game): Step[] {
-  return FINDERS.map(f => f(g))
+  return (() => {
+    const seen = new Set<string>();
+    const out: Step[] = [];
+    for (const f of FINDERS) {
+      const st = f(g);
+      if (!st || (st.eliminations.length === 0 && st.placements.length === 0)) continue;
+      const key = st.technique + "|" + st.eliminations.map(e => e.cell * 10 + e.cand).sort((x, y) => x - y).join(",") + "|" + (st.patternCells ?? []).slice().sort((x, y) => x - y).join(",");
+      if (seen.has(key)) continue;
+      seen.add(key); out.push(st);
+    }
+    return out;
+  })()
     .filter((s): s is Step => !!s)
     .sort((a, b) => a.score - b.score);
 }
