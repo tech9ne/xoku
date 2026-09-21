@@ -376,3 +376,13 @@ findBug (bugPlus1/2/3), urType2/3/4, bugLite function definitions
 removed from techniques.ts (lines 513-539, 611-694, 896-1117). The
 uniqueness family is now completely gone from the engine; only the
 import-time countSolutions===1 validity check remains.
+H31 (v14.3-h31): STORMDOKU NAME TRANSLATIONS SLICE 1 — honest minimum
+port: translate existing findAic technique strings to StormDoku names
+where mapping is unambiguous. "AIC Type 1" / "AIC Type 2" → "AIC" (his
+taxonomy collapses both). "X-Chain - ring" → "L(1)-Ring" at score 6.0
+(5.5 + 0.5 ring bonus). "XY-Ring" → "AIC Ring". Deferred to H32+: full
+V/L pattern grammar classifier requires understanding StormDoku's
+chain-builder node-merging rules (PublicChainStep merges bridge cells
+into single 'L' nodes); porting the grammar honestly requires studying
+his chain.ts builder first. This slice renames without changing
+detection logic.

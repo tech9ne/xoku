@@ -550,7 +550,7 @@ export const xyChain: Finder = (g) => {
               }
               if (elims.length === 0) continue;
               const samePair = ringCells.every(c => g.cands[c] === g.cands[start]);
-              const technique = samePair ? "Continuous Nice Loop" : (ringCells.length === 4 ? "XY-Ring" : "XY-Chain - ring");
+              const technique = samePair ? "Continuous Nice Loop" : (ringCells.length === 4 ? "AIC Ring" : "XY-Chain - ring");
               return mk({
                 technique, category: "Chain", score: 5.5,
                 candColors: (() => {
@@ -1290,7 +1290,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               });
               if (uniq.length) {
                 return mk({
-                  technique: "X-Chain - ring", category: "Single Digit Chain", score: 5.5,
+                  technique: "L(1)-Ring", category: "Single Digit Chain", score: 6.0,
                   candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                   links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                   reason: `X-Chain - ring: closed loop on digit ${sDig} => ${conclusionStr(uniq)}.`,
@@ -1379,7 +1379,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
               .map(t => ({ cell: t, cand: d }));
             if (elims.length) {
               return mk({
-                technique: "AIC Type 1", category: "Chain", score: 4.5,
+                technique: "AIC", category: "Chain", score: 4.5,
                 candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                 links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} => ${conclusionStr(elims)}.`,
@@ -1405,7 +1405,7 @@ function findAic(g: Game, mode: "xchain" | "type1" | "type2"): Step | null {
             }
             if (elims.length) {
               return mk({
-                technique: "AIC Type 2", category: "Chain", score: 4.5,
+                technique: "AIC", category: "Chain", score: 4.5,
                 candColors: path.map((n, k) => ({ cell: nodeCell(n), cand: nodeDigit(n), color: k % 2 })),
                 links: path.slice(0, -1).map((n, k) => ({ from: { cell: nodeCell(n), cand: nodeDigit(n) }, to: { cell: nodeCell(path[k + 1]), cand: nodeDigit(path[k + 1]) }, strong: k % 2 === 0 })),
                 reason: `AIC: ${chainStr(path)} => ${conclusionStr(elims)}.`,
