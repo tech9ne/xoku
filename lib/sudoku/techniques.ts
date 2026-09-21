@@ -412,12 +412,9 @@ export const xyWing: Finder = (g) => {
         return mk({
           technique: "XY-Wing", category: "Wing", score: 3.5,
           candColors: [
-            { cell: a, cand: z, color: 0 },
-            { cell: a, cand: x, color: 1 },
-            { cell: p, cand: x, color: 0 },
-            { cell: p, cand: y, color: 1 },
-            { cell: b, cand: y, color: 0 },
-            { cell: b, cand: z, color: 1 },
+            ...candsOf(g.cands[a]).map(d => ({ cell: a, cand: d, color: 0 })),
+            ...candsOf(g.cands[p]).map(d => ({ cell: p, cand: d, color: 1 })),
+            ...candsOf(g.cands[b]).map(d => ({ cell: b, cand: d, color: 0 })),
           ],
                                                   reason: `XY-Wing: ${bivStr(z, x, a)} - ${bivStr(x, y, p)} - ${bivStr(y, z, b)} => ${conclusionStr(elims)}.`,
           eliminations: elims, patternCells: [p, a, b],
@@ -445,12 +442,9 @@ export const xyzWing: Finder = (g) => {
         return mk({
           technique: "XYZ-Wing", category: "Wing", score: 3.5,
           candColors: [
-            ...ccOf(g, [a], z).map(c => ({ cell: c, cand: z, color: 0 })),
-            ...ccOf(g, [a], x).map(c => ({ cell: c, cand: x, color: 1 })),
-            ...ccOf(g, [p], x).map(c => ({ cell: c, cand: x, color: 0 })),
-            ...ccOf(g, [p], y).map(c => ({ cell: c, cand: y, color: 4 })),
-            ...ccOf(g, [b], y).map(c => ({ cell: c, cand: y, color: 4 })),
-            ...ccOf(g, [b], z).map(c => ({ cell: c, cand: z, color: 1 })),
+            ...candsOf(g.cands[a]).map(d => ({ cell: a, cand: d, color: 0 })),
+            ...candsOf(g.cands[p]).map(d => ({ cell: p, cand: d, color: 1 })),
+            ...candsOf(g.cands[b]).map(d => ({ cell: b, cand: d, color: 0 })),
           ],
                               reason: `XYZ-Wing: pivot ${cellName(p)} (${x}/${y}/${z}) with pincers ${cellName(a)} and ${cellName(b)} — ${z} must be in the pivot or a pincer.`,
           eliminations: elims, patternCells: [p, a, b],
