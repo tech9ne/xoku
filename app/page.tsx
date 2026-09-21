@@ -98,6 +98,7 @@ export default function Home() {
     setGenerating(false);
     const r = rating ?? rateGame(g);
     setMsg(`${label ?? "New game"} — XR ${r.hardest.toFixed(1)} · ${levelOfRating(r)} · hardest: ${r.hardestTechnique}`);
+    setLevel(levelOfRating(r));
   }, []);
 
   useEffect(() => {
