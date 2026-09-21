@@ -563,7 +563,6 @@ export const xyChain: Finder = (g) => {
               }
               for (const [aa, bb, dd] of weakPairs) {
                 for (const i of commonPeers(aa, bb)) {
-                  if (inRing.has(i)) continue;
                   if (g.values[i] === 0 && g.cands[i] & candMask(dd)) elims.push({ cell: i, cand: dd });
                 }
               }
