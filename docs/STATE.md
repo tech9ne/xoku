@@ -371,3 +371,8 @@ and name literals (XY-Wing, W-Wing, S-Wing, H(n)-Wing, M(n)-Wing,
 L(n)-Wing/Ring, W-Ring, Y-Ring, H(2)-Ring, M(2)-Ring, Strong-Ring,
 AIC Ring, Transport, T-ALS-XZ/XY, inverted i*-names; WEAK_TYPE_NAMES
 LOCAL/SECTOR).
+H30b (v14.3-h30b): DEAD UNIQUENESS BODIES DELETED — uniqueRectangle1,
+findBug (bugPlus1/2/3), urType2/3/4, bugLite function definitions
+removed from techniques.ts (lines 513-539, 611-694, 896-1117). The
+uniqueness family is now completely gone from the engine; only the
+import-time countSolutions===1 validity check remains.
