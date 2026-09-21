@@ -10,10 +10,10 @@ const FILTER_BG_X = "bg-[#FFB9B9]";
 const HINT_COLORS = [
   { node: "bg-[#33CCFF] text-black", cell: "bg-[#33CCFF]/20" },
   { node: "bg-[#3FDA65] text-black", cell: "bg-[#3FDA65]/20" },
-  { node: "bg-[#FF8800] text-black", cell: "bg-[#FF8800]/20" },
   { node: "bg-[#9D4EDD] text-white", cell: "bg-[#9D4EDD]/20" },
   { node: "bg-[#FF00FF] text-white", cell: "bg-[#FF00FF]/20" },
-  { node: "bg-[#800000] text-white", cell: "bg-[#800000]/20" },
+  { node: "bg-[#FF69B4] text-black", cell: "bg-[#FF69B4]/20" },
+  { node: "bg-[#FFB347] text-black", cell: "bg-[#FFB347]/20" },
 ];
 const H = ["FFC059","FF4500","86F280","33CCFF","FFFF00","F7DE8F","FF00FF","DA70D6","8A2BE2","B1A5F3","40E0D0","FF69B4"];
 const MANUAL_HEX = H.map(h => "#" + h);

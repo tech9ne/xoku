@@ -561,7 +561,6 @@ export const xyChain: Finder = (g) => {
                 weakPairs.push([aa, bb, outgoing]);
                 incoming = outgoing;
               }
-              weakPairs.push([ringCells[ringCells.length - 1], start, z]);
               for (const [aa, bb, dd] of weakPairs) {
                 for (const i of commonPeers(aa, bb)) {
                   if (inRing.has(i)) continue;
@@ -576,7 +575,7 @@ export const xyChain: Finder = (g) => {
                 candColors: (() => {
                   const nodeColor = new Map<number, number>();
                   let t = 0, inc = z;
-                  for (let k = 0; k < ringCells.length; k++) {
+                  for (let k = 0; k < ringCells.length - 1; k++) {
                     const outD = weakPairs[k][2];
                     nodeColor.set(ringCells[k] * 10 + inc, t % 2);
                     nodeColor.set(ringCells[k] * 10 + outD, (t + 1) % 2);
@@ -585,7 +584,7 @@ export const xyChain: Finder = (g) => {
                   return [...nodeColor.entries()].map(([key, color]) => ({ cell: Math.floor(key / 10), cand: key % 10, color }));
                 })(),
                 links: weakPairs.map(([aa, bb, dd]) => ({ from: { cell: aa, cand: dd }, to: { cell: bb, cand: dd }, strong: false })),
-                reason: `${technique}: closed XY loop of ${ringCells.length} cells => ${conclusionStr(elims)}.`,
+                reason: `${technique}: closed XY loop of ${ringCells.length - 1} cells => ${conclusionStr(elims)}.`,
                 eliminations: elims, patternCells: ringCells,
                 patternCands: ringCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
               });
@@ -866,16 +865,18 @@ export const ahsXZ: Finder = (g) => {
             .map(t => ({ cell: t, cand: z }));
           if (elims.length === 0) continue;
           const patternCells = [...A.cells, ...B.cells];
+          const isWXYZ = (A.cells.length === 1 && countCands(g.cands[A.cells[0]]) === 2 && B.cells.length === 3) ||
+            (B.cells.length === 1 && countCands(g.cands[B.cells[0]]) === 2 && A.cells.length === 3);
           return mk({
-            technique: "AHS-XZ",
-            category: "ALS", score: 7.0,
+            technique: isWXYZ ? "WXYZ-Wing" : "AHS-XZ",
+            category: "ALS", score: isWXYZ ? 4.8 : 7.0,
             candColors: [
               ...zB.map(c => ({ cell: c, cand: z, color: 0 })),
               ...xB.map(c => ({ cell: c, cand: x, color: 1 })),
               ...xA.map(c => ({ cell: c, cand: x, color: 0 })),
               ...zA.map(c => ({ cell: c, cand: z, color: 1 })),
             ],
-            reason: `AHS ${A.cells.map(cellName).join("+")} (digits ${A.digits.join("")}) and AHS ${B.cells.map(cellName).join("+")} (digits ${B.digits.join("")}) share restricted placement state ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets.`,
+            reason: isWXYZ ? `WXYZ-Wing: hinge ${A.cells.length === 1 ? cellName(A.cells[0]) : cellName(B.cells[0])} with wings ${A.cells.length === 1 ? B.cells.map(cellName).join(", ") : A.cells.map(cellName).join(", ")} — restricted common ${x} between hinge and wings forces ${z} into the structure` : `AHS ${A.cells.map(cellName).join("+")} (digits ${A.digits.join("")}) and AHS ${B.cells.map(cellName).join("+")} (digits ${B.digits.join("")}) share restricted placement state ${x}: if ${x} is placed in one set it is removed from the other, locking it and forcing ${z}; if ${x} is false in the first set, that set locks and forces ${z} itself — either way ${z} must be true in one of the two sets.`,
             eliminations: elims, patternCells,
             patternCands: patternCells.flatMap(c => candsOf(g.cands[c]).map(d => ({ cell: c, cand: d }))),
           });
@@ -1935,7 +1936,7 @@ export const FINDERS: Finder[] = [
   ahsXZ,
   sueDeCoq,                   // XR 7.0
   alsXYWing,
-  wxyzWing,               // XR 7.2
+
   alsChain,                // XR 7.4
   deathBlossom,            // XR 7.6
   chainLens,               // Stage 1a: master chain engine (runs last)
