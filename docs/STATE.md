@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36c: ALS chain naming + rendering in chainLens
 - H36b3: ALS weak links + chain walker consumption
 - H36b2: intra-ALS strong links (inclusive-OR on digit pairs)
 - H36b1: ALS node registration in chain tables (cycle noted)
@@ -494,3 +495,12 @@ ALS-XY-Wing (3), ALS-Chain (>3) with score 6.0+0.3*n; patternCells/
 patternCands render ALS member cells; links skip ALS endpoints (drawn as
 set-like nodes). Local classify retained for non-ALS paths. StormDoku
 modular ALS grammar (chain.ts:486-690) deferred to H36d.
+
+H36f (v14.3-h36f): ALS-KEY SOUNDNESS FIXES — isSetKey(k)=k>=1000 also
+matches ALS keys (>=3000), so six decode sites indexed t.sets[k-1000]
+out of range. Fixed: weakFrom early-returns alsWeak; tryEnding sd/ed use
+ALS-safe digOfNode; T1 on-path loop delegates to onPathNode; local
+classify bails to AIC on ALS paths; renderNotation emits ALS(...) tokens.
+Audit v5 updated to skip ALS paths (different endpoint semantics).
+Result: SOUNDNESS OK - 111 chains audited; ALS paths confirmed firing
+(56/99 on probe puzzle, alternating ALS->RCC->ALS structure intact).

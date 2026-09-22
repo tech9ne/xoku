@@ -19,6 +19,7 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
 
   const weakFrom = (k: number): number[] => {
     const out: number[] = [];
+    if (isAlsKey(k)) return t.alsWeak.get(k) ?? [];
     const d = isSetKey(k) ? t.sets[k - 1000].digit : keyDigit(k);
     if (!isSetKey(k)) {
       const c = keyCell(k);
@@ -55,8 +56,11 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
                        : (keyCell(k) === c && keyDigit(k) === d);
   };
   const tryEnding = (start: number, end: number, path: number[]): { cell: number; cand: number }[] | null => {
-    const sd = isSetKey(start) ? t.sets[start - 1000].digit : keyDigit(start);
-    const ed = isSetKey(end) ? t.sets[end - 1000].digit : keyDigit(end);
+    const digOfNode = (k: number) => isAlsKey(k)
+      ? (t.alsNodes.find(n => n.nodeKey === k)?.digit ?? 0)
+      : isSetKey(k) ? t.sets[k - 1000].digit : keyDigit(k);
+    const sd = digOfNode(start);
+    const ed = digOfNode(end);
     if (sd === ed) {
       // T1: victims see all cells of both endpoint objects
       const sc = cellsOf(start), ec = cellsOf(end);
@@ -66,8 +70,7 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         if (sc.includes(c) || ec.includes(c)) continue;
         let onPath = false;
         for (const k of path) {
-          if (isSetKey(k)) { if (t.sets[k - 1000].digit === sd && t.sets[k - 1000].cells.includes(c)) { onPath = true; break; } }
-          else if (keyCell(k) === c && keyDigit(k) === sd) { onPath = true; break; }
+          if (onPathNode(k, c, sd)) { onPath = true; break; }
         }
         if (onPath) continue;
         if (sc.every(s => seesCell(c, s)) && ec.every(s => seesCell(c, s)))
@@ -131,7 +134,7 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
 
 // ---- notation: folds by service, hoisting for single-digit chains ----
 function renderNotation(g: Game, t: ChainTables, path: number[]): string {
-  const digitOf = (n: number) => (isSetKey(n) ? t.sets[n - 1000].digit : keyDigit(n));
+  const digitOf = (n: number) => isAlsKey(n) ? (t.alsNodes.find(x => x.nodeKey === n)?.digit ?? 0) : isSetKey(n) ? t.sets[n - 1000].digit : keyDigit(n);
   const allSame = path.every(n => digitOf(n) === digitOf(path[0]));
   const toks: { text: string; endIdx: number }[] = [];
   let k = 0;
@@ -145,6 +148,11 @@ function renderNotation(g: Game, t: ChainTables, path: number[]): string {
       const conn = k % 2 === 0 && pairIsBiv ? "=" : "-";
       toks.push({ text: `(${d1} ${conn} ${d2})${cellName(c)}`, endIdx: k + 1 });
       k += 2;
+    } else if (isAlsKey(path[k])) {
+      const als = t.alsNodes.find(x => x.nodeKey === path[k]);
+      const cells = als?.cells ?? [];
+      toks.push({ text: allSame ? `ALS(${compressCells(cells)})` : `ALS:${digitOf(path[k])}:${compressCells(cells)}`, endIdx: k });
+      k += 1;
     } else if (isSetKey(path[k])) {
       const cells = t.sets[path[k] - 1000].cells;
       toks.push({ text: allSame ? `(${compressCells(cells)})` : setNodeStr(digitOf(path[k]), cells), endIdx: k });
@@ -164,6 +172,7 @@ function renderNotation(g: Game, t: ChainTables, path: number[]): string {
 }
 
 function classify(path: number[], t: ChainTables): { name: string; xr: number } {
+  if (path.some(isAlsKey)) return { name: "AIC", xr: 6.2 };
   const digits = new Set(path.map(n => (isSetKey(n) ? t.sets[n - 1000].digit : keyDigit(n))));
   const hasSet = path.some(isSetKey);
   let allBiv = true;

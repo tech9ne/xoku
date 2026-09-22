@@ -25,6 +25,7 @@ for (const p of puzzles) {
   const t = T.buildChainTables(g);
   const found = E.searchChains(g, t, 4);
   for (const f of found) {
+    if (f.path.some(T.isAlsKey)) continue; // skip ALS paths (different semantics)
     total++;
     const dig = k => (T.isSetKey(k) ? t.sets[k - 1000].digit : k % 10);
     const kind = k => (T.isSetKey(k) ? "set" : "cand");
