@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36a: ERI geometry detection with rich metadata (intersection/active/linked cells)
 - docs: provenance credit + rewrite ledger (H35a)
 - docs: regen section 5 from git log; header the H22-H34 narrative appendix
 - H34: Remote Pair + Hidden Remote Pair + chain scores per StormDoku chainMathScore; v14.3-h34
@@ -464,3 +465,9 @@ StormDoku strong-link.ts eriGeometries (4-5 candidate box rule, empty
 rectangle validation, active/linked cell split); chain-tables.ts updated
 to consume new geometry field. ERI now provides intersectionCell,
 activeCells, linkedCells for directional row↔column swapping in chains.
+
+H36b1 (v14.3-h36b1): ALS NODE REGISTRATION — ChainTables gains alsNodes
+(alsIndex, digit, nodeKey = 3000+alsIndex*10+digit, cells); enumerateAls
+exported from techniques.ts (creates techniques<->chain-tables cycle:
+function-level only, runtime-safe, accepted consciously). Nodes carry no
+links yet; H36b2 adds intra-ALS strong links, H36b3 RCC weak links.

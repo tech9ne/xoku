@@ -4,8 +4,11 @@
 // from slices.ts - single-cell sides collapse to candidate nodes).
 import { ALL_DIGITS, Game, UNITS, candMask, candsOf } from "./core";
 import { buildSliceLinks } from "./slices";
+import { enumerateAls } from "./techniques";
 
 export const isSetKey = (k: number) => k >= 1000;
+export const alsKey = (alsIndex: number, digit: number) => 3000 + alsIndex * 10 + digit;
+export const isAlsKey = (k: number) => k >= 3000;
 export const candKey = (cell: number, digit: number) => cell * 10 + digit;
 export const keyCell = (k: number) => Math.floor(k / 10);
 export const keyDigit = (k: number) => k % 10;
@@ -14,6 +17,7 @@ export interface ChainTables {
   strong: Map<number, number[]>;
   sets: { digit: number; cells: number[] }[];
   eriSets: Set<number>;
+  alsNodes: { alsIndex: number; digit: number; nodeKey: number; cells: number[] }[];
 }
 
 export function buildChainTables(g: Game): ChainTables {
@@ -62,5 +66,13 @@ export function buildChainTables(g: Game): ChainTables {
       if (isSetKey(b)) eriSets.add(b);
     }
   }
-  return { strong, sets, eriSets };
+  const alsList = enumerateAls(g);
+  const alsNodes: { alsIndex: number; digit: number; nodeKey: number; cells: number[] }[] = [];
+  for (let i = 0; i < alsList.length; i++) {
+    const als = alsList[i];
+    for (const d of candsOf(als.mask)) {
+      alsNodes.push({ alsIndex: i, digit: d, nodeKey: alsKey(i, d), cells: als.cells });
+    }
+  }
+  return { strong, sets, eriSets, alsNodes };
 }

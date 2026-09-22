@@ -787,7 +787,7 @@ export const ahsXZ: Finder = (g) => {
 };
 // ---------- Shared ALS infrastructure ----------
 // (alsXZ keeps its own enumeration; the rest of the ALS family uses these.)
-function enumerateAls(g: Game): Als[] {
+export function enumerateAls(g: Game): Als[] {
   const alsList: Als[] = [];
   const seenKeys = new Set<string>();
   for (let u = 0; u < 27; u++) {
