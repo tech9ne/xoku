@@ -206,16 +206,27 @@ export const chainLens: Finder = (g) => {
   if (!found.length) return null;
   found.sort((a, b) => a.path.length - b.path.length || b.elims.length - a.elims.length);
   const best = found[0];
-  const { name, xr } = classify(best.path, t);
+  const alsCellsOf = (k: number) => t.alsNodes.find(n => n.nodeKey === k)?.cells ?? [];
+  const alsDigitOf = (k: number) => t.alsNodes.find(n => n.nodeKey === k)?.digit ?? 0;
+  const alsIdx = new Set(best.path.filter(isAlsKey).map(k => Math.floor((k - 3000) / 10)));
+  let name: string, xr: number;
+  if (alsIdx.size >= 2) {
+    name = alsIdx.size === 2 ? "ALS-XZ" : alsIdx.size === 3 ? "ALS-XY-Wing" : "ALS-Chain";
+    xr = 6.0 + alsIdx.size * 0.3;
+  } else {
+    ({ name, xr } = classify(best.path, t));
+  }
   const patternCells = [...new Set(best.path.flatMap(k =>
-    isSetKey(k) ? t.sets[k - 1000].cells : [keyCell(k)]))];
-  const patternCands = best.path.flatMap(k => isSetKey(k)
+    isAlsKey(k) ? alsCellsOf(k) : isSetKey(k) ? t.sets[k - 1000].cells : [keyCell(k)]))];
+  const patternCands = best.path.flatMap(k => isAlsKey(k)
+    ? alsCellsOf(k).map(c => ({ cell: c, cand: alsDigitOf(k) }))
+    : isSetKey(k)
     ? t.sets[k - 1000].cells.map(c => ({ cell: c, cand: t.sets[k - 1000].digit }))
     : [{ cell: keyCell(k), cand: keyDigit(k) }]);
   const links: Step["links"] = [];
   for (let k = 0; k + 1 < best.path.length; k++) {
     const a = best.path[k], b = best.path[k + 1];
-    if (isSetKey(a) || isSetKey(b)) continue;
+    if (isSetKey(a) || isSetKey(b) || isAlsKey(a) || isAlsKey(b)) continue;
     links.push({ from: { cell: keyCell(a), cand: keyDigit(a) },
                  to: { cell: keyCell(b), cand: keyDigit(b) }, strong: k % 2 === 0 });
   }

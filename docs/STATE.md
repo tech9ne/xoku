@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36b3: ALS weak links + chain walker consumption
 - H36b2: intra-ALS strong links (inclusive-OR on digit pairs)
 - H36b1: ALS node registration in chain tables (cycle noted)
 - H36a: ERI geometry detection with rich metadata (intersection/active/linked cells)
@@ -486,3 +487,10 @@ d-cells; ALS-ALS RCC where all d-cells peer); chain-engine updated:
 cellsOf/onPathNode handle ALS keys, weakFrom returns precomputed weaks,
 tryEnding T2 rejects ALS endpoints. Walker now traverses ALS paths;
 classifier naming lands H36c.
+
+H36c (v14.3-h36c): ALS CHAIN NAMING + RENDERING — chainLens (master
+engine) now names paths containing >=2 distinct ALS nodes as ALS-XZ (2),
+ALS-XY-Wing (3), ALS-Chain (>3) with score 6.0+0.3*n; patternCells/
+patternCands render ALS member cells; links skip ALS endpoints (drawn as
+set-like nodes). Local classify retained for non-ALS paths. StormDoku
+modular ALS grammar (chain.ts:486-690) deferred to H36d.
