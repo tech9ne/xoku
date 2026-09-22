@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- STATE: competent-level terminology contract (mini-sectors, ERI bounds, wing structures) + V-COMP vectors
 - STATE: adopt strmCkr r/sudoku wiki intermediate terminology as naming/geometry contract + V-INT vectors
 - H36g: size-1 ALS registration, union elims, XZ-family guard, sound tryAlsElims
 - H36d: ALS modular views with locked-set eliminations
@@ -614,3 +615,25 @@ V-COMP-1 ERI X-chain: P=5.1..3.....7..415..89.15.6..15..7346.2364157.67435....15
 V-COMP-2 W-Wing: P=5.......9.2.1...7...8...3...4...2.......5.......7.6.1...3...8...6...4.2.9.......5
   W-Wing per structure above.
 V-COMP-3 XY-Wing: identical to V-INT-5.
+
+## Terminology contract — Competent Level part 2 (exact wing vectors)
+V-COMP-1 Empty Rectangle, exact expected step:
+  (9)(r6c789=r5c9-r7c9=r7c6) => r6c6<>9
+V-COMP-2 W-Wing, exact expected step:
+  (4=2)r8c1-(2)r7c3=(2)r7c78-(2=4)r9c9 => r8c7,r9c3<>4
+{Split} S-Wing: Structure Location{a} - Bivalve{a,b} - Location{b}
+  vector (same puzzle as V-COMP-2):
+  (4)r9c6=(4)r7c6-(4=8)r7c9-(8)r2c9=(8)r2c6 => r9c6<>8
+M(2)-Wing: Structure Bivalve{a,b} - Location{a} - Location{b}
+  vector P=...67..242..4....1..4512..874.3..269..27..485..82.43178579361424..127856.2.845793
+  (1=8)r4c6-(8)r1c6=(8-1)r1c2=(1)r5c2 => r4c3,r5c6<>1
+Notation convention: a location weak inference inside one cell is
+written (8-1)r1c2 seated between the two sector strong links.
+
+Wing structure table (V = bivalve/value node, L = location/grouped
+sector node):
+  XY-Wing  V-V-V
+  W-Wing   V-L-V
+  S-Wing   L-V-L   ({Split} variant)
+  M(2)-Wing V-L-L
+  M(3)-Wing pending next screenshots
