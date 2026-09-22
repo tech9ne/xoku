@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36d: ALS modular views with locked-set eliminations
 - H36f: ALS-key soundness fixes in decoders + audit v5 skip
 - H36c: ALS chain naming + rendering in chainLens
 - H36b3: ALS weak links + chain walker consumption
@@ -516,3 +517,18 @@ causes chain count explosion (~100 → ~15k) as the ALS-XZ elimination
 space is much larger than T1/T2 endpoints. Audit v5 skips ALS paths
 (soundness intact at 111 chains). Future optimization: prune non-modular
 ALS paths early.
+
+H36g (v14.3-h36g): NAME-PARITY + SOUNDNESS SCOPE — size-1 ALS (bivalue
+cells) registered as ALS nodes (StormDoku buildCellAlsLink parity), so
+doubly-linked ALS-XZ is expressible as a 2-ALS path; chainLens names it
+"ALS-XZ (doubly linked)" and emits the full union elim set (T1 endpoint
+elims UNION RCC-victim elims; both independent theorems). tryAlsElims
+restricted to exactly 2 distinct ALS indices: RCC-victim elims are
+licensed only in the XZ family; longer ALS chains eliminate via endpoint
+digits only (alsChain semantics). renderNotation prints size-1 ALS as
+plain candidate. Supersedes H36e superset logic.
+H36g2: tryAlsElims soundness rewrite — standard Z-elims (non-restricted
+common digits) added; X/RCC-digit and locked-set elims gated on
+doubly-linked (second restricted common); record key endpoint-normalized
+(kills cand-node vs ALS-key representation duplicates). Folds uncommitted
+H36e/H36f experiments; tags skip e/f by design.

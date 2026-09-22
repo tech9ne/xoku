@@ -99,74 +99,83 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
   };
   const tryAlsElims = (path: number[]): { cell: number; cand: number }[] | null => {
     const alsKeys = path.filter(isAlsKey);
-    if (alsKeys.length < 2) return null;
-    
+    const idxSet = new Set(alsKeys.map(k => Math.floor((k - 3000) / 10)));
+    if (idxSet.size !== 2) return null; // XZ-family only; longer chains use endpoint rules
     const elims: { cell: number; cand: number }[] = [];
     const elimsSet = new Set<string>();
-    
-    for (let i = 0; i < path.length - 1; i++) {
+    const push = (c: number, d: number) => {
+      const k = `${c},${d}`;
+      if (!elimsSet.has(k)) { elimsSet.add(k); elims.push({ cell: c, cand: d }); }
+    };
+    for (let i = 0; i + 1 < path.length; i++) {
       const a = path[i], b = path[i + 1];
       if (!isAlsKey(a) || !isAlsKey(b)) continue;
-      
-      const alsIdxA = Math.floor((a - 3000) / 10);
-      const alsIdxB = Math.floor((b - 3000) / 10);
-      const rccDigit = (a - 3000) % 10;
-      
-      const viewKey = `${Math.min(alsIdxA, alsIdxB)},${Math.max(alsIdxA, alsIdxB)},${rccDigit}`;
-      const view = t.alsModularViews.get(viewKey);
-      if (!view) continue;
-      
-      const alsA = t.alsNodes.find(n => n.alsIndex === alsIdxA);
-      const alsB = t.alsNodes.find(n => n.alsIndex === alsIdxB);
+      const ia = Math.floor((a - 3000) / 10), ib = Math.floor((b - 3000) / 10);
+      if (ia === ib) continue;
+      const x = (a - 3000) % 10;
+      const alsA = t.alsNodes.find(n => n.alsIndex === ia);
+      const alsB = t.alsNodes.find(n => n.alsIndex === ib);
       if (!alsA || !alsB) continue;
-      
-      const rccCellsA = alsA.cells.filter(c => g.cands[c] & candMask(rccDigit));
-      const rccCellsB = alsB.cells.filter(c => g.cands[c] & candMask(rccDigit));
-      
-      for (let c = 0; c < 81; c++) {
-        if (g.values[c] !== 0) continue;
-        if (!(g.cands[c] & candMask(rccDigit))) continue;
-        if (alsA.cells.includes(c) || alsB.cells.includes(c)) continue;
-        
-        const seesAllA = rccCellsA.every(ac => fastPeers(c, ac));
-        const seesAllB = rccCellsB.every(bc => fastPeers(c, bc));
-        
-        if (seesAllA && seesAllB) {
-          const key = `${c},${rccDigit}`;
-          if (!elimsSet.has(key)) {
-            elimsSet.add(key);
-            elims.push({ cell: c, cand: rccDigit });
-          }
+      const dCells = (als: { cells: number[] }, d: number) => als.cells.filter(c => g.cands[c] & candMask(d));
+      const restricted = new Set<number>();
+      const plainCommon: number[] = [];
+      for (let d = 1; d <= 9; d++) {
+        const ca = dCells(alsA, d), cb = dCells(alsB, d);
+        if (!ca.length || !cb.length) continue;
+        if (ca.every(p => cb.every(q => fastPeers(p, q)))) restricted.add(d);
+        else plainCommon.push(d);
+      }
+      if (!restricted.has(x)) continue;
+      const doubly = restricted.size >= 2;
+      const inAls = (c: number) => alsA.cells.includes(c) || alsB.cells.includes(c);
+      const seesAll = (c: number, cells: number[]) => cells.every(p => fastPeers(c, p));
+      const onPathCand = (c: number, d: number) => path.some(k => onPathNode(k, c, d));
+      // Standard ALS-XZ: Z (non-restricted common) from cells seeing all Z-cells of both
+      for (const d of plainCommon) {
+        const ca = dCells(alsA, d), cb = dCells(alsB, d);
+        for (let c = 0; c < 81; c++) {
+          if (g.values[c] !== 0 || inAls(c) || onPathCand(c, d)) continue;
+          if (!(g.cands[c] & candMask(d))) continue;
+          if (seesAll(c, ca) && seesAll(c, cb)) push(c, d);
         }
       }
-      
-      for (const d of view.LS_L.digits) {
-        if (!view.LS_R.digits.includes(d)) continue;
+      if (!doubly) continue;
+      // Doubly-linked: RCC digits from cells seeing all their cells in both ALSes
+      for (const d of [...restricted]) {
+        const ca = dCells(alsA, d), cb = dCells(alsB, d);
         for (let c = 0; c < 81; c++) {
-          if (g.values[c] !== 0) continue;
+          if (g.values[c] !== 0 || inAls(c) || onPathCand(c, d)) continue;
           if (!(g.cands[c] & candMask(d))) continue;
-          if (alsA.cells.includes(c) || alsB.cells.includes(c)) continue;
-          
-          const seesAllLS_L = view.LS_L.cells.every(lc => fastPeers(c, lc));
-          const seesAllLS_R = view.LS_R.cells.every(rc => fastPeers(c, rc));
-          
-          if (seesAllLS_L && seesAllLS_R) {
-            const key = `${c},${d}`;
-            if (!elimsSet.has(key)) {
-              elimsSet.add(key);
-              elims.push({ cell: c, cand: d });
-            }
-          }
+          if (seesAll(c, ca) && seesAll(c, cb)) push(c, d);
+        }
+      }
+      // Doubly-linked locked-set digits common to both locked views
+      const view = t.alsModularViews.get(`${Math.min(ia, ib)},${Math.max(ia, ib)},${x}`);
+      if (view) for (const d of view.LS_L.digits) {
+        if (!view.LS_R.digits.includes(d) || restricted.has(d)) continue;
+        for (let c = 0; c < 81; c++) {
+          if (g.values[c] !== 0 || inAls(c) || onPathCand(c, d)) continue;
+          if (!(g.cands[c] & candMask(d))) continue;
+          if (seesAll(c, view.LS_L.cells) && seesAll(c, view.LS_R.cells)) push(c, d);
         }
       }
     }
-    
     return elims.length ? elims : null;
   };
 
+  const dedupeElims = (es: { cell: number; cand: number }[]) => {
+    const m = new Map<number, { cell: number; cand: number }>();
+    for (const e of es) m.set(e.cell * 10 + e.cand, e);
+    return [...m.values()];
+  };
   const record = (path: number[], elims: { cell: number; cand: number }[]) => {
+    const ec = (k: number) => {
+      if (isAlsKey(k)) { const n2 = t.alsNodes.find(x => x.nodeKey === k); return (n2?.cells[0] ?? 0) * 10 + (n2?.digit ?? 0); }
+      if (isSetKey(k)) return t.sets[k - 1000].cells[0] * 10 + t.sets[k - 1000].digit;
+      return k;
+    };
     const key = elims.map(e => e.cell * 10 + e.cand).sort((x, y) => x - y).join(",") +
-      "|" + Math.min(path[0], path[path.length - 1]) + ":" + Math.max(path[0], path[path.length - 1]);
+      "|" + Math.min(ec(path[0]), ec(path[path.length - 1])) + ":" + Math.max(ec(path[0]), ec(path[path.length - 1]));
     if (seen.has(key)) return;
     seen.add(key);
     results.push({ path, elims });
@@ -182,9 +191,9 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         const strongArrived = path.length % 2 === 0;
         if (strongArrived && sc >= 2) {
           const elims = tryEnding(start, cur, path);
-          if (elims) record(path, elims);
           const alsElims = tryAlsElims(path);
-          if (alsElims && !elims) record(path, alsElims);
+          const merged = dedupeElims([...(elims ?? []), ...(alsElims ?? [])]);
+          if (merged.length) record(path, merged);
         }
         if (sc >= maxStrong) continue;
         if (strongArrived) {
@@ -219,7 +228,11 @@ function renderNotation(g: Game, t: ChainTables, path: number[]): string {
     } else if (isAlsKey(path[k])) {
       const als = t.alsNodes.find(x => x.nodeKey === path[k]);
       const cells = als?.cells ?? [];
-      toks.push({ text: allSame ? `ALS(${compressCells(cells)})` : `ALS:${digitOf(path[k])}:${compressCells(cells)}`, endIdx: k });
+      if (cells.length === 1) {
+        toks.push({ text: allSame ? cellName(cells[0]) : nodeStr(digitOf(path[k]), cells[0]), endIdx: k });
+      } else {
+        toks.push({ text: allSame ? `ALS(${compressCells(cells)})` : `ALS:${digitOf(path[k])}:${compressCells(cells)}`, endIdx: k });
+      }
       k += 1;
     } else if (isSetKey(path[k])) {
       const cells = t.sets[path[k] - 1000].cells;
@@ -287,6 +300,7 @@ export const chainLens: Finder = (g) => {
   const alsDigitOf = (k: number) => t.alsNodes.find(n => n.nodeKey === k)?.digit ?? 0;
   const alsIdx = new Set(best.path.filter(isAlsKey).map(k => Math.floor((k - 3000) / 10)));
   // Check if path has modular views (locked set eliminations)
+  // Check for modular views and doubly-linked (two RCC digits between same ALS pair)
   const hasModularView = best.path.some((k, i) => {
     if (!isAlsKey(k)) return false;
     const alsIdxK = Math.floor((k - 3000) / 10);
@@ -299,9 +313,29 @@ export const chainLens: Finder = (g) => {
     }
     return false;
   });
+  const alsPairs = new Map<string, Set<number>>();
+  for (const k of best.path) {
+    if (!isAlsKey(k)) continue;
+    const alsIdxK = Math.floor((k - 3000) / 10);
+    const rccDigitK = (k - 3000) % 10;
+    for (const [viewKey] of t.alsModularViews) {
+      const parts = viewKey.split(',');
+      if (parts.length !== 3) continue;
+      const [left, right, d] = parts.map(Number);
+      if ((left === alsIdxK || right === alsIdxK) && d === rccDigitK) {
+        const pairKey = `${left},${right}`;
+        if (!alsPairs.has(pairKey)) alsPairs.set(pairKey, new Set());
+        alsPairs.get(pairKey)!.add(d);
+      }
+    }
+  }
+  const isDoublyLinked = [...alsPairs.values()].some(set => set.size >= 2);
   let name: string, xr: number;
   if (alsIdx.size >= 2) {
-    if (hasModularView) {
+    if (isDoublyLinked) {
+      name = alsIdx.size === 2 ? "ALS-XZ (doubly linked)" : "ALS-Chain (doubly linked)";
+      xr = 7.5 + alsIdx.size * 0.3;
+    } else if (hasModularView) {
       name = alsIdx.size === 2 ? "ALS-XZ (Modular)" : alsIdx.size === 3 ? "ALS-XY-Wing (Modular)" : "ALS-Chain (Modular)";
       xr = 7.0 + alsIdx.size * 0.3;
     } else {

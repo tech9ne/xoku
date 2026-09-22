@@ -119,7 +119,6 @@ export function buildChainTables(g: Game): ChainTables {
   const alsNodes: { alsIndex: number; digit: number; nodeKey: number; cells: number[] }[] = [];
   for (let i = 0; i < alsList.length; i++) {
     const als = alsList[i];
-    if (als.cells.length === 1) continue; // size-1 implicit as bivalue cand nodes
     for (const d of candsOf(als.mask)) {
       alsNodes.push({ alsIndex: i, digit: d, nodeKey: alsKey(i, d), cells: als.cells });
     }
@@ -127,7 +126,6 @@ export function buildChainTables(g: Game): ChainTables {
   // H36b2: intra-ALS strong links - P(i,d1) OR P(i,d2) always true
   // (exactly one digit of the mask is absent => two absents impossible)
   for (let i = 0; i < alsList.length; i++) {
-    if (alsList[i].cells.length === 1) continue;
     const ds = candsOf(alsList[i].mask);
     for (let a = 0; a < ds.length; a++)
       for (let b = a + 1; b < ds.length; b++)
