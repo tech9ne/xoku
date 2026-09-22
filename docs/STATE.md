@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36f: ALS-key soundness fixes in decoders + audit v5 skip
 - H36c: ALS chain naming + rendering in chainLens
 - H36b3: ALS weak links + chain walker consumption
 - H36b2: intra-ALS strong links (inclusive-OR on digit pairs)
@@ -504,3 +505,14 @@ classify bails to AIC on ALS paths; renderNotation emits ALS(...) tokens.
 Audit v5 updated to skip ALS paths (different endpoint semantics).
 Result: SOUNDNESS OK - 111 chains audited; ALS paths confirmed firing
 (56/99 on probe puzzle, alternating ALS->RCC->ALS structure intact).
+
+H36d (v14.3-h36d): ALS MODULAR VIEWS — computeLockedSet helper added to
+chain-tables; alsModularViews map populated during ALS-ALS RCC construction
+(tracking LS_L/LS_R locked digits that share a unit); tryAlsElims function
+added to chain-engine that eliminates candidates seeing both locked sets
+for shared digits; chainLens names paths with modular views as
+"ALS-XZ (Modular)" / "ALS-XY-Wing (Modular)" with score +1.0. Note: this
+causes chain count explosion (~100 → ~15k) as the ALS-XZ elimination
+space is much larger than T1/T2 endpoints. Audit v5 skips ALS paths
+(soundness intact at 111 chains). Future optimization: prune non-modular
+ALS paths early.

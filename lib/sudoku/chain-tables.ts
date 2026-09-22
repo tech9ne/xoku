@@ -9,7 +9,41 @@ import { enumerateAls } from "./techniques";
 export const isSetKey = (k: number) => k >= 1000;
 export const alsKey = (alsIndex: number, digit: number) => 3000 + alsIndex * 10 + digit;
 export const isAlsKey = (k: number) => k >= 3000;
-const fastPeers = (a: number, b: number): boolean => {
+
+// Compute locked set: digits that appear in ≥2 cells of the ALS, where those cells share a unit
+function computeLockedSet(als: { cells: number[]; mask: number; byDigit: number[][] }, cands: Uint8Array | number[]): { cells: number[]; digits: number[] } {
+  const result: { cells: number[]; digits: number[] } = { cells: [], digits: [] };
+  const ds = candsOf(als.mask);
+  for (const d of ds) {
+    const positions = als.byDigit[d] ?? [];
+    if (positions.length >= 2) {
+      // Check if all positions share a row
+      const row = Math.floor(positions[0] / 9);
+      if (positions.every(p => Math.floor(p / 9) === row)) {
+        result.cells.push(...positions);
+        result.digits.push(d);
+        continue;
+      }
+      // Check if all positions share a column
+      const col = positions[0] % 9;
+      if (positions.every(p => p % 9 === col)) {
+        result.cells.push(...positions);
+        result.digits.push(d);
+        continue;
+      }
+      // Check if all positions share a box
+      const box = Math.floor(Math.floor(positions[0] / 9) / 3) * 3 + Math.floor((positions[0] % 9) / 3);
+      if (positions.every(p => Math.floor(Math.floor(p / 9) / 3) * 3 + Math.floor((p % 9) / 3) === box)) {
+        result.cells.push(...positions);
+        result.digits.push(d);
+        continue;
+      }
+    }
+  }
+  return result;
+}
+
+export const fastPeers = (a: number, b: number): boolean => {
   const ra = Math.floor(a / 9), ca = a % 9;
   const rb = Math.floor(b / 9), cb = b % 9;
   return (ra === rb) || (ca === cb) || (Math.floor(ra / 3) * 3 + Math.floor(ca / 3) === Math.floor(rb / 3) * 3 + Math.floor(cb / 3));
@@ -24,6 +58,15 @@ export interface ChainTables {
   eriSets: Set<number>;
   alsNodes: { alsIndex: number; digit: number; nodeKey: number; cells: number[] }[];
   alsWeak: Map<number, number[]>;
+  alsModularViews: Map<string, ALSModularView>;
+}
+
+export interface ALSModularView {
+  alsLeft: number;      // alsIndex
+  alsRight: number;     // alsIndex
+  rccDigit: number;     // restricted common digit
+  LS_L: { cells: number[]; digits: number[] };  // locked set left
+  LS_R: { cells: number[]; digits: number[] };  // locked set right
 }
 
 export function buildChainTables(g: Game): ChainTables {
@@ -90,7 +133,8 @@ export function buildChainTables(g: Game): ChainTables {
       for (let b = a + 1; b < ds.length; b++)
         add(alsKey(i, ds[a]), alsKey(i, ds[b]));
   }
-  // H36b3a: precompute ALS weak links (candidate-ALS and ALS-ALS RCC)
+  const alsModularViews = new Map<string, ALSModularView>();
+    // H36b3a: precompute ALS weak links (candidate-ALS and ALS-ALS RCC)
   const alsWeak = new Map<number, number[]>();
   for (const node of alsNodes) {
     if (!alsWeak.has(node.nodeKey)) alsWeak.set(node.nodeKey, []);
@@ -119,8 +163,21 @@ export function buildChainTables(g: Game): ChainTables {
         alsWeak.get(node.nodeKey)!.push(nk2);
         if (!alsWeak.has(nk2)) alsWeak.set(nk2, []);
         alsWeak.get(nk2)!.push(node.nodeKey);
+        // H36d2: Build modular view for this ALS pair
+        const LS_L = computeLockedSet(alsList[node.alsIndex], g.cands);
+        const LS_R = computeLockedSet(alsList[j], g.cands);
+        if (LS_L.digits.length > 0 || LS_R.digits.length > 0) {
+          const viewKey = `${node.alsIndex},${j},${node.digit}`;
+          alsModularViews.set(viewKey, {
+            alsLeft: node.alsIndex,
+            alsRight: j,
+            rccDigit: node.digit,
+            LS_L,
+            LS_R,
+          });
+        }
       }
     }
   }
-  return { strong, sets, eriSets, alsNodes, alsWeak };
+  return { strong, sets, eriSets, alsNodes, alsWeak, alsModularViews };
 }

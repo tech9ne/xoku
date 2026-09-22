@@ -1,7 +1,7 @@
 // Stage 1a: the master chain engine - alternating DFS, T1/T2 endings.
 // Runs LAST in the registry: pure addition over the old finders.
 import { Game, PEERS, Step, candMask, candsOf, countCands, cellName } from "./core";
-import { ChainTables, buildChainTables, isSetKey, isAlsKey, keyCell, keyDigit, candKey } from "./chain-tables";
+import { ChainTables, buildChainTables, isSetKey, isAlsKey, keyCell, keyDigit, candKey, fastPeers } from "./chain-tables";
 import { seesCell, cellSeesSet, setSeesSet } from "./slices";
 import { nodeStr, setNodeStr, conclusionStr, compressCells } from "./notation";
 import type { Finder } from "./techniques";
@@ -97,6 +97,72 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
     }
     return null;
   };
+  const tryAlsElims = (path: number[]): { cell: number; cand: number }[] | null => {
+    const alsKeys = path.filter(isAlsKey);
+    if (alsKeys.length < 2) return null;
+    
+    const elims: { cell: number; cand: number }[] = [];
+    const elimsSet = new Set<string>();
+    
+    for (let i = 0; i < path.length - 1; i++) {
+      const a = path[i], b = path[i + 1];
+      if (!isAlsKey(a) || !isAlsKey(b)) continue;
+      
+      const alsIdxA = Math.floor((a - 3000) / 10);
+      const alsIdxB = Math.floor((b - 3000) / 10);
+      const rccDigit = (a - 3000) % 10;
+      
+      const viewKey = `${Math.min(alsIdxA, alsIdxB)},${Math.max(alsIdxA, alsIdxB)},${rccDigit}`;
+      const view = t.alsModularViews.get(viewKey);
+      if (!view) continue;
+      
+      const alsA = t.alsNodes.find(n => n.alsIndex === alsIdxA);
+      const alsB = t.alsNodes.find(n => n.alsIndex === alsIdxB);
+      if (!alsA || !alsB) continue;
+      
+      const rccCellsA = alsA.cells.filter(c => g.cands[c] & candMask(rccDigit));
+      const rccCellsB = alsB.cells.filter(c => g.cands[c] & candMask(rccDigit));
+      
+      for (let c = 0; c < 81; c++) {
+        if (g.values[c] !== 0) continue;
+        if (!(g.cands[c] & candMask(rccDigit))) continue;
+        if (alsA.cells.includes(c) || alsB.cells.includes(c)) continue;
+        
+        const seesAllA = rccCellsA.every(ac => fastPeers(c, ac));
+        const seesAllB = rccCellsB.every(bc => fastPeers(c, bc));
+        
+        if (seesAllA && seesAllB) {
+          const key = `${c},${rccDigit}`;
+          if (!elimsSet.has(key)) {
+            elimsSet.add(key);
+            elims.push({ cell: c, cand: rccDigit });
+          }
+        }
+      }
+      
+      for (const d of view.LS_L.digits) {
+        if (!view.LS_R.digits.includes(d)) continue;
+        for (let c = 0; c < 81; c++) {
+          if (g.values[c] !== 0) continue;
+          if (!(g.cands[c] & candMask(d))) continue;
+          if (alsA.cells.includes(c) || alsB.cells.includes(c)) continue;
+          
+          const seesAllLS_L = view.LS_L.cells.every(lc => fastPeers(c, lc));
+          const seesAllLS_R = view.LS_R.cells.every(rc => fastPeers(c, rc));
+          
+          if (seesAllLS_L && seesAllLS_R) {
+            const key = `${c},${d}`;
+            if (!elimsSet.has(key)) {
+              elimsSet.add(key);
+              elims.push({ cell: c, cand: d });
+            }
+          }
+        }
+      }
+    }
+    
+    return elims.length ? elims : null;
+  };
 
   const record = (path: number[], elims: { cell: number; cand: number }[]) => {
     const key = elims.map(e => e.cell * 10 + e.cand).sort((x, y) => x - y).join(",") +
@@ -117,6 +183,8 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         if (strongArrived && sc >= 2) {
           const elims = tryEnding(start, cur, path);
           if (elims) record(path, elims);
+          const alsElims = tryAlsElims(path);
+          if (alsElims && !elims) record(path, alsElims);
         }
         if (sc >= maxStrong) continue;
         if (strongArrived) {
@@ -218,10 +286,28 @@ export const chainLens: Finder = (g) => {
   const alsCellsOf = (k: number) => t.alsNodes.find(n => n.nodeKey === k)?.cells ?? [];
   const alsDigitOf = (k: number) => t.alsNodes.find(n => n.nodeKey === k)?.digit ?? 0;
   const alsIdx = new Set(best.path.filter(isAlsKey).map(k => Math.floor((k - 3000) / 10)));
+  // Check if path has modular views (locked set eliminations)
+  const hasModularView = best.path.some((k, i) => {
+    if (!isAlsKey(k)) return false;
+    const alsIdxK = Math.floor((k - 3000) / 10);
+    const rccDigitK = (k - 3000) % 10;
+    for (const [viewKey] of t.alsModularViews) {
+      const [left, right] = viewKey.split(',').map(Number);
+      if ((left === alsIdxK || right === alsIdxK) && viewKey.endsWith(`,${rccDigitK}`)) {
+        return true;
+      }
+    }
+    return false;
+  });
   let name: string, xr: number;
   if (alsIdx.size >= 2) {
-    name = alsIdx.size === 2 ? "ALS-XZ" : alsIdx.size === 3 ? "ALS-XY-Wing" : "ALS-Chain";
-    xr = 6.0 + alsIdx.size * 0.3;
+    if (hasModularView) {
+      name = alsIdx.size === 2 ? "ALS-XZ (Modular)" : alsIdx.size === 3 ? "ALS-XY-Wing (Modular)" : "ALS-Chain (Modular)";
+      xr = 7.0 + alsIdx.size * 0.3;
+    } else {
+      name = alsIdx.size === 2 ? "ALS-XZ" : alsIdx.size === 3 ? "ALS-XY-Wing" : "ALS-Chain";
+      xr = 6.0 + alsIdx.size * 0.3;
+    }
   } else {
     ({ name, xr } = classify(best.path, t));
   }
