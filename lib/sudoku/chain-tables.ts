@@ -9,6 +9,11 @@ import { enumerateAls } from "./techniques";
 export const isSetKey = (k: number) => k >= 1000;
 export const alsKey = (alsIndex: number, digit: number) => 3000 + alsIndex * 10 + digit;
 export const isAlsKey = (k: number) => k >= 3000;
+const fastPeers = (a: number, b: number): boolean => {
+  const ra = Math.floor(a / 9), ca = a % 9;
+  const rb = Math.floor(b / 9), cb = b % 9;
+  return (ra === rb) || (ca === cb) || (Math.floor(ra / 3) * 3 + Math.floor(ca / 3) === Math.floor(rb / 3) * 3 + Math.floor(cb / 3));
+};
 export const candKey = (cell: number, digit: number) => cell * 10 + digit;
 export const keyCell = (k: number) => Math.floor(k / 10);
 export const keyDigit = (k: number) => k % 10;
@@ -18,6 +23,7 @@ export interface ChainTables {
   sets: { digit: number; cells: number[] }[];
   eriSets: Set<number>;
   alsNodes: { alsIndex: number; digit: number; nodeKey: number; cells: number[] }[];
+  alsWeak: Map<number, number[]>;
 }
 
 export function buildChainTables(g: Game): ChainTables {
@@ -84,5 +90,37 @@ export function buildChainTables(g: Game): ChainTables {
       for (let b = a + 1; b < ds.length; b++)
         add(alsKey(i, ds[a]), alsKey(i, ds[b]));
   }
-  return { strong, sets, eriSets, alsNodes };
+  // H36b3a: precompute ALS weak links (candidate-ALS and ALS-ALS RCC)
+  const alsWeak = new Map<number, number[]>();
+  for (const node of alsNodes) {
+    if (!alsWeak.has(node.nodeKey)) alsWeak.set(node.nodeKey, []);
+    // candidate-to-ALS weak link
+    for (let c = 0; c < 81; c++) {
+      if (g.values[c] !== 0) continue;
+      if (node.cells.includes(c)) continue;
+      if (!(g.cands[c] & candMask(node.digit))) continue;
+      const alsDigitCells = alsList[node.alsIndex].byDigit[node.digit] ?? [];
+      if (alsDigitCells.every(ac => fastPeers(c, ac))) {
+        const ck = candKey(c, node.digit);
+        alsWeak.get(node.nodeKey)!.push(ck);
+        if (!alsWeak.has(ck)) alsWeak.set(ck, []);
+        alsWeak.get(ck)!.push(node.nodeKey);
+      }
+    }
+    // ALS-to-ALS RCC weak link
+    for (let j = node.alsIndex + 1; j < alsList.length; j++) {
+      const als2 = alsList[j];
+      if (als2.cells.some(c2 => node.cells.includes(c2))) continue;
+      if (!(alsList[node.alsIndex].mask & als2.mask & candMask(node.digit))) continue;
+      const a1Cells = alsList[node.alsIndex].byDigit[node.digit] ?? [];
+      const a2Cells = als2.byDigit[node.digit] ?? [];
+      if (a1Cells.every(c1 => a2Cells.every(c2 => fastPeers(c1, c2)))) {
+        const nk2 = alsKey(j, node.digit);
+        alsWeak.get(node.nodeKey)!.push(nk2);
+        if (!alsWeak.has(nk2)) alsWeak.set(nk2, []);
+        alsWeak.get(nk2)!.push(node.nodeKey);
+      }
+    }
+  }
+  return { strong, sets, eriSets, alsNodes, alsWeak };
 }

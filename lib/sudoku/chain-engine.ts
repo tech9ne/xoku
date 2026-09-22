@@ -1,7 +1,7 @@
 // Stage 1a: the master chain engine - alternating DFS, T1/T2 endings.
 // Runs LAST in the registry: pure addition over the old finders.
 import { Game, PEERS, Step, candMask, candsOf, countCands, cellName } from "./core";
-import { ChainTables, buildChainTables, isSetKey, keyCell, keyDigit, candKey } from "./chain-tables";
+import { ChainTables, buildChainTables, isSetKey, isAlsKey, keyCell, keyDigit, candKey } from "./chain-tables";
 import { seesCell, cellSeesSet, setSeesSet } from "./slices";
 import { nodeStr, setNodeStr, conclusionStr, compressCells } from "./notation";
 import type { Finder } from "./techniques";
@@ -15,7 +15,7 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
   const results: Found[] = [];
   const seen = new Set<string>();
   let budget = 150_000;
-  const cellsOf = (k: number) => (isSetKey(k) ? t.sets[k - 1000].cells : [keyCell(k)]);
+  const cellsOf = (k: number) => (isAlsKey(k) ? t.alsNodes.find(n => n.nodeKey === k)!.cells : isSetKey(k) ? t.sets[k - 1000].cells : [keyCell(k)]);
 
   const weakFrom = (k: number): number[] => {
     const out: number[] = [];
@@ -39,12 +39,21 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
         if (o.digit === d && s !== k - 1000 && setSeesSet(set.cells, o.cells) && !set.cells.some(x => o.cells.includes(x))) out.push(1000 + s);
       }
     }
+    if (isAlsKey(k)) {
+      const weaks = t.alsWeak.get(k) ?? [];
+      for (const w of weaks) out.push(w);
+    }
     return out;
   };
 
-  const onPathNode = (k: number, c: number, d: number): boolean =>
-      (isSetKey(k) ? (t.sets[k - 1000].digit === d && t.sets[k - 1000].cells.includes(c))
-                   : (keyCell(k) === c && keyDigit(k) === d));
+  const onPathNode = (k: number, c: number, d: number): boolean => {
+    if (isAlsKey(k)) {
+      const node = t.alsNodes.find(n => n.nodeKey === k);
+      return node ? node.digit === d && node.cells.includes(c) : false;
+    }
+    return isSetKey(k) ? (t.sets[k - 1000].digit === d && t.sets[k - 1000].cells.includes(c))
+                       : (keyCell(k) === c && keyDigit(k) === d);
+  };
   const tryEnding = (start: number, end: number, path: number[]): { cell: number; cand: number }[] | null => {
     const sd = isSetKey(start) ? t.sets[start - 1000].digit : keyDigit(start);
     const ed = isSetKey(end) ? t.sets[end - 1000].digit : keyDigit(end);
@@ -66,8 +75,8 @@ export function searchChains(g: Game, t: ChainTables, maxStrong = 4): Found[] {
       }
       return elims.length ? elims : null;
     }
-    // T2: single objects only (group endpoints may not serve T2)
-    if (isSetKey(start) || isSetKey(end)) return null;
+    // T2: single objects only (group and ALS endpoints may not serve T2)
+    if (isSetKey(start) || isSetKey(end) || isAlsKey(start) || isAlsKey(end)) return null;
     const a = keyCell(start), b = keyCell(end);
     if (a === b) {
       const elims = candsOf(g.cands[a]).filter(x => x !== sd && x !== ed &&

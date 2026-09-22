@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36b2: intra-ALS strong links (inclusive-OR on digit pairs)
 - H36b1: ALS node registration in chain tables (cycle noted)
 - H36a: ERI geometry detection with rich metadata (intersection/active/linked cells)
 - docs: provenance credit + rewrite ledger (H35a)
@@ -478,3 +479,10 @@ ALS (size >= 2) registered as a strong link between P(i,d) nodes
 (inclusive-OR ruling per section 4; exactly-one-absent makes two absents
 impossible). Size-1 ALS skipped: bivalue cand nodes already carry the pair.
 Walker consumption (cellsOf / onPathNode / weakFrom ALS cases) lands H36b3.
+
+H36b3 (v14.3-h36b3): ALS WEAK LINKS + WALKER CONSUMPTION — alsWeak map
+precomputed in chain-tables (candidate-ALS where candidate sees all
+d-cells; ALS-ALS RCC where all d-cells peer); chain-engine updated:
+cellsOf/onPathNode handle ALS keys, weakFrom returns precomputed weaks,
+tryEnding T2 rejects ALS endpoints. Walker now traverses ALS paths;
+classifier naming lands H36c.
