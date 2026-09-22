@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- STATE: adopt strmCkr r/sudoku wiki intermediate terminology as naming/geometry contract + V-INT vectors
 - H36g: size-1 ALS registration, union elims, XZ-family guard, sound tryAlsElims
 - H36d: ALS modular views with locked-set eliminations
 - H36f: ALS-key soundness fixes in decoders + audit v5 skip
@@ -572,3 +573,44 @@ V-INT-4 Remote Pair: P=16.3.825.83.256..152.91.368256793184971485632483621975395
   (7=4)r1c5-(4=7)r7c5-(7=4)r7c7-(4=7)r2c7 => r1c9<>7
 V-INT-5 XY-Wing: P=31...2958629538471..81.9623..3.9781...18.359.89..1536.736981245142356789985724136
   (4=6)r5c5-(6=7)r5c2-(7=4)r6c3 => r5c1,r6c4<>4
+
+## Terminology contract — Competent Level (strmCkr r/sudoku wiki)
+Second instalment; further wing/ring structures pending. Structures
+below are the naming/geometry contract for V-phase.
+
+Mini-sectors (slice sets): 27 sectors x 3 groups of 3 cells.
+ 1 Mini Row by Box:   [r1c123],[r1c456],[r1c789]
+ 2 Mini Col by Box:   [r123c1],[r456c1],[r789c1]
+ 3 Mini Box Col by Row: [r1c123],[r2c123],[r3c123]
+ 4 Mini Box Row by Col: [r123c1],[r123c2],[r123c3]
+A mini-sector holds <=3 truths; eliminating 1 leaves 2 => grouped
+strong link (<=3 active cells); value and/or location transfer
+across it depending on configuration.
+
+ERI contract: special case of grouped strong link; VALUE inferences
+only. A grouped strong in a box is true only as a mini row or mini
+col. ERI = check that all box cells of a candidate lie exactly on
+1 row and 1 col, and the row*col overlap is not the only active
+cell. Centre cell (row intersect col) is marked as the link-build
+point (direction change row<->col). Counting method:
+cells(row)+cells(col)-(centre if active) = box total; invalid if
+total >5, <2, or row/col has no cells.
+Six strong-link types: bivalve; bi-location; grouped&one-cell;
+one-cell&grouped; grouped&grouped; ERI {max, missing-I, min}.
+Weak inferences may also use grouped mini-sector candidates.
+
+Chains: value chains vs location chains (a cell ON for one value,
+OFF for another strong link).
+Ex: (1=2)r1c1-(2)(r2c3=r4c3)-(1)(r4c3=r4c5) => r1c5<>1.
+
+Wing structures (three strongs + two weaks; value+location classes):
+ XY-Wing: Bivalve{a,b} - Bivalve{b,c} - Bivalve{c,a}
+ W-Wing:  Bivalve{a,b} - Location{b} - Bivalve{a,b}
+ (further structures to be appended from later screenshots)
+
+Test vectors:
+V-COMP-1 ERI X-chain: P=5.1..3.....7..415..89.15.6..15..7346.2364157.67435....15643.78..925.......81....5
+  single-value X-chain using ERI; must fire on this grid.
+V-COMP-2 W-Wing: P=5.......9.2.1...7...8...3...4...2.......5.......7.6.1...3...8...6...4.2.9.......5
+  W-Wing per structure above.
+V-COMP-3 XY-Wing: identical to V-INT-5.
