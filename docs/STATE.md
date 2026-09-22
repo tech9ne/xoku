@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36b1: ALS node registration in chain tables (cycle noted)
 - H36a: ERI geometry detection with rich metadata (intersection/active/linked cells)
 - docs: provenance credit + rewrite ledger (H35a)
 - docs: regen section 5 from git log; header the H22-H34 narrative appendix
@@ -471,3 +472,9 @@ H36b1 (v14.3-h36b1): ALS NODE REGISTRATION — ChainTables gains alsNodes
 exported from techniques.ts (creates techniques<->chain-tables cycle:
 function-level only, runtime-safe, accepted consciously). Nodes carry no
 links yet; H36b2 adds intra-ALS strong links, H36b3 RCC weak links.
+
+H36b2 (v14.3-h36b2): INTRA-ALS STRONG LINKS - every digit pair within an
+ALS (size >= 2) registered as a strong link between P(i,d) nodes
+(inclusive-OR ruling per section 4; exactly-one-absent makes two absents
+impossible). Size-1 ALS skipped: bivalue cand nodes already carry the pair.
+Walker consumption (cellsOf / onPathNode / weakFrom ALS cases) lands H36b3.
