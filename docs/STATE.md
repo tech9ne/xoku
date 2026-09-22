@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- H36g: size-1 ALS registration, union elims, XZ-family guard, sound tryAlsElims
 - H36d: ALS modular views with locked-set eliminations
 - H36f: ALS-key soundness fixes in decoders + audit v5 skip
 - H36c: ALS chain naming + rendering in chainLens
@@ -532,3 +533,42 @@ common digits) added; X/RCC-digit and locked-set elims gated on
 doubly-linked (second restricted common); record key endpoint-normalized
 (kills cand-node vs ALS-key representation duplicates). Folds uncommitted
 H36e/H36f experiments; tags skip e/f by design.
+
+## Terminology contract — strmCkr r/sudoku wiki (Intermediate Level)
+Adopted as naming + geometry parity reference for the V-phase and all
+future technique work. Source: reddit.com/r/sudoku/wiki intermediate
+chaining page, author strmCkr (StormDoku). Further sections
+(Competent level etc.) appended here on receipt.
+
+Gates: strong link = bidirectional XOR over two sector truths,
+(#)(A = B), exactly one true (bilocation, bivalve, grouped).
+Weak inference = NAND between nodes: at most one true, both may be
+false; bidirectional check. Notation: "=" strong, "-" weak,
+"=>" implies, "<>" eliminate.
+
+AIC types: T1 same value(s) at first/last => eliminate from peers of
+start & end. T2 different values, ends peer each other => exclude the
+opposite value. T3 Ring: start & end weak-inferenced; every node part
+acts as start/end; apply T1+T2 a second round; strongest class.
+
+Pattern geometry contract:
+- X-Wing: technically a ring; two same-cand strongs in rows or cols;
+  four valid weak constructions.
+- Skyscraper: two same-cand strongs, nodes 2x Row || 2x Col (parallel
+  strongs in two houses joined by a base weak link).
+- Two-String Kite: two same-cand strongs, one row + one col, joined by
+  one weak; strongs built 1 Row, 1 Col.
+- Remote Pair: bivalue-only AIC, same two digits; eliminates BOTH
+  digits from peers of start/end cells.
+- XY-Wing: three bivalue strongs + two weak inferences.
+- X-Chain: single-candidate AIC. XY-Chain: bivalue-only AIC.
+
+Golden test vectors (wiki examples; V2 regression set):
+V-INT-1 X-Ring: P=..47.5...29....15..5891....52.49861....5.1...9.1.3..85..2856931..9...546..51498..
+  (7)(r2c3=r2c9-r4c9=r4c3-r2c3) => r3c9,r5c9,r9c9,r5c3<>7
+V-INT-2 Skyscraper: same P => (6)(r5c3=r2c3-r2c4=r6c4) => r5c5,r6c2<>6
+V-INT-3 2-String Kite: same P => (6)(r2c3=r5c3-r6c2=r6c4) => r2c4<>6
+V-INT-4 Remote Pair: P=16.3.825.83.256..152.91.3682567931849714856324836219753958.2.1661253.8..748169523
+  (7=4)r1c5-(4=7)r7c5-(7=4)r7c7-(4=7)r2c7 => r1c9<>7
+V-INT-5 XY-Wing: P=31...2958629538471..81.9623..3.9781...18.359.89..1536.736981245142356789985724136
+  (4=6)r5c5-(6=7)r5c2-(7=4)r6c3 => r5c1,r6c4<>4
