@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- STATE: competent part 3 - M3/L1/L2/L3/H1 wing structures + vectors, digit-flow naming rule
 - STATE: competent part 2 - exact ERI/W-Wing vectors, S-Wing + M(2)-Wing structures, location-link notation
 - STATE: competent-level terminology contract (mini-sectors, ERI bounds, wing structures) + V-COMP vectors
 - STATE: adopt strmCkr r/sudoku wiki intermediate terminology as naming/geometry contract + V-INT vectors
@@ -663,3 +664,20 @@ Structure table update (V=bivalve/value, L=location/grouped):
   L1 L-L-L(same a) | L2 L-L-L(b,a,a) | L3 L-L-L(a,b,c) | H1 L-L-V
 Token strings alone do NOT separate M2/M3 nor L1/L2/L3: digit flow
 across nodes is part of the name. classify() must inspect digits.
+
+## Terminology contract — Competent Level part 4 (hybrid/inverted, final)
+H(2)-Wing: Structure Location{a} - Bivalve{a,b} - Bivalve{a,b}
+  contains a naked pair; single-digit x-chain redundancy.
+  Vector P=L3-grid: (3)r3c8=(3)r3c7-(3=5)r6c7-(5=3)r6c8 => r1c8,r4c8<>3
+H(3)-Wing: Structure 3 values, any link type for the 3 strong links;
+  single-digit x-chain redundancy.
+  Vector P=L2-grid: (7)r5c7=(7)r5c4-(7=6)r4c5-(6=9)r4c9 => r5c7<>9
+{inverted} iW-Wing: Structure Location{a} - Location{b} -
+  Location{b} - Location{a} (four nodes)
+  Vector P=L3-grid: (1)r4c3=(1-4)r1c3=(4)r13c1-(4)r8c1=(4-1)r8c7=(1)r5c7
+  => r4c8,r5c1<>1
+Structure table final additions: H2 = L-V-V, H3 = 3-value any-link,
+iW = L-L-L-L (a,b,b,a).
+Shared-grid note: L3/H2/iW share one puzzle; L2/H3 share one; W/S
+share one. Same-state vectors with different elim sets must all
+surface; equal elim sets fall to the elim-set dedupe rule.
