@@ -64,6 +64,7 @@ Selection = 3px yellow ring outline only, never a fill.
 - Rejected: Hodoku pastels for members, cyan #00B4D8, copper #B87333, magenta #FF006E.
 
 ## 5. Milestones (auto-regen from git log; newest first)
+- STATE: competent part 2 - exact ERI/W-Wing vectors, S-Wing + M(2)-Wing structures, location-link notation
 - STATE: competent-level terminology contract (mini-sectors, ERI bounds, wing structures) + V-COMP vectors
 - STATE: adopt strmCkr r/sudoku wiki intermediate terminology as naming/geometry contract + V-INT vectors
 - H36g: size-1 ALS registration, union elims, XZ-family guard, sound tryAlsElims
@@ -637,3 +638,28 @@ sector node):
   S-Wing   L-V-L   ({Split} variant)
   M(2)-Wing V-L-L
   M(3)-Wing pending next screenshots
+
+## Terminology contract — Competent Level part 3 (local/hybrid wings)
+M(3)-Wing: Structure bivalve{a,b} - Location{a} - Location{c}
+  P=.5....964467915283928364175.42.......4...27..7...63417.6.534.2..6...7..21.7.....
+  (1)r7c4=(1-2)r8c6=(2)r1c6-(2=8)r1c4 => r7c4<>8
+{Local} L(1)-Wing: Structure Location{a} - Location{a} - Location{a}
+  P=...382.....3....8.7.8...52334..96.5.9...5...6...1.3....2.6.8.95..6...4..5.3.7..61
+  (2)(r46c9=r8c9-r9c7=r9c4-r8c5=r6c5) => r6?<>(occluded; verify at replay)
+{Local} L(2)-Wing: Structure Location{b} - Location{a} - Location{a}
+  P=3.2...4.565.....914...57623..32.41....21.8..4.7465192381.46....2.3.....64.65...317
+  (3)r7c5=(3)r2c5-(3)r2c4=(3-7)r5c4=(7)r8c4 => r7c5<>7
+{Local} L(3)-Wing: Structure Location{a} - Location{b} - Location{c}
+  P=.2...7..6.35641..7.6782...1......7....37.....679412..831.974..5.98.56.7375..839..
+  (1)r8c7=(1-6)r9c8=(6-4)r9c3-(4)r8c1 => r8c7<>4
+{Hybrid} H(1)-Wing: Structure Location{a} - Location{a} - Bivalve{a,b}
+  P=8..14..6..6358974...4.62...6..43..2......6...8..51..6..861.95..91...63..46.95..7
+  (2)r7c12=(2)r7c9-(2)r2c9=(2)r2c1-(2=3)r9c1 => r9c1<>2
+  Wiki note: features a single-digit x-chain for the same elimination
+  => naming-priority question: H-wing vs X-chain for identical elims.
+
+Structure table update (V=bivalve/value, L=location/grouped):
+  XY V-V-V | W V-L-V | S L-V-L | M2 V-L-L(ends on b) | M3 V-L-L(ends on c)
+  L1 L-L-L(same a) | L2 L-L-L(b,a,a) | L3 L-L-L(a,b,c) | H1 L-L-V
+Token strings alone do NOT separate M2/M3 nor L1/L2/L3: digit flow
+across nodes is part of the name. classify() must inspect digits.
