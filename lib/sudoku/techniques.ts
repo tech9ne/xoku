@@ -1625,7 +1625,7 @@ export function findAllSteps(g: Game): Step[] {
     for (const f of FINDERS) {
       const st = f(g);
       if (!st || (st.eliminations.length === 0 && st.placements.length === 0)) continue;
-      const key = st.technique + "|" + st.eliminations.map(e => e.cell * 10 + e.cand).sort((x, y) => x - y).join(",") + "|" + (st.patternCells ?? []).slice().sort((x, y) => x - y).join(",");
+      const key = st.eliminations.map(e => e.cell * 10 + e.cand).sort((x, y) => x - y).join(",") + "|" + (st.patternCells ?? []).slice().sort((x, y) => x - y).join(",");
       if (seen.has(key)) continue;
       seen.add(key); out.push(st);
     }
