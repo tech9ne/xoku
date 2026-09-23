@@ -693,3 +693,22 @@ number[][]), fromHint (Tech to technique+XR, Elimination union to our
 fishStep k=2-4, findAicChains) with chain candColors from step entry/exit
 sides and reasons from formatChainEureka. Old engine live until parity
 gate passes; UI untouched throughout per decree.
+STORMDOKU ADAPTER PARITY VERIFIED — three semantic fixes align his
+candidate-grid-only model with our values+cands state:
+(1) Implicit resolve pass: Storm's nakedSingleStep returns null once a
+cell has one candidate (sudoku.ts:658-671, no peer eliminations remain).
+Our state needs explicit placements, so stormFindNextStep emits a Naked
+Single placement for any empty cell with a single-bit mask before calling
+his finders.
+(2) Singles-as-placements: his hiddenSubsetStep/hiddenSubsetStep k=1
+return peer eliminations with at: [cell], digits: [digit]. Adapter
+detects tech.includes('single') and converts to placements: [{cell, value}]
+with empty eliminations (our apply() handles peer reductions).
+(3) Hidden-before-naked scheduler order: his demo checks hiddenSubsetStep
+before nakedSingleStep/nakedSubsetStep within each size; adapter walks
+hidden k=1, naked k=1, box-line, hidden k=2-4, naked k=2-4, fish k=2-4,
+findAicChains.
+
+Parity gate: 6/6 Moderate puzzles solved by both engines (step counts
+differ by 0-3 due to scheduler noise). Adapter is gate-clear; flag-flip
+(STORM_ENGINE default true) next.

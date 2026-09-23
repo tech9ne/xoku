@@ -105,6 +105,26 @@ function fromHint(h: storm.Hint, g: Game): Step {
   const eliminations = fromStormElim(h.elim);
   const patternCells = h.at || [];
   const patternCands: Elimination[] = [];
+  
+  // Storm singles return peer eliminations, but we need placements.
+  // If this is a single with at: [cell] and digits: [digit], convert to placement.
+  const placements: { cell: number; value: number }[] = [];
+  if (h.at && h.at.length === 1 && h.digits && h.digits.length === 1 && h.tech.includes('single')) {
+    placements.push({ cell: h.at[0], value: h.digits[0] });
+    // Singles don't have explicit eliminations in our model — placement handles peer reductions
+    return {
+      technique,
+      category,
+      score,
+      reason: h.desc,
+      placements,
+      eliminations: [],
+      patternCells,
+      patternCands: [{ cell: h.at[0], cand: h.digits[0] }],
+      candColors: [],
+      links: [],
+    };
+  }
   if (h.digits) {
     for (const cell of patternCells) {
       for (const d of h.digits) {
@@ -118,7 +138,7 @@ function fromHint(h: storm.Hint, g: Game): Step {
     category,
     score,
     reason: h.desc,
-    placements: [],
+    placements,
     eliminations,
     patternCells,
     patternCands,
@@ -130,13 +150,32 @@ function fromHint(h: storm.Hint, g: Game): Step {
 // Walk his finders in scheduler order, return first match as Step.
 // cite: lib/sudoku/storm/sudoku.ts exports
 export function stormFindNextStep(g: Game): Step | null {
+  // Implicit resolve pass. Storm's state model is candidate-grid-only: a
+  // cell reduced to one candidate IS placed (his nakedSingleStep returns
+  // null once no peer eliminations remain, sudoku.ts:658-671). Our state
+  // needs an explicit placement step, so emit it here.
+  for (let i = 0; i < 81; i++) {
+    if (g.values[i] !== 0) continue;
+    const m = g.cands[i];
+    if (m !== 0 && (m & (m - 1)) === 0) {
+      let d = 0;
+      for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
+      return {
+        technique: "Naked Single", category: "Single", score: 1.0,
+        reason: `Naked Single: cell ${i} holds only candidate ${d}.`,
+        placements: [{ cell: i, value: d }],
+        eliminations: [],
+        patternCells: [i], patternCands: [{ cell: i, cand: d }],
+      };
+    }
+  }
   const cg = toCandidateGrid(g);
   
-  // Singles (nakedSingleStep, hiddenSubsetStep with k=1)
-  const nakedSingle = storm.nakedSingleStep(cg);
-  if (nakedSingle) return fromHint(nakedSingle, g);
+  // Singles (hidden before naked per his demo)
   const hiddenSingle = storm.hiddenSubsetStep(cg, 1);
   if (hiddenSingle) return fromHint(hiddenSingle, g);
+  const nakedSingle = storm.nakedSingleStep(cg);
+  if (nakedSingle) return fromHint(nakedSingle, g);
   
   // Box-line
   const boxLine = storm.boxLineStep(cg);
@@ -166,7 +205,6 @@ export function stormFindNextStep(g: Game): Step | null {
       cand: e.digit
     }));
     
-    // Build candColors from chain steps
     const candColors: { cell: number; cand: number; color: number }[] = [];
     let colorIdx = 0;
     for (const step of chain.steps) {
@@ -199,3 +237,4 @@ export function stormFindNextStep(g: Game): Step | null {
   
   return null;
 }
+
