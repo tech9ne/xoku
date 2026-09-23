@@ -681,3 +681,15 @@ iW = L-L-L-L (a,b,b,a).
 Shared-grid note: L3/H2/iW share one puzzle; L2/H3 share one; W/S
 share one. Same-state vectors with different elim sets must all
 surface; equal elim sets fall to the elim-set dedupe rule.
+STORMDOKU ADAPTER LANDED (v14.4-storm-adapter): lib/sudoku/storm/ vendors
+his engine (chain/spaces/sudoku/pom etc.) compiling clean under our
+tsconfig after compile-time-only null guards (isModularRingClosure already
+guarantees RCC_Left/RCC_Right at runtime; assertions add zero behavior).
+lib/sudoku/storm-adapter.ts converts his Hint to our Step behind
+STORM_ENGINE env flag (default false): toCandidateGrid (bitmask to
+number[][]), fromHint (Tech to technique+XR, Elimination union to our
+{cell,cand} list), stormFindNextStep walks his scheduler order
+(nakedSingleStep, hiddenSubsetStep k=1, boxLineStep, subsets k=2-4,
+fishStep k=2-4, findAicChains) with chain candColors from step entry/exit
+sides and reasons from formatChainEureka. Old engine live until parity
+gate passes; UI untouched throughout per decree.
