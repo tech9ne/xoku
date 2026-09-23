@@ -4,8 +4,10 @@
 // edges between steps: 'S' = LOCAL (same cell), 'C' = SECTOR (peers),
 // per WEAK_TYPE_NAMES = ['LOCAL','SECTOR'] (chain.ts:10).
 
+import { isAlsKey } from './chain-tables';
+
 export type StormStep = {
-  token: 'V' | 'L';
+  token: 'V' | 'L' | 'A';
   linkType: 0 | 4;
   digits: number[];        // digits on the node's sides, in traversal order
   cells: number[];
@@ -17,19 +19,34 @@ const cellOf = (n: number) => Math.floor(n / 10);
 const digOf = (n: number) => n % 10;
 
 // Adapt a xoku findAic path (node = cell*10+digit) to StormDoku steps.
-export function toStormSteps(path: number[], isRing: boolean): StormStep[] {
+export function toStormSteps(path: number[], isRing: boolean, t?: { alsNodes: { nodeKey: number; cells: number[] }[] }): StormStep[] {
   const steps: StormStep[] = [];
   for (let k = 0; k + 1 < path.length; k += 2) {
     const a = path[k], b = path[k + 1];
-    const sameCell = cellOf(a) === cellOf(b);
     const nxt = k + 2 < path.length ? path[k + 2] : (isRing ? path[0] : null);
+    
+    let token: 'V' | 'L' | 'A', linkType: 0 | 4, digits: number[], cells: number[];
+    
+    if (isAlsKey(a)) {
+      token = 'A';
+      linkType = 4;
+      digits = [digOf(a)];
+      cells = t?.alsNodes.find(n => n.nodeKey === a)?.cells ?? [];
+    } else {
+      const sameCell = cellOf(a) === cellOf(b);
+      token = sameCell ? 'V' : 'L';
+      linkType = sameCell ? 4 : 0;
+      digits = sameCell ? [digOf(a), digOf(b)] : [digOf(a)];
+      cells = sameCell ? [cellOf(a)] : [cellOf(a), cellOf(b)];
+    }
+    
     steps.push({
-      token: sameCell ? 'V' : 'L',
-      linkType: sameCell ? 4 : 0,
-      digits: sameCell ? [digOf(a), digOf(b)] : [digOf(a)],
-      cells: sameCell ? [cellOf(a)] : [cellOf(a), cellOf(b)],
+      token,
+      linkType,
+      digits,
+      cells,
       weakDigit: nxt != null ? digOf(nxt) : null,
-      weakSameCell: nxt != null ? cellOf(b) === cellOf(nxt) : false,
+      weakSameCell: nxt != null ? (isAlsKey(b) ? false : cellOf(b) === cellOf(nxt)) : false,
     });
   }
   return steps;

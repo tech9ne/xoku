@@ -5,7 +5,7 @@ import { ALL_DIGITS } from "@/lib/sudoku/core";
 import { UNDO_PNG } from "../lib/undoPng";
 import { REDO_PNG } from "../lib/redoPng";
 
-const LEVELS: Level[] = ["Extremely Easy", "Very Easy", "Modestly Easy", "Easy", "Moderate", "Tough", "Challenging", "Irritating", "Frustrating", "Hard", "Demanding", "Expert", "Brutal", "Nightmare"];
+const LEVELS: Level[] = ["Lulz", "Extremely Easy", "Very Easy", "Modestly Easy", "Easy", "Moderate", "Tough", "Challenging", "Irritating", "Frustrating", "Hard", "Demanding", "Expert", "Brutal", "Nightmare", "Abyssal", "Transcendent"];
 
 interface Props {
   idle?: boolean;
