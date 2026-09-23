@@ -712,3 +712,12 @@ findAicChains.
 Parity gate: 6/6 Moderate puzzles solved by both engines (step counts
 differ by 0-3 due to scheduler noise). Adapter is gate-clear; flag-flip
 (STORM_ENGINE default true) next.
+H-PARITY-B (v14.4-storm-parity-b): STORMDOKU RATING TRUTH PORTED — three
+levels added to our Level union (Lulz at 0, Abyssal at 12-12.999,
+Transcendent at 13-14.999) per his RATING_CATEGORY_SCORE_BANDS
+(index.html, verbatim). rateGame() uses his band logic while preserving
+its Game→Rating signature (Level derived from hardest via levelOfRating).
+TECH_NAME display strings ported verbatim from browser-core.js — note:
+pointing/claiming both map to "Box - Line Reduction" per his face
+(Hodoku synonym). Adapter now uses his exact rating numbers and display
+names; our guessed maps purged.

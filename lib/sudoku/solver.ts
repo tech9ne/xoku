@@ -76,25 +76,41 @@ export interface Rating {
 }
 
 export function rateGame(g: Game): Rating {
-  const g2 = cloneGame(g);
   const steps: Step[] = [];
+  const g2 = cloneGame(g);
+  let hardest = 0, hardestTechnique = "—";
   while (!isSolved(g2)) {
     const s = findNextStep(g2);
     if (!s) break;
     applyStep(g2, s);
     steps.push(s);
+    if (s.score > hardest) { hardest = s.score; hardestTechnique = s.technique; }
   }
-  let hardest = 0, hardestTechnique = "—";
-  for (const s of steps) if (s.score > hardest) { hardest = s.score; hardestTechnique = s.technique; }
-  return {
-    steps,
-    score: steps.reduce((a, s) => a + s.score, 0),
-    hardest, hardestTechnique,
-    solvedByLogic: isSolved(g2),
-  };
+  const solvedByLogic = isSolved(g2);
+  // cite: index.html RATING_CATEGORY_SCORE_BANDS + ratingCategoryForValue
+  const bands = [
+    { category: 'Lulz' as Level, min: 0, max: 0 },
+    { category: 'Extremely Easy' as Level, min: 1, max: 1.5 },
+    { category: 'Very Easy' as Level, min: 2, max: 2 },
+    { category: 'Modestly Easy' as Level, min: 2.001, max: 2.999 },
+    { category: 'Easy' as Level, min: 3, max: 3 },
+    { category: 'Moderate' as Level, min: 3.001, max: 3.999 },
+    { category: 'Tough' as Level, min: 4, max: 4 },
+    { category: 'Challenging' as Level, min: 4.001, max: 4.999 },
+    { category: 'Irritating' as Level, min: 5, max: 5.999 },
+    { category: 'Frustrating' as Level, min: 6, max: 6.999 },
+    { category: 'Hard' as Level, min: 7, max: 7.999 },
+    { category: 'Demanding' as Level, min: 8, max: 8.999 },
+    { category: 'Expert' as Level, min: 9, max: 9.999 },
+    { category: 'Brutal' as Level, min: 10, max: 10.999 },
+    { category: 'Nightmare' as Level, min: 11, max: 11.999 },
+    { category: 'Abyssal' as Level, min: 12, max: 12.999 },
+    { category: 'Transcendent' as Level, min: 13, max: 14.999 },
+  ];
+  return { steps, score: hardest, hardest, hardestTechnique, solvedByLogic };
 }
 
-export type Level = "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | "Moderate" | "Tough" | "Challenging" | "Irritating" | "Frustrating" | "Hard" | "Demanding" | "Expert" | "Brutal" | "Nightmare";
+export type Level = "Lulz" | "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | "Moderate" | "Tough" | "Challenging" | "Irritating" | "Frustrating" | "Hard" | "Demanding" | "Expert" | "Brutal" | "Nightmare" | "Abyssal" | "Transcendent";
 
 // ---- Xoku Rating (XR) ----
 // Every technique has an XR; a puzzle's XR is the rating of the hardest
@@ -106,6 +122,9 @@ export type Level = "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | 
 //   Brutal 7.0 - 8.4   ALS family, death blossom, kraken fish
 //   Nightmare    8.5+ / not solvable with the current engine
 const XR_BAND: Record<Level, { min: number; max: number } | null> = {
+  Lulz: { min: 0, max: 0 },
+  "Abyssal": { min: 12, max: 12.999 },
+  "Transcendent": { min: 13, max: 14.999 },
   "Extremely Easy": { min: 1.0, max: 2.0 },
   "Very Easy": { min: 2.0, max: 2.5 },
   "Modestly Easy": { min: 2.5, max: 3.0 },
@@ -132,6 +151,9 @@ export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): L
 
 export function generatePuzzle(level: Level = "Easy") {
   const cluesTarget: Record<Level, number> = {
+  Lulz: 40,
+  "Abyssal": 20,
+  "Transcendent": 17,
   "Extremely Easy": 40,
   "Very Easy": 36,
   "Modestly Easy": 33,
@@ -148,6 +170,9 @@ export function generatePuzzle(level: Level = "Easy") {
   "Nightmare": 18,
 };
   const maxAttempts: Record<Level, number> = {
+  Lulz: 200,
+  "Abyssal": 2000,
+  "Transcendent": 3000,
   "Extremely Easy": 10,
   "Very Easy": 15,
   "Modestly Easy": 20,
