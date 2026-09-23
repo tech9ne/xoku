@@ -2,6 +2,7 @@ import { matchRule, NodeKind, WeakKind, LinkType } from './naming-table';
 import { nodeStr, setNodeStr, bivStr, conclusionStr } from "./notation";
 import { chainLens } from "./chain-engine";
 import { classifyStormChain } from "./storm-names";
+import { stormFindNextStep } from "./storm-adapter";
 import {
   ALL_DIGITS, Elimination, Game, PEERS, Step, UNITS, UNITS_OF,
   arePeers, boxOf, candMask, candsOf, cellName, colOf, combinations,
@@ -1603,11 +1604,21 @@ export const FINDERS: Finder[] = [
 ];
 
 export function findNextStep(g: Game): Step | null {
+  // Gate: StormDoku engine (H-parity)
+  if (process.env.NEXT_PUBLIC_STORM_ENGINE === "true") {
+    const stormStep = stormFindNextStep(g);
+    if (stormStep) return stormStep;
+  }
   for (const f of FINDERS) { const s = f(g); if (s && (s.eliminations.length > 0 || s.placements.length > 0)) return s; }
   return null;
 }
 
 export function findAllSteps(g: Game): Step[] {
+  // Gate: StormDoku engine (H-parity)
+  if (process.env.NEXT_PUBLIC_STORM_ENGINE === "true") {
+    const stormStep = stormFindNextStep(g);
+    return stormStep ? [stormStep] : [];
+  }
   return (() => {
     const seen = new Set<string>();
     const out: Step[] = [];

@@ -721,3 +721,19 @@ TECH_NAME display strings ported verbatim from browser-core.js — note:
 pointing/claiming both map to "Box - Line Reduction" per his face
 (Hodoku synonym). Adapter now uses his exact rating numbers and display
 names; our guessed maps purged.
+H-PARITY-C/D (v14.4-storm-parity-d): (c) XR_BAND replaced verbatim by his
+RATING_CATEGORY_SCORE_BANDS (inclusive bounds, Unknown fallback via
+ratingCategoryForValue mirror); Level union gains Unknown; dead bands
+array purged from rateGame. (d) Gate wired: findNextStep/findAllSteps in
+techniques.ts call stormFindNextStep when NEXT_PUBLIC_STORM_ENGINE=true
+(the gate previously existed only as a comment — Storm never ran in the
+UI). withActualEliminations ported as liveHint() type predicate
+(browser-core.js:1061 discipline): no-op hints skipped, killing the
+rateGame infinite loop that froze new-game until refresh. Guessed
+techToScore map purged; his ratingDefinition ladder ported (singles/box-
+line 1, pairs/X-Wing 2, triples/Swordfish 3, quads/Jellyfish 4, fish
+variants 2.125-5.25 by size+K, skyscraper/kite/ER 2.25, L(1)/XY-Wing
+3.25, L(2+)/W/S/M/H-wings 6, ERI 3.25/4.25/5, remote-pair/XY-chain 5,
+ALS-XZ 7, T-ALS 8-9, ALS-Chain 10, ALS-DOF/DDS 11). Bands widened to
+include fractional ladder values (Tough 4-4.999, etc.) to reduce
+starvation on middle tiers. maxAttempts increased for struggling tiers.
