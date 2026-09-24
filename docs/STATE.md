@@ -744,3 +744,12 @@ for the entire Storm path and silently fell through to old FINDERS
 (techniques.ts:1611-1612), producing chimera ratings. Selection policy
 remains first-live; his lowest-value policy (index.html:11402) arrives
 with the chooseSolverStep port (H-parity-e2).
+H-FIX-SCORE-SUM (v14.4-fix-score-sum): Rating.score now the sum of step
+XRs, matching its doc comment and his ratingFromSteps (index.html:8917:
+score = sum of finite move values; category from hardest). rateGame/
+rateBounded previously assigned hardest into score. Zero UI consumers of
+Rating.score (page.tsx:494,506 sum per-step scores; :575,601,603 render
+per-step score), so dist()/levelOfRating (hardest-based) unchanged.
+STATE erratum retracted: withActualEliminations is real — browser-core.js
+:1156 def, used :797/:1032/:1036/:1061; earlier no-hit was an index.html-
+only grep. parity-d citation stands.

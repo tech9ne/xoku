@@ -79,6 +79,7 @@ export function rateGame(g: Game): Rating {
   const steps: Step[] = [];
   const g2 = cloneGame(g);
   let hardest = 0, hardestTechnique = "—";
+  let sum = 0;
   while (!isSolved(g2)) {
     const before = g2.values.slice();
     const bc = g2.cands.slice();
@@ -87,10 +88,11 @@ export function rateGame(g: Game): Rating {
     applyStep(g2, s);
     if (before.every((v, i) => v === g2.values[i]) && bc.every((c, i) => c === g2.cands[i])) break;
     steps.push(s);
+    sum += s.score;
     if (s.score > hardest) { hardest = s.score; hardestTechnique = s.technique; }
   }
   const solvedByLogic = isSolved(g2);
-  return { steps, score: hardest, hardest, hardestTechnique, solvedByLogic };
+  return { steps, score: sum, hardest, hardestTechnique, solvedByLogic };
 }
 
 export type Level = "Unknown" | "Lulz" | "Extremely Easy" | "Very Easy" | "Modestly Easy" | "Easy" | "Moderate" | "Tough" | "Challenging" | "Irritating" | "Frustrating" | "Hard" | "Demanding" | "Expert" | "Brutal" | "Nightmare" | "Abyssal" | "Transcendent";
@@ -138,6 +140,7 @@ function rateBounded(g: Game, bandMax: number): Rating {
   const steps: Step[] = [];
   const g2 = cloneGame(g);
   let hardest = 0, hardestTechnique = "—";
+  let sum = 0;
   while (!isSolved(g2)) {
     const bv = g2.values.slice(); const bc = g2.cands.slice();
     const st = findNextStep(g2);
@@ -147,8 +150,9 @@ function rateBounded(g: Game, bandMax: number): Rating {
     if (st.score > hardest) { hardest = st.score; hardestTechnique = st.technique; }
     if (hardest > bandMax) break; // prune: band unreachable, stop paying for the rest
     steps.push(st);
+    sum += st.score;
   }
-  return { steps, score: hardest, hardest, hardestTechnique, solvedByLogic: isSolved(g2) };
+  return { steps, score: sum, hardest, hardestTechnique, solvedByLogic: isSolved(g2) };
 }
 
 export function generatePuzzle(level: Level = "Easy") {
