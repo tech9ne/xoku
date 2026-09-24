@@ -770,10 +770,10 @@ rates via ratingForStep and displays his tag; techToName/techToScore
 guessed maps purged; chain branch rates via ratingForChain; interim
 sentinel 4.5 for his unknownRating (value null) documented. Implicit
 resolve split per his scheduler: last-man-standing (value 0, his
-browser-core.js LMSLINE lastManStandingStep) scanned before naked
+browser-core.js line 693 lastManStandingStep) scanned before naked
 singles - Lulz becomes reachable. ALS chains now reach the rater with
 real names: vendored findAicChains already searches ALS links, so
 ALS-XZ 7 / ALS-XY 8 / ALS-Chain 10 / AIC+ALS 11 are live values.
-Fish hint construction site still unfound (fishStepM at: FISHSITE);
+Fish implementation located: fishStepM (lib/sudoku/storm/spaces.ts:543), wrapped by fishStep (sudoku.ts:762);
 if size/k are absent on fish hints his own degradation applies
 (unknownRating) pending e1b.
