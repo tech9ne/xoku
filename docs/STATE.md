@@ -758,3 +758,22 @@ NEXT_PUBLIC_STORM_ENGINE: true. GitHub Pages was building with the flag
 unset, so the public face ran old FINDERS (Locked Candidates naming, old
 XR values) while localhost ran Storm — two engines, two taxonomies, one
 repo. All pre-flag GH observations belong to the old engine.
+H-PARITY-E1 (v14.4-parity-e1): StormDoku rating layer ported verbatim to
+lib/sudoku/storm-rater.ts - RATING_CATEGORY_RANKS (index.html:8181),
+RATING_CATEGORY_SCORE_BANDS (:8203), normalize/ratingCategoryForValue,
+ratingDefinition, RATING_TAGS, unknownRating, fishScoreForSize,
+chainLengthOf, chainMathScore (:8622), alsDofScore (:8782),
+ratingForStep (:8825), ratingForChain (:8637, regex branches in his
+order; helper branches stubbed for e1b: barns :10276, transport :10306,
+eriCount :10094, sizeOne :10339, hiddenXY :10405). Adapter: fromHint
+rates via ratingForStep and displays his tag; techToName/techToScore
+guessed maps purged; chain branch rates via ratingForChain; interim
+sentinel 4.5 for his unknownRating (value null) documented. Implicit
+resolve split per his scheduler: last-man-standing (value 0, his
+browser-core.js LMSLINE lastManStandingStep) scanned before naked
+singles - Lulz becomes reachable. ALS chains now reach the rater with
+real names: vendored findAicChains already searches ALS links, so
+ALS-XZ 7 / ALS-XY 8 / ALS-Chain 10 / AIC+ALS 11 are live values.
+Fish hint construction site still unfound (fishStepM at: FISHSITE);
+if size/k are absent on fish hints his own degradation applies
+(unknownRating) pending e1b.

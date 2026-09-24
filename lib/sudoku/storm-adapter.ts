@@ -4,6 +4,7 @@
 import { Game, Step, Elimination, candMask, StepCategory } from "./core";
 import * as storm from "./storm/sudoku";
 import { findAicChains, formatChainEureka, ChainElimination } from "./storm/chain";
+import { ratingForStep, ratingForChain } from "./storm-rater";
 
 // Convert our bitmask cands to his CandidateGrid (number[][]).
 // cite: lib/sudoku/storm/sudoku.ts:13 (type CandidateGrid = number[][])
@@ -43,103 +44,34 @@ function fromStormElim(e: storm.Elimination): Elimination[] {
   return out;
 }
 
-// Map his Tech enum to our technique strings.
-function techToName(tech: string): string {
-  const map: Record<string, string> = {
-    'hidden-single': 'Hidden Single',
-    'naked-single': 'Naked Single',
-    'box-line': 'Box-Line Reduction',
-    'hidden-pair': 'Hidden Pair',
-    'naked-pair': 'Naked Pair',
-    'hidden-triple': 'Hidden Triple',
-    'naked-triple': 'Naked Triple',
-    'hidden-quad': 'Hidden Quad',
-    'naked-quad': 'Naked Quad',
-    'x-wing': 'X-Wing',
-    'swordfish': 'Swordfish',
-    'jellyfish': 'Jellyfish',
-    'aic': 'AIC',
-    'remote-pair': 'Remote Pair',
-  };
-  return map[tech] || tech;
-}
-
 // Derive category from tech.
 function techToCategory(tech: string): StepCategory {
   if (tech.includes('single')) return 'Single';
   if (tech.includes('pair') || tech.includes('triple') || tech.includes('quad')) return 'Subset';
   if (tech.includes('wing') || tech.includes('chain') || tech.includes('aic')) return 'Chain';
   if (tech.includes('fish') || tech.includes('x-wing')) return 'Fish';
-  if (tech.includes('box-line') || tech.includes('locked')) return 'Locked Candidates';
+  if (tech.includes('box-line') || tech.includes('locked') || tech === 'pointing' || tech === 'claiming') return 'Locked Candidates';
   return 'Chain'; // fallback
-}
-
-// Score mapping (XR scores for his tech).
-// cite: stormdoku index.html ratingDefinition table (verbatim values)
-function techToScore(tech: string, reason?: string): number {
-  const t = tech.toLowerCase();
-  // Singles & basics
-  if (t.includes('single') || t.includes('last-man')) return t.includes('last') ? 0 : 1;
-  if (t.includes('box-line') || t.includes('pointing') || t.includes('claiming')) return 1;
-  // Pairs & X-Wing
-  if (t.includes('pair') || t === 'x-wing' || t.includes('aic x-wing')) return 2;
-  // Triples & Swordfish
-  if (t.includes('triple') || t.includes('swordfish')) return 3;
-  // Quads & Jellyfish
-  if (t.includes('quad') || t.includes('jellyfish')) return 4;
-  // Fish variants (Franken/Mutant/K-fish)
-  if (t.includes('fish')) {
-    if (reason && /franken|mutant/i.test(reason)) {
-      const kMatch = reason.match(/k(\d+)/i);
-      const k = kMatch ? parseInt(kMatch[1]) : 0;
-      const sizeMatch = reason.match(/(\d+)x(\d+)/);
-      const size = sizeMatch ? parseInt(sizeMatch[1]) : 2;
-      if (size <= 2) return 2.125 + k * 0.125;
-      if (size <= 3) return 3.125 + k * 0.125;
-      if (size <= 4) return 4.125 + k * 0.125;
-      return 5.125 + k * 0.125;
-    }
-    if (reason && /finned|sashimi/i.test(reason)) return 2.25;
-    return t.includes('x-wing') ? 2 : t.includes('swordfish') ? 3 : 4;
-  }
-  // Skyscraper, 2-String Kite, Empty Rectangle
-  if (t.includes('skyscraper') || t.includes('2-string') || t.includes('empty-rect') || t.includes('kite')) return 2.25;
-  // Wings & Rings
-  if (t.includes('wing') || t.includes('ring')) {
-    if (t.includes('l(1)') || t.includes('xy-wing') || t.includes('xy-ring') || t.includes('barns xyz')) return 3.25;
-    if (t.includes('l(2)') || t.includes('l(3)') || t.includes('w-wing') || t.includes('s-wing') || 
-        t.includes('m(2)') || t.includes('m(3)') || t.includes('h(1)') || t.includes('h(2)') || t.includes('h(3)')) return 6;
-    return 3.25; // default wing
-  }
-  // ERI chains
-  if (t.includes('eri')) {
-    if (reason && /3x/.test(reason)) return 3.25;
-    if (reason && /4x/.test(reason)) return 4.25;
-    return 5;
-  }
-  // Remote Pair, XY-Chain
-  if (t.includes('remote-pair') || t.includes('xy-chain')) return 5;
-  // ALS techniques
-  if (t.includes('als')) {
-    if (t.includes('chain')) return 10;
-    if (t.includes('t-als-xy') || t.includes('aic')) return 9;
-    if (t.includes('t-als-xz') || t.includes('als-xy')) return 8;
-    if (t.includes('als-xz')) return 7;
-    if (t.includes('dof') || t.includes('dds') || t.includes('adds')) return 11;
-    return 8;
-  }
-  // AIC chains (default)
-  if (t.includes('aic') || t.includes('chain')) return 4.5;
-  // Fallback
-  return 5;
 }
 
 // Convert one Hint to our Step shape.
 // cite: lib/sudoku/storm/sudoku.ts:56 (Hint interface)
 function fromHint(h: storm.Hint, g: Game): Step {
-  const technique = techToName(h.tech);
+  // H-parity-e1: rating via ported rater (index.html:8825 ratingForStep);
+  // display name is his tag. techToName/techToScore purged as guessed maps.
+  const rating = ratingForStep({
+    tech: h.tech as string,
+    name: h.name,
+    category: h.category,
+    size: h.size,
+    k: h.k,
+    desc: h.desc,
+  });
+  const technique = rating.tag;
   const category = techToCategory(h.tech);
-  const score = techToScore(h.tech, h.desc);
+  // Interim sentinel for his unknownRating (value null): 4.5, documented
+  // in STATE.md; e1b removes the need.
+  const score = rating.value ?? 4.5;
   
   const eliminations = fromStormElim(h.elim);
   const patternCells = h.at || [];
@@ -205,6 +137,38 @@ export function stormFindNextStep(g: Game): Step | null {
   // cell reduced to one candidate IS placed (his nakedSingleStep returns
   // null once no peer eliminations remain, sudoku.ts:658-671). Our state
   // needs an explicit placement step, so emit it here.
+  // H-parity-e1: implicit resolve split per his scheduler order
+  // (browser-core.js subsetOrFishStep: last-man-standing before singles).
+  // Pass 1: single-candidate cell whose digit appears in no peer
+  // candidate = his lastManStandingStep (value 0, promote: true).
+  // Pass 2: any other single-candidate cell = naked single (value 1).
+  const peerHasD = (cell: number, d: number): boolean => {
+    const mask = candMask(d);
+    const r = (cell / 9) | 0, c = cell % 9;
+    for (let j = 0; j < 81; j++) {
+      if (j === cell || g.values[j] !== 0) continue;
+      const jr = (j / 9) | 0, jc = j % 9;
+      const sameBox = ((jr / 3) | 0) === ((r / 3) | 0) && ((jc / 3) | 0) === ((c / 3) | 0);
+      if ((jr === r || jc === c || sameBox) && (g.cands[j] & mask) !== 0) return true;
+    }
+    return false;
+  };
+  for (let i = 0; i < 81; i++) {
+    if (g.values[i] !== 0) continue;
+    const m = g.cands[i];
+    if (m === 0 || (m & (m - 1)) !== 0) continue;
+    let d = 0;
+    for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
+    if (!peerHasD(i, d)) {
+      return {
+        technique: "Last Man Standing", category: "Single", score: 0,
+        reason: `Last Man Standing: cell ${i} = ${d} (no peer lists ${d}).`,
+        placements: [{ cell: i, value: d }],
+        eliminations: [],
+        patternCells: [i], patternCands: [{ cell: i, cand: d }],
+      };
+    }
+  }
   for (let i = 0; i < 81; i++) {
     if (g.values[i] !== 0) continue;
     const m = g.cands[i];
@@ -276,10 +240,11 @@ export function stormFindNextStep(g: Game): Step | null {
       }
       colorIdx += 2;
     }
+    const rating = ratingForChain(chain, { desc: reason });
     return {
-      technique: 'AIC',
+      technique: rating.tag,
       category: 'Chain',
-      score: techToScore('AIC', reason),
+      score: rating.value ?? 4.5,
       reason,
       placements: [],
       eliminations,
