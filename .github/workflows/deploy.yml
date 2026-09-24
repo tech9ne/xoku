@@ -20,6 +20,7 @@ jobs:
       - run: npx next build
         env:
           NEXT_BASE_PATH: /xoku
+            NEXT_PUBLIC_STORM_ENGINE: true
       - run: touch out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:

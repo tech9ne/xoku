@@ -753,3 +753,8 @@ per-step score), so dist()/levelOfRating (hardest-based) unchanged.
 STATE erratum retracted: withActualEliminations is real — browser-core.js
 :1156 def, used :797/:1032/:1036/:1061; earlier no-hit was an index.html-
 only grep. parity-d citation stands.
+H-DEPLOY-STORM (v14.4-deploy-storm): deploy.yml build env gains
+NEXT_PUBLIC_STORM_ENGINE: true. GitHub Pages was building with the flag
+unset, so the public face ran old FINDERS (Locked Candidates naming, old
+XR values) while localhost ran Storm — two engines, two taxonomies, one
+repo. All pre-flag GH observations belong to the old engine.
