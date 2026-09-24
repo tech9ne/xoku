@@ -737,3 +737,10 @@ variants 2.125-5.25 by size+K, skyscraper/kite/ER 2.25, L(1)/XY-Wing
 ALS-XZ 7, T-ALS 8-9, ALS-Chain 10, ALS-DOF/DDS 11). Bands widened to
 include fractional ladder values (Tough 4-4.999, etc.) to reduce
 starvation on middle tiers. maxAttempts increased for struggling tiers.
+H-FIX-CHAINS (v14.4-fix-chains): stormFindNextStep chain branch walks all
+findAicChains results, returning the first with a live elimination.
+Previously only chains[0] was checked; a dead head chain returned null
+for the entire Storm path and silently fell through to old FINDERS
+(techniques.ts:1611-1612), producing chimera ratings. Selection policy
+remains first-live; his lowest-value policy (index.html:11402) arrives
+with the chooseSolverStep port (H-parity-e2).

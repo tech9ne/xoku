@@ -246,16 +246,21 @@ export function stormFindNextStep(g: Game): Step | null {
     if (liveHint(fish, g)) return fromHint(fish, g);
   }
   
-  // Chains (AIC)
+  // Chains (AIC). H-fix-chains: walk every chain; the first chain with a
+  // live elimination wins. Previously only chains[0] was inspected and a
+  // dead head chain nulled the entire Storm path -> silent old-FINDERS
+  // fall-through mid-solve (techniques.ts:1611), mixing engine ratings.
   const chainReport = findAicChains(cg);
-  if (chainReport.chains && chainReport.chains.length > 0) {
-    const chain = chainReport.chains[0];
-    const reason = formatChainEureka(chain);
+  for (const chain of chainReport.chains ?? []) {
     const eliminations: Elimination[] = chain.eliminations.map((e: ChainElimination) => ({
       cell: e.cell,
-      cand: e.digit
+      cand: e.digit,
     }));
-    
+    const isLive = eliminations.some(
+      (e) => g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.cand)) !== 0,
+    );
+    if (!isLive) continue;
+    const reason = formatChainEureka(chain);
     const candColors: { cell: number; cand: number; color: number }[] = [];
     let colorIdx = 0;
     for (const step of chain.steps) {
@@ -271,8 +276,6 @@ export function stormFindNextStep(g: Game): Step | null {
       }
       colorIdx += 2;
     }
-    
-    if (!eliminations.some((e) => g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.cand)) !== 0)) return null;
     return {
       technique: 'AIC',
       category: 'Chain',
@@ -286,7 +289,6 @@ export function stormFindNextStep(g: Game): Step | null {
       links: [],
     };
   }
-  
   return null;
 }
 
