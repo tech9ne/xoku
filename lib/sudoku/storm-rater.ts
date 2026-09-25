@@ -365,3 +365,64 @@ export function ratingForChain(chain: ChainLike | null, step: StepLike = chain a
   return unknownRating(step?.desc || '');
 }
 // rater chunk R6 ok
+
+// Generator solver profile. cite: index.html:8263 generationTechniqueProfile
+// (verbatim; TS types ours). Caps co-vary with ranks - porting moveTypes
+// alone would misgate depth/fish/strong-links.
+export interface SolverProfile {
+  moveTypes: Set<string>;
+  maxRank: number;
+  maxDepth: number;
+  maxFishSize: number;
+  strongLinkTypes: number[];
+  includeAlsRcc: boolean;
+}
+
+// cite: index.html:8263 (verbatim). Returns null for Any/Unknown targets.
+export function generationTechniqueProfile(category: string): SolverProfile | null {
+  const normalizedCategory = normalizeRatingCategory(category);
+  if (normalizedCategory === 'Any' || normalizedCategory === 'Unknown') return null;
+  const maxRank = RATING_CATEGORY_RANKS[normalizedCategory];
+  if (!Number.isFinite(maxRank)) return null;
+  const moveTypes = new Set<string>();
+  const addAt = (rank: number, ...types: string[]) => {
+    if (maxRank < rank) return;
+    for (const type of types) moveTypes.add(type);
+  };
+  addAt(0, 'last-man-standing');
+  addAt(10, 'hidden-single', 'naked-single', 'box-line');
+  addAt(20, 'hidden-pair', 'naked-pair', 'x-wing', 'aic-x-wing', 'chains', 'x-chain', 'chain-x-wing');
+  addAt(30, '2x2+k-fish', 'empty-rectangle', '2-string-kite', 'skyscraper',
+    'finned-x-wing', 'sashimi-x-wing');
+  addAt(40, 'hidden-triple', 'naked-triple', 'swordfish');
+  addAt(50, '3x3+k-fish', 'dual-empty-rectangle', 'rect-kite', 'bridged-eri',
+    'eri-chain', 'l1-wing', 'xy-wing', 'barns');
+  addAt(60, 'hidden-quad', 'naked-quad', 'jellyfish');
+  addAt(70, '4x4+k-fish');
+  addAt(80, 'xy-chain', 'remote-pair', 'hidden-xy-chain', 'hidden-remote-pair');
+  addAt(90, 'l2-wing', 'l3-wing', 's-wing', 'm2-wing', 'm3-wing',
+    'h1-wing', 'h2-wing', 'h3-wing', 'w-wing', 'strong-wing', 'inversion',
+    'barns-transport');
+  addAt(100, 'als-xz');
+  addAt(110, 't-als-xz', 'als-xy');
+  addAt(120, 't-als-xy', 'aic-als');
+  addAt(130, 'als-chain');
+  addAt(150, 'als-dof', 'dds', 'adds');
+  addAt(160, 'dds-chain', 'adds-chain');
+  // rater chunk E2A ok
+  const strongLinkTypes = maxRank >= 50 ? [0, 1, 2, 3, 4]
+    : maxRank >= 30 ? [0, 1, 2, 3]
+    : maxRank >= 20 ? [0]
+    : [];
+  const maxDepth = maxRank <= 30 ? 2 : maxRank <= 50 ? 3 : maxRank <= 70 ? 4 : 8;
+  const maxFishSize = maxRank < 40 ? 2 : maxRank < 60 ? 3 : 4;
+  return {
+    moveTypes,
+    maxRank,
+    maxDepth,
+    maxFishSize,
+    strongLinkTypes,
+    includeAlsRcc: maxRank >= 100,
+  };
+}
+// rater chunk E2B ok

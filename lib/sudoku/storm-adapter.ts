@@ -4,7 +4,7 @@
 import { Game, Step, Elimination, candMask, StepCategory } from "./core";
 import * as storm from "./storm/sudoku";
 import { findAicChains, formatChainEureka, ChainElimination } from "./storm/chain";
-import { ratingForStep, ratingForChain } from "./storm-rater";
+import { ratingForStep, ratingForChain, chainLengthOf, type SolverProfile } from "./storm-rater";
 
 // Convert our bitmask cands to his CandidateGrid (number[][]).
 // cite: lib/sudoku/storm/sudoku.ts:13 (type CandidateGrid = number[][])
@@ -132,16 +132,20 @@ function liveHint(h: storm.Hint | null, g: Game): h is storm.Hint {
     g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.digit)) !== 0);
 }
 
-export function stormFindNextStep(g: Game): Step | null {
-  // Implicit resolve pass. Storm's state model is candidate-grid-only: a
-  // cell reduced to one candidate IS placed (his nakedSingleStep returns
-  // null once no peer eliminations remain, sudoku.ts:658-671). Our state
-  // needs an explicit placement step, so emit it here.
-  // H-parity-e1: implicit resolve split per his scheduler order
-  // (browser-core.js subsetOrFishStep: last-man-standing before singles).
-  // Pass 1: single-candidate cell whose digit appears in no peer
-  // candidate = his lastManStandingStep (value 0, promote: true).
-  // Pass 2: any other single-candidate cell = naked single (value 1).
+// Walk his finders in scheduler order under an optional generator profile.
+// cite: index.html:11704 chooseSolverStep - simple first; early-return when
+// the simple value <= 2; otherwise lower-scoring of (simple, best chain)
+// wins, simple winning ties. ALS-DOF branch not vendored yet (e1b/e3).
+// H-parity-e2: chain selection is his bestChainFromReport policy
+// (index.html:11043): lowest rating value, Unknown = Infinity, his rank
+// filter under profiles. First-live selection (H-fix-chains) over-rated
+// puzzles by playing deep chains when cheap ones existed - root cause of
+// the observed Very Easy / Modestly Easy generation starvation. His
+// SOLVER_TIE_ORDER tie component is deferred to e2b (needs
+// chainMoveTieKey/directMoveTieKey); ties break by length then report
+// index here - documented, deterministic.
+export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step | null {
+  const mt = profile?.moveTypes;
   const peerHasD = (cell: number, d: number): boolean => {
     const mask = candMask(d);
     const r = (cell / 9) | 0, c = cell % 9;
@@ -153,113 +157,155 @@ export function stormFindNextStep(g: Game): Step | null {
     }
     return false;
   };
-  for (let i = 0; i < 81; i++) {
-    if (g.values[i] !== 0) continue;
-    const m = g.cands[i];
-    if (m === 0 || (m & (m - 1)) !== 0) continue;
-    let d = 0;
-    for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
-    if (!peerHasD(i, d)) {
-      return {
-        technique: "Last Man Standing", category: "Single", score: 0,
-        reason: `Last Man Standing: cell ${i} = ${d} (no peer lists ${d}).`,
-        placements: [{ cell: i, value: d }],
-        eliminations: [],
-        patternCells: [i], patternCands: [{ cell: i, cand: d }],
-      };
-    }
-  }
-  for (let i = 0; i < 81; i++) {
-    if (g.values[i] !== 0) continue;
-    const m = g.cands[i];
-    if (m !== 0 && (m & (m - 1)) === 0) {
+  // Pass 1: last-man-standing. cite: browser-core.js:693 (value 0).
+  if (!mt || mt.has('last-man-standing')) {
+    for (let i = 0; i < 81; i++) {
+      if (g.values[i] !== 0) continue;
+      const m = g.cands[i];
+      if (m === 0 || (m & (m - 1)) !== 0) continue;
       let d = 0;
       for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
-      return {
-        technique: "Naked Single", category: "Single", score: 1.0,
-        reason: `Naked Single: cell ${i} holds only candidate ${d}.`,
-        placements: [{ cell: i, value: d }],
-        eliminations: [],
-        patternCells: [i], patternCands: [{ cell: i, cand: d }],
-      };
+      if (!peerHasD(i, d)) {
+        return {
+          technique: "Last Man Standing", category: "Single", score: 0,
+          reason: `Last Man Standing: cell ${i} = ${d} (no peer lists ${d}).`,
+          placements: [{ cell: i, value: d }],
+          eliminations: [],
+          patternCells: [i], patternCands: [{ cell: i, cand: d }],
+        };
+      }
+    }
+  }
+  // Pass 2: naked singles (value 1).
+  if (!mt || mt.has('naked-single')) {
+    for (let i = 0; i < 81; i++) {
+      if (g.values[i] !== 0) continue;
+      const m = g.cands[i];
+      if (m !== 0 && (m & (m - 1)) === 0) {
+        let d = 0;
+        for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
+        return {
+          technique: "Naked Single", category: "Single", score: 1.0,
+          reason: `Naked Single: cell ${i} holds only candidate ${d}.`,
+          placements: [{ cell: i, value: d }],
+          eliminations: [],
+          patternCells: [i], patternCands: [{ cell: i, cand: d }],
+        };
+      }
     }
   }
   const cg = toCandidateGrid(g);
-  
-  // Singles (hidden before naked per his demo)
-  const hiddenSingle = storm.hiddenSubsetStep(cg, 1);
-  if (liveHint(hiddenSingle, g)) return fromHint(hiddenSingle, g);
-  const nakedSingle = storm.nakedSingleStep(cg);
-  if (liveHint(nakedSingle, g)) return fromHint(nakedSingle, g);
-  
-  // Box-line
-  const boxLine = storm.boxLineStep(cg);
-  if (liveHint(boxLine, g)) return fromHint(boxLine, g);
-  
-  // Subsets (hidden then naked, sizes 2-4)
-  for (let k = 2; k <= 4; k++) {
-    const hidden = storm.hiddenSubsetStep(cg, k as storm.SubsetSize);
-    if (liveHint(hidden, g)) return fromHint(hidden, g);
-    const naked = storm.nakedSubsetStep(cg, k as storm.SubsetSize);
-    if (liveHint(naked, g)) return fromHint(naked, g);
+  // Simple walk: his subsetOrFishStep order (singles, box-line, subsets
+  // 2-4, fish 2-4), each moveType-gated under profiles. First live match.
+  let simple: Step | null = null;
+  if (!mt || mt.has('hidden-single')) {
+    const h = storm.hiddenSubsetStep(cg, 1);
+    if (liveHint(h, g)) simple = fromHint(h, g);
   }
-  
-  // Fish (sizes 2-4)
-  for (let size = 2; size <= 4; size++) {
-    const fish = storm.fishStep(cg, [size as 2 | 3 | 4]);
-    if (liveHint(fish, g)) return fromHint(fish, g);
+  if (!simple && (!mt || mt.has('naked-single'))) {
+    const n = storm.nakedSingleStep(cg);
+    if (liveHint(n, g)) simple = fromHint(n, g);
   }
-  
-  // Chains (AIC). H-fix-chains: walk every chain; the first chain with a
-  // live elimination wins. Previously only chains[0] was inspected and a
-  // dead head chain nulled the entire Storm path -> silent old-FINDERS
-  // fall-through mid-solve (techniques.ts:1611), mixing engine ratings.
-  const chainReport = findAicChains(cg);
-  for (const chain of chainReport.chains ?? []) {
-    const eliminations: Elimination[] = chain.eliminations.map((e: ChainElimination) => ({
-      cell: e.cell,
-      cand: e.digit,
-    }));
-    const isLive = eliminations.some(
-      (e) => g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.cand)) !== 0,
-    );
-    if (!isLive) continue;
-    // H-parity-e1c: cite index.html displayedStepDescription - his eureka
-    // strings embed the structure name ("T-ALS-XZ: (3)r1c8=..."); the UI
-    // already prints the display tag, so strip the prefix here to match
-    // his face (one name, then the body, "=> eliminations" kept intact).
-    const eureka = formatChainEureka(chain);
-    const eurekaSep = eureka.indexOf(':');
-    const reason = eurekaSep >= 0 ? eureka.slice(eurekaSep + 1).trim() : eureka;
-    const candColors: { cell: number; cand: number; color: number }[] = [];
-    let colorIdx = 0;
-    for (const step of chain.steps) {
-      for (const cell of step.entry.cells) {
-        for (const d of step.entry.digits) {
-          candColors.push({ cell, cand: d, color: colorIdx % 6 });
-        }
+  if (!simple && (!mt || mt.has('box-line'))) {
+    const b = storm.boxLineStep(cg);
+    if (liveHint(b, g)) simple = fromHint(b, g);
+  }
+  if (!simple) {
+    for (let k = 2; k <= 4 && !simple; k++) {
+      const hid = ['hidden-pair', 'hidden-triple', 'hidden-quad'][k - 2];
+      if (!mt || mt.has(hid)) {
+        const h = storm.hiddenSubsetStep(cg, k as storm.SubsetSize);
+        if (liveHint(h, g)) { simple = fromHint(h, g); break; }
       }
-      for (const cell of step.exit.cells) {
-        for (const d of step.exit.digits) {
-          candColors.push({ cell, cand: d, color: (colorIdx + 1) % 6 });
-        }
+      const nak = ['naked-pair', 'naked-triple', 'naked-quad'][k - 2];
+      if (!mt || mt.has(nak)) {
+        const n = storm.nakedSubsetStep(cg, k as storm.SubsetSize);
+        if (liveHint(n, g)) { simple = fromHint(n, g); break; }
       }
-      colorIdx += 2;
     }
-    const rating = ratingForChain(chain, { desc: eureka });
-    return {
-      technique: rating.tag,
-      category: 'Chain',
-      score: rating.value ?? 4.5,
-      reason,
-      placements: [],
-      eliminations,
-      patternCells: [],
-      patternCands: [],
-      candColors,
-      links: [],
-    };
   }
-  return null;
+  if (!simple) {
+    // cite: index.html solverFishSizes - size enabled by either name key.
+    const fishKeys: Record<number, [string, string]> = {
+      2: ['x-wing', '2x2+k-fish'],
+      3: ['swordfish', '3x3+k-fish'],
+      4: ['jellyfish', '4x4+k-fish'],
+    };
+    for (let size = 2; size <= 4 && !simple; size++) {
+      if ((profile?.maxFishSize ?? 4) < size) continue;
+      if (mt) { const keys = fishKeys[size]; if (!mt.has(keys[0]) && !mt.has(keys[1])) continue; }
+      const f = storm.fishStep(cg, [size as 2 | 3 | 4]);
+      if (liveHint(f, g)) simple = fromHint(f, g);
+    }
+  }
+  // his chooseSolverStep: simple <= 2 cannot be beaten by any chain.
+  if (simple && simple.score <= 2) return simple;
+  // Chain search: his bestChainFromReport policy (lowest value wins).
+  let best: { step: Step; value: number; length: number } | null = null;
+  if (!mt || mt.has('chains')) {
+    const report = findAicChains(cg, profile ? {
+      maxDepth: profile.maxDepth,
+      strongLinkTypes: profile.strongLinkTypes,
+      includeAls: profile.includeAlsRcc,
+    } : {});
+    for (const chain of report.chains ?? []) {
+      const eliminations: Elimination[] = chain.eliminations.map((e: ChainElimination) => ({
+        cell: e.cell,
+        cand: e.digit,
+      }));
+      const isLive = eliminations.some(
+        (e) => g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.cand)) !== 0,
+      );
+      if (!isLive) continue;
+      // H-parity-e1c: strip his embedded structure-name prefix.
+      const eureka = formatChainEureka(chain);
+      const eurekaSep = eureka.indexOf(':');
+      const reason = eurekaSep >= 0 ? eureka.slice(eurekaSep + 1).trim() : eureka;
+      const rating = ratingForChain(chain, { desc: eureka });
+      // his rank filter (bestChainFromReport, verbatim)
+      if (profile && rating.rank > profile.maxRank) continue;
+      const value = rating.value ?? Number.POSITIVE_INFINITY; // his Unknown rule
+      const length = chainLengthOf(chain);
+      if (!best || value < best.value || (value === best.value && length < best.length)) {
+        const candColors: { cell: number; cand: number; color: number }[] = [];
+        let colorIdx = 0;
+        for (const step of chain.steps) {
+          for (const cell of step.entry.cells) {
+            for (const d of step.entry.digits) {
+              candColors.push({ cell, cand: d, color: colorIdx % 6 });
+            }
+          }
+          for (const cell of step.exit.cells) {
+            for (const d of step.exit.digits) {
+              candColors.push({ cell, cand: d, color: (colorIdx + 1) % 6 });
+            }
+          }
+          colorIdx += 2;
+        }
+        best = {
+          step: {
+            technique: rating.tag,
+            category: 'Chain',
+            score: rating.value ?? 4.5, // unknownRating sentinel, see STATE e1
+            reason,
+            placements: [],
+            eliminations,
+            patternCells: [],
+            patternCands: [],
+            candColors,
+            links: [],
+          },
+          value,
+          length,
+        };
+      }
+    }
+  }
+  // his chooseLowerScoringMove: lower value wins; simple wins ties (his
+  // chooseBestSolverMove iterates [simple, chain] with strict <).
+  if (best) {
+    const simpleVal = simple ? simple.score : Number.POSITIVE_INFINITY;
+    if (best.value < simpleVal) return best.step;
+  }
+  return simple;
 }
-

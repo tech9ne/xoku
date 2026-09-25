@@ -785,3 +785,21 @@ panel showed the name twice (user screenshots, Expert 48%/54%).
 Reason is now the body after the first colon; "=> eliminations" kept;
 ratingForChain still receives the full eureka for hardestMove.
 Simple-hint descs untouched (no duplication observed there).
+H-PARITY-E2 (v14.4-parity-e2): chain selection ported to his
+bestChainFromReport policy (index.html:11043) - lowest rating value wins,
+Unknown = Infinity, his rank filter under profiles; ties by length then
+report index (his SOLVER_TIE_ORDER component deferred to e2b pending
+chainMoveTieKey/directMoveTieKey fetch). Simple-vs-chain chooser ported
+from chooseSolverStep (index.html:11704): simple <= 2 early-return,
+else lower-scoring wins, simple wins ties. generationTechniqueProfile
+(index.html:8263) ported verbatim with co-varying caps (maxDepth,
+maxFishSize, strongLinkTypes, includeAlsRcc) into storm-rater.ts;
+stormFindNextStep accepts an optional SolverProfile and moveType-gates
+every simple step (his subsetOrFishStep semantics) - the restricted
+solver e3 requires. Root cause fixed: first-live chain selection
+(H-fix-chains stopgap) over-rated puzzles (depth-4 chain at 4.25 played
+over an available 2.25 Skyscraper), starving Very Easy (exact 2.0) and
+Modestly Easy (2.001-2.999) bands. candColors preserved. Known
+deviation: ALS-DOF/DDS chooser branch not vendored (top-tier move types
+cannot be produced; stage-1 will honestly stall there - matches his
+own stage-2 Nightmare profile gap).
