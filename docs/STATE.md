@@ -777,3 +777,11 @@ ALS-XZ 7 / ALS-XY 8 / ALS-Chain 10 / AIC+ALS 11 are live values.
 Fish implementation located: fishStepM (lib/sudoku/storm/spaces.ts:543), wrapped by fishStep (sudoku.ts:762);
 if size/k are absent on fish hints his own degradation applies
 (unknownRating) pending e1b.
+H-PARITY-E1C (v14.4-parity-e1c): chain hint descriptions strip the
+structure-name prefix per his displayedStepDescription (index.html:
+renderLog window). His eureka format prepends "T-ALS-XZ: "/"AIC + ALS
+- S-Wing: " to the body; our UI prints the display tag itself, so the
+panel showed the name twice (user screenshots, Expert 48%/54%).
+Reason is now the body after the first colon; "=> eliminations" kept;
+ratingForChain still receives the full eureka for hardestMove.
+Simple-hint descs untouched (no duplication observed there).

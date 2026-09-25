@@ -224,7 +224,13 @@ export function stormFindNextStep(g: Game): Step | null {
       (e) => g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.cand)) !== 0,
     );
     if (!isLive) continue;
-    const reason = formatChainEureka(chain);
+    // H-parity-e1c: cite index.html displayedStepDescription - his eureka
+    // strings embed the structure name ("T-ALS-XZ: (3)r1c8=..."); the UI
+    // already prints the display tag, so strip the prefix here to match
+    // his face (one name, then the body, "=> eliminations" kept intact).
+    const eureka = formatChainEureka(chain);
+    const eurekaSep = eureka.indexOf(':');
+    const reason = eurekaSep >= 0 ? eureka.slice(eurekaSep + 1).trim() : eureka;
     const candColors: { cell: number; cand: number; color: number }[] = [];
     let colorIdx = 0;
     for (const step of chain.steps) {
@@ -240,7 +246,7 @@ export function stormFindNextStep(g: Game): Step | null {
       }
       colorIdx += 2;
     }
-    const rating = ratingForChain(chain, { desc: reason });
+    const rating = ratingForChain(chain, { desc: eureka });
     return {
       technique: rating.tag,
       category: 'Chain',
