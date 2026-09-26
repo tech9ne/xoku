@@ -1,1 +1,1 @@
-export const BUILD_TAG = "v14.4-parity-e2";
+export const BUILD_TAG = "v14.4-parity-e3";

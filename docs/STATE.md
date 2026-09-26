@@ -803,3 +803,23 @@ Modestly Easy (2.001-2.999) bands. candColors preserved. Known
 deviation: ALS-DOF/DDS chooser branch not vendored (top-tier move types
 cannot be produced; stage-1 will honestly stall there - matches his
 own stage-2 Nightmare profile gap).
+H-PARITY-E3 (v14.4-parity-e3): two-stage generator ported from his
+generatePuzzle (index.html:13339). Stage 1: restricted solve under
+generationTechniqueProfile(target) via new stormFindNextStepRated -
+adapter now returns steps with his rating (rank/value/category) per
+his ratingFromSteps (index.html:8917: category from hardest by
+rank-then-value; score = sum of finite values; Unknown rank Infinity
+becomes hardest, making the whole rating Unknown). Accept solved &&
+category === target; Lulz additionally sum === 0 in both stages.
+Stage 2: verify under profile('Nightmare'). 1000 attempts, honest
+failure. Restricted solve is Storm-only: a stall is the fail-fast
+reject; no old-FINDERS fall-through (it would rate with techniques
+the tier forbids). Deviations documented: per-level clue targets
+retained; worker generation wall-free (timeBudgetMs 0) while
+main-thread callers default 30s; Abyssal/Transcendent fail
+immediately with reason als-dof-not-vendored (his ALS-DOF/DDS engine
+not vendored; rank 150/160 move types unproducible); generation now
+Storm-only unconditionally - NEXT_PUBLIC_STORM_ENGINE henceforth
+gates the interactive solver only; rateBounded exported and unused
+pending H-cleanup; old generatePuzzle dead best/bestDist code
+removed with the rewrite.

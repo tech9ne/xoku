@@ -4,7 +4,7 @@
 import { Game, Step, Elimination, candMask, StepCategory } from "./core";
 import * as storm from "./storm/sudoku";
 import { findAicChains, formatChainEureka, ChainElimination } from "./storm/chain";
-import { ratingForStep, ratingForChain, chainLengthOf, type SolverProfile } from "./storm-rater";
+import { ratingForStep, ratingForChain, chainLengthOf, ratingDefinition, type SolverProfile } from "./storm-rater";
 
 // Convert our bitmask cands to his CandidateGrid (number[][]).
 // cite: lib/sudoku/storm/sudoku.ts:13 (type CandidateGrid = number[][])
@@ -54,11 +54,26 @@ function techToCategory(tech: string): StepCategory {
   return 'Chain'; // fallback
 }
 
-// Convert one Hint to our Step shape.
-// cite: lib/sudoku/storm/sudoku.ts:56 (Hint interface)
-function fromHint(h: storm.Hint, g: Game): Step {
-  // H-parity-e1: rating via ported rater (index.html:8825 ratingForStep);
-  // display name is his tag. techToName/techToScore purged as guessed maps.
+// Convert one Hint to our Step shape plus his rating. H-parity-e3: the
+// generator acceptance consumes rank/value/category exactly as his
+// ratingFromSteps does (index.html:8917), so steps now travel with
+// their rating instead of dropping it inside fromHint.
+export interface StormRatingInfo {
+  tag: string;
+  value: number | null; // null = his unknownRating (unclassifiable)
+  rank: number;
+  category: string;
+}
+export interface StormRatedStep {
+  step: Step;
+  rating: StormRatingInfo;
+}
+function ri(r: { tag: string; value: number | null; rank: number; category: string }): StormRatingInfo {
+  return { tag: r.tag, value: r.value, rank: r.rank, category: r.category };
+}
+function fromHintRated(h: storm.Hint, g: Game): StormRatedStep {
+  // cite: index.html:8825 ratingForStep - display name is his tag;
+  // techToName/techToScore guessed maps purged in H-parity-e1.
   const rating = ratingForStep({
     tech: h.tech as string,
     name: h.name,
@@ -67,34 +82,23 @@ function fromHint(h: storm.Hint, g: Game): Step {
     k: h.k,
     desc: h.desc,
   });
-  const technique = rating.tag;
+  const rinfo = ri(rating);
   const category = techToCategory(h.tech);
-  // Interim sentinel for his unknownRating (value null): 4.5, documented
-  // in STATE.md; e1b removes the need.
+  // Interim sentinel for his unknownRating (value null): 4.5 for the
+  // display score only; acceptance uses rinfo.value (e1b removes it).
   const score = rating.value ?? 4.5;
-  
   const eliminations = fromStormElim(h.elim);
   const patternCells = h.at || [];
   const patternCands: Elimination[] = [];
-  
-  // Storm singles return peer eliminations, but we need placements.
-  // If this is a single with at: [cell] and digits: [digit], convert to placement.
   const placements: { cell: number; value: number }[] = [];
   if (h.at && h.at.length === 1 && h.digits && h.digits.length === 1 && h.tech.includes('single')) {
     placements.push({ cell: h.at[0], value: h.digits[0] });
-    // Singles don't have explicit eliminations in our model — placement handles peer reductions
-    return {
-      technique,
-      category,
-      score,
-      reason: h.desc,
-      placements,
-      eliminations: [],
-      patternCells,
+    return { step: {
+      technique: rating.tag, category, score, reason: h.desc,
+      placements, eliminations: [], patternCells,
       patternCands: [{ cell: h.at[0], cand: h.digits[0] }],
-      candColors: [],
-      links: [],
-    };
+      candColors: [], links: [],
+    }, rating: rinfo };
   }
   if (h.digits) {
     for (const cell of patternCells) {
@@ -103,25 +107,16 @@ function fromHint(h: storm.Hint, g: Game): Step {
       }
     }
   }
-  
-  return {
-    technique,
-    category,
-    score,
-    reason: h.desc,
-    placements,
-    eliminations,
-    patternCells,
-    patternCands,
-    candColors: [],
-    links: [],
-  };
+  return { step: {
+    technique: rating.tag, category, score, reason: h.desc,
+    placements, eliminations, patternCells, patternCands,
+    candColors: [], links: [],
+  }, rating: rinfo };
 }
 
-// Walk his finders in scheduler order, return first match as Step.
-// cite: lib/sudoku/storm/sudoku.ts exports
-// cite: stormdoku src/browser-core.js withActualEliminations — a hint whose
-// eliminations are already gone is a no-op; skip it or rateGame spins forever.
+// cite: stormdoku src/browser-core.js:1156 withActualEliminations - a hint
+// whose eliminations are already gone is a no-op; skip it or rateGame
+// spins forever.
 function liveHint(h: storm.Hint | null, g: Game): h is storm.Hint {
   if (!h) return false;
   if (typeof h.tech === "string" && h.tech.includes("single")) {
@@ -132,19 +127,13 @@ function liveHint(h: storm.Hint | null, g: Game): h is storm.Hint {
     g.values[e.cell] === 0 && (g.cands[e.cell] & candMask(e.digit)) !== 0);
 }
 
-// Walk his finders in scheduler order under an optional generator profile.
-// cite: index.html:11704 chooseSolverStep - simple first; early-return when
-// the simple value <= 2; otherwise lower-scoring of (simple, best chain)
-// wins, simple winning ties. ALS-DOF branch not vendored yet (e1b/e3).
-// H-parity-e2: chain selection is his bestChainFromReport policy
-// (index.html:11043): lowest rating value, Unknown = Infinity, his rank
-// filter under profiles. First-live selection (H-fix-chains) over-rated
-// puzzles by playing deep chains when cheap ones existed - root cause of
-// the observed Very Easy / Modestly Easy generation starvation. His
-// SOLVER_TIE_ORDER tie component is deferred to e2b (needs
-// chainMoveTieKey/directMoveTieKey); ties break by length then report
-// index here - documented, deterministic.
-export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step | null {
+// His move selection under an optional generator profile, with his
+// rating attached. cite: index.html:11704 chooseSolverStep - simple
+// first; early-return when the simple value <= 2; otherwise
+// lower-scoring of (simple, best chain) wins. Chain pick:
+// bestChainFromReport (index.html:11043) - lowest rating value,
+// Unknown = Infinity, his rank filter under profiles.
+export function stormFindNextStepRated(g: Game, profile?: SolverProfile | null): StormRatedStep | null {
   const mt = profile?.moveTypes;
   const peerHasD = (cell: number, d: number): boolean => {
     const mask = candMask(d);
@@ -157,7 +146,8 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
     }
     return false;
   };
-  // Pass 1: last-man-standing. cite: browser-core.js:693 (value 0).
+  // Pass 1: last-man-standing. cite: browser-core.js:693; RATING_TAGS
+  // 'last-man-standing' -> Lulz 0.
   if (!mt || mt.has('last-man-standing')) {
     for (let i = 0; i < 81; i++) {
       if (g.values[i] !== 0) continue;
@@ -166,17 +156,17 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
       let d = 0;
       for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
       if (!peerHasD(i, d)) {
-        return {
+        const r = ri(ratingDefinition('Lulz', 0, 'Last Man Standing', 'last-man-standing'));
+        return { step: {
           technique: "Last Man Standing", category: "Single", score: 0,
           reason: `Last Man Standing: cell ${i} = ${d} (no peer lists ${d}).`,
           placements: [{ cell: i, value: d }],
-          eliminations: [],
-          patternCells: [i], patternCands: [{ cell: i, cand: d }],
-        };
+          eliminations: [], patternCells: [i], patternCands: [{ cell: i, cand: d }],
+        }, rating: r };
       }
     }
   }
-  // Pass 2: naked singles (value 1).
+  // Pass 2: naked singles (value 1). cite: RATING_TAGS 'naked-single'.
   if (!mt || mt.has('naked-single')) {
     for (let i = 0; i < 81; i++) {
       if (g.values[i] !== 0) continue;
@@ -184,43 +174,42 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
       if (m !== 0 && (m & (m - 1)) === 0) {
         let d = 0;
         for (let k = 1; k <= 9; k++) if (m & candMask(k)) { d = k; break; }
-        return {
+        const r = ri(ratingDefinition('Extremely Easy', 1, 'Naked Single', 'naked-single'));
+        return { step: {
           technique: "Naked Single", category: "Single", score: 1.0,
           reason: `Naked Single: cell ${i} holds only candidate ${d}.`,
           placements: [{ cell: i, value: d }],
-          eliminations: [],
-          patternCells: [i], patternCands: [{ cell: i, cand: d }],
-        };
+          eliminations: [], patternCells: [i], patternCands: [{ cell: i, cand: d }],
+        }, rating: r };
       }
     }
   }
   const cg = toCandidateGrid(g);
-  // Simple walk: his subsetOrFishStep order (singles, box-line, subsets
-  // 2-4, fish 2-4), each moveType-gated under profiles. First live match.
-  let simple: Step | null = null;
+  // Simple walk: his subsetOrFishStep order, moveType-gated under profiles.
+  let simple: StormRatedStep | null = null;
   if (!mt || mt.has('hidden-single')) {
     const h = storm.hiddenSubsetStep(cg, 1);
-    if (liveHint(h, g)) simple = fromHint(h, g);
+    if (liveHint(h, g)) simple = fromHintRated(h, g);
   }
   if (!simple && (!mt || mt.has('naked-single'))) {
     const n = storm.nakedSingleStep(cg);
-    if (liveHint(n, g)) simple = fromHint(n, g);
+    if (liveHint(n, g)) simple = fromHintRated(n, g);
   }
   if (!simple && (!mt || mt.has('box-line'))) {
     const b = storm.boxLineStep(cg);
-    if (liveHint(b, g)) simple = fromHint(b, g);
+    if (liveHint(b, g)) simple = fromHintRated(b, g);
   }
   if (!simple) {
     for (let k = 2; k <= 4 && !simple; k++) {
       const hid = ['hidden-pair', 'hidden-triple', 'hidden-quad'][k - 2];
       if (!mt || mt.has(hid)) {
         const h = storm.hiddenSubsetStep(cg, k as storm.SubsetSize);
-        if (liveHint(h, g)) { simple = fromHint(h, g); break; }
+        if (liveHint(h, g)) { simple = fromHintRated(h, g); break; }
       }
       const nak = ['naked-pair', 'naked-triple', 'naked-quad'][k - 2];
       if (!mt || mt.has(nak)) {
         const n = storm.nakedSubsetStep(cg, k as storm.SubsetSize);
-        if (liveHint(n, g)) { simple = fromHint(n, g); break; }
+        if (liveHint(n, g)) { simple = fromHintRated(n, g); break; }
       }
     }
   }
@@ -235,13 +224,17 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
       if ((profile?.maxFishSize ?? 4) < size) continue;
       if (mt) { const keys = fishKeys[size]; if (!mt.has(keys[0]) && !mt.has(keys[1])) continue; }
       const f = storm.fishStep(cg, [size as 2 | 3 | 4]);
-      if (liveHint(f, g)) simple = fromHint(f, g);
+      if (liveHint(f, g)) simple = fromHintRated(f, g);
     }
   }
-  // his chooseSolverStep: simple <= 2 cannot be beaten by any chain.
-  if (simple && simple.score <= 2) return simple;
+  // his chooseSolverStep early-return (index.html:11704): simple value
+  // <= 2 cannot be beaten by any chain (Number(null)=0 quirk preserved).
+  if (simple) {
+    const sv = Number(simple.rating.value);
+    if (Number.isFinite(sv) && sv <= 2) return simple;
+  }
   // Chain search: his bestChainFromReport policy (lowest value wins).
-  let best: { step: Step; value: number; length: number } | null = null;
+  let best: { rated: StormRatedStep; value: number; length: number } | null = null;
   if (!mt || mt.has('chains')) {
     const report = findAicChains(cg, profile ? {
       maxDepth: profile.maxDepth,
@@ -262,9 +255,10 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
       const eurekaSep = eureka.indexOf(':');
       const reason = eurekaSep >= 0 ? eureka.slice(eurekaSep + 1).trim() : eureka;
       const rating = ratingForChain(chain, { desc: eureka });
-      // his rank filter (bestChainFromReport, verbatim)
       if (profile && rating.rank > profile.maxRank) continue;
-      const value = rating.value ?? Number.POSITIVE_INFINITY; // his Unknown rule
+      const rinfo = ri(rating);
+      const value = rinfo.category === 'Unknown' || rinfo.value == null
+        ? Number.POSITIVE_INFINITY : rinfo.value;
       const length = chainLengthOf(chain);
       if (!best || value < best.value || (value === best.value && length < best.length)) {
         const candColors: { cell: number; cand: number; color: number }[] = [];
@@ -282,30 +276,29 @@ export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step
           }
           colorIdx += 2;
         }
-        best = {
-          step: {
-            technique: rating.tag,
-            category: 'Chain',
-            score: rating.value ?? 4.5, // unknownRating sentinel, see STATE e1
-            reason,
-            placements: [],
-            eliminations,
-            patternCells: [],
-            patternCands: [],
-            candColors,
-            links: [],
-          },
-          value,
-          length,
-        };
+        best = { rated: { step: {
+          technique: rating.tag, category: 'Chain',
+          score: rinfo.value ?? 4.5, reason,
+          placements: [], eliminations,
+          patternCells: [], patternCands: [], candColors, links: [],
+        }, rating: rinfo }, value, length };
       }
     }
   }
-  // his chooseLowerScoringMove: lower value wins; simple wins ties (his
-  // chooseBestSolverMove iterates [simple, chain] with strict <).
+  // his chooseLowerScoringMove / chooseBestSolverMove: lower value wins;
+  // simple wins ties (iterated first with strict <).
   if (best) {
-    const simpleVal = simple ? simple.score : Number.POSITIVE_INFINITY;
-    if (best.value < simpleVal) return best.step;
+    const simpleVal = simple
+      ? (simple.rating.category === 'Unknown' || simple.rating.value == null
+          ? Number.POSITIVE_INFINITY : simple.rating.value)
+      : Number.POSITIVE_INFINITY;
+    if (best.value < simpleVal) return best.rated;
   }
   return simple;
+}
+
+// Interactive entry (techniques.ts gate). H-parity-e3: thin wrapper over
+// the rated finder; the rating is discarded on this path.
+export function stormFindNextStep(g: Game, profile?: SolverProfile | null): Step | null {
+  return stormFindNextStepRated(g, profile)?.step ?? null;
 }

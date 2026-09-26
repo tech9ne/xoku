@@ -7,6 +7,6 @@ const ctx = self as unknown as { onmessage: ((e: MessageEvent) => void) | null; 
 
 ctx.onmessage = (e: MessageEvent) => {
   const { level } = e.data as { level: Level };
-  const result = generatePuzzle(level);
+  const result = generatePuzzle(level, { timeBudgetMs: 0 }); // wall-free in worker
   ctx.postMessage(result);
 };

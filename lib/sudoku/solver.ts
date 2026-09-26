@@ -3,6 +3,8 @@ import {
   candsOf, isSolved, PEERS,
 } from "./core";
 import { findNextStep } from "./techniques";
+import { stormFindNextStepRated } from "./storm-adapter";
+import { generationTechniqueProfile, ratingCategoryForValue, type SolverProfile } from "./storm-rater";
 
 function shuffle<T>(a: T[]): T[] {
   const r = a.slice();
@@ -136,7 +138,7 @@ export function levelOfRating(r: { hardest: number; solvedByLogic: boolean }): L
   return band ? band[0] : "Unknown";
 }
 
-function rateBounded(g: Game, bandMax: number): Rating {
+export function rateBounded(g: Game, bandMax: number): Rating { // retained for old-engine parachute until H-cleanup
   const steps: Step[] = [];
   const g2 = cloneGame(g);
   let hardest = 0, hardestTechnique = "—";
@@ -155,84 +157,120 @@ function rateBounded(g: Game, bandMax: number): Rating {
   return { steps, score: sum, hardest, hardestTechnique, solvedByLogic: isSolved(g2) };
 }
 
-export function generatePuzzle(level: Level = "Easy") {
-  const cluesTarget: Record<Level, number> = {
-  Unknown: 30,
-  Lulz: 40,
-  "Abyssal": 20,
-  "Transcendent": 17,
-  "Extremely Easy": 40,
-  "Very Easy": 36,
-  "Modestly Easy": 33,
-  "Easy": 30,
-  "Moderate": 28,
-  "Tough": 26,
-  "Challenging": 25,
-  "Irritating": 24,
-  "Frustrating": 23,
-  "Hard": 22,
-  "Demanding": 21,
-  "Expert": 20,
-  "Brutal": 19,
-  "Nightmare": 18,
-};
-  const maxAttempts: Record<Level, number> = {
-  Unknown: 1,
-  Lulz: 200,
-  "Abyssal": 2000,
-  "Transcendent": 3000,
-  "Extremely Easy": 10,
-  "Very Easy": 15,
-  "Modestly Easy": 20,
-  "Easy": 25,
-  "Moderate": 30,
-  "Tough": 200,
-  "Challenging": 200,
-  "Irritating": 200,
-  "Frustrating": 200,
-  "Hard": 300,
-  "Demanding": 300,
-  "Expert": 300,
-  "Brutal": 500,
-  "Nightmare": 500,
-};
-  const band = level === "Nightmare" ? null : XR_BAND[level];
-  const t0 = Date.now();
 
-  // distance from the requested band (0 = exact match).
-  // With ALS-XZ (XR 7.0) Brutal is reachable; fallback reports honestly.
-  //
-  const dist = (r: Rating): number => {
-    if (!band) return r.solvedByLogic ? 1000 - Math.min(r.hardest, 999) : 0;
-    if (!r.solvedByLogic) return 500;
-    const { min: lo, max: hi } = band;
-    return r.hardest < lo ? lo - r.hardest : r.hardest >= hi ? r.hardest - hi : 0;
+// ---- H-parity-e3: his two-stage generator ------------------------------
+// cite: index.html:13339 generatePuzzle. Stage 1 solves each candidate
+// under generationTechniqueProfile(target) - a puzzle needing
+// above-tier techniques stalls fast (cheap reject); accept only
+// solved && category === target, Lulz additionally sum === 0. Stage 2
+// re-verifies survivors under profile('Nightmare'). maxRatingAttempts
+// = 1000; honest failure leaves the current puzzle unchanged. Our dig
+// with per-removal uniqueness is retained (his core.generate does the
+// same, browser-core.js:324). Deviations in STATE.md: per-level clue
+// targets kept; worker runs wall-free, main thread defaults 30s.
+function cluesTarget(level: Level): number {
+  const t: Record<Level, number> = {
+    Unknown: 30, Lulz: 40, "Abyssal": 20, "Transcendent": 17,
+    "Extremely Easy": 40, "Very Easy": 36, "Modestly Easy": 33,
+    "Easy": 30, "Moderate": 28, "Tough": 26, "Challenging": 25,
+    "Irritating": 24, "Frustrating": 23, "Hard": 22, "Demanding": 21,
+    "Expert": 20, "Brutal": 19, "Nightmare": 18,
   };
+  return t[level];
+}
 
-  let best: { puzzle: number[]; solution: number[]; rating: Rating } | null = null;
-  let bestDist = Infinity;
+interface ProfileSolve {
+  solvedCorrect: boolean;
+  category: string; // his ratingFromSteps category (index.html:8917)
+  sum: number;      // his score: sum of finite move values
+  hardest: number;
+  hardestTechnique: string;
+  steps: Step[];
+}
 
-  for (let attempt = 0; attempt < maxAttempts[level]; attempt++) {
-    if (Date.now() - t0 > 30000) break; // time budget: return best effort
+// Restricted solve: Storm path ONLY, profile-gated. A stall means the
+// puzzle is unsolvable at this tier - the fail-fast reject. No
+// old-FINDERS fall-through: it would rate with forbidden techniques.
+function stormSolveUnderProfile(g: Game, solution: number[], profile: SolverProfile | null): ProfileSolve {
+  const g2 = cloneGame(g);
+  const steps: Step[] = [];
+  let hardest = 0, hardestTechnique = "—", sum = 0;
+  let top: { value: number | null; rank: number; category: string } | null = null;
+  for (let cycle = 0; cycle < 100; cycle++) { // his maxCycles = 100
+    const rated = stormFindNextStepRated(g2, profile ?? undefined);
+    if (!rated) break;
+    const before = g2.values.slice();
+    applyStep(g2, rated.step);
+    steps.push(rated.step);
+    if (rated.rating.value !== null) sum += rated.rating.value;
+    if (!top
+      || rated.rating.rank > top.rank
+      || (rated.rating.rank === top.rank
+        && Number(rated.rating.value ?? -Infinity) > Number(top.value ?? -Infinity))) {
+      top = rated.rating;
+    }
+    if (rated.rating.value !== null && rated.rating.value > hardest) {
+      hardest = rated.rating.value;
+      hardestTechnique = rated.step.technique;
+    }
+    let changed = false;
+    for (let i = 0; i < 81; i++) if (before[i] !== g2.values[i]) { changed = true; break; }
+    if (!changed) break;
+  }
+  let solvedCorrect = isSolved(g2);
+  if (solvedCorrect) {
+    for (let i = 0; i < 81; i++) {
+      if (g2.values[i] !== solution[i]) { solvedCorrect = false; break; }
+    }
+  }
+  const category = top ? ratingCategoryForValue(top.value, top.category) : 'Unknown';
+  return { solvedCorrect, category, sum, hardest, hardestTechnique, steps };
+}
+
+export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: number }) {
+  // Xoku-UX guard (documented deviation): Abyssal/Transcendent need
+  // ALS-DOF/DDS moves (rank 150/160) the vendored engine cannot produce
+  // yet; stage 1 would stall on every candidate. Fail honestly now;
+  // remove this guard when the ALS-DOF engine is vendored.
+  if (level === 'Abyssal' || level === 'Transcendent') {
+    return { failed: true, attempts: 0, level, reason: 'als-dof-not-vendored' };
+  }
+  const profile = generationTechniqueProfile(level); // null for Unknown
+  const verifyProfile = generationTechniqueProfile('Nightmare');
+  const t0 = Date.now();
+  const timeBudget = opts?.timeBudgetMs ?? 30000; // 0 = wall-free (worker)
+  const maxAttempts = 1000; // his maxRatingAttempts (index.html:13355)
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (timeBudget > 0 && Date.now() - t0 > timeBudget) break;
     const solution = bruteSolve(new Array(81).fill(0), true)!;
     const puzzle = solution.slice();
     let clues = 81;
     for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
-      if (clues <= cluesTarget[level]) break;
+      if (clues <= cluesTarget(level)) break;
       const v = puzzle[i];
       puzzle[i] = 0;
       if (countSolutions(puzzle, 2) !== 1) puzzle[i] = v;
       else clues--;
     }
-    const rating = band ? rateBounded(newGame(puzzle, solution), band.max) : rateGame(newGame(puzzle, solution));
-    const candidate = { puzzle, solution, rating };
-    const d = dist(rating);
-    if (d === 0) return candidate;
-    if (d < bestDist) { best = candidate; bestDist = d; }
+    const limited = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
+    const stage1Ok = limited.solvedCorrect
+      && (profile === null || limited.category === level)
+      && (level !== 'Lulz' || limited.sum === 0);
+    if (!stage1Ok) continue;
+    if (profile === null) {
+      // his quickGeneration (Any/Unknown): accept the first unique solve.
+      return { puzzle, solution, rating: {
+        steps: limited.steps, score: limited.sum, hardest: limited.hardest,
+        hardestTechnique: limited.hardestTechnique, solvedByLogic: true,
+      } };
+    }
+    const verified = stormSolveUnderProfile(newGame(puzzle, solution), solution, verifyProfile);
+    if (!(verified.solvedCorrect && verified.category === level)) continue;
+    if (level === 'Lulz' && verified.sum !== 0) continue;
+    return { puzzle, solution, rating: {
+      steps: limited.steps, score: limited.sum, hardest: limited.hardest,
+      hardestTechnique: limited.hardestTechnique, solvedByLogic: true,
+    } };
   }
-  // StormDoku index.html:13354 - if no perfect match found, report failure
-  if (!best || dist(best.rating) !== 0) {
-    return { failed: true, attempts: maxAttempts[level], level };
-  }
-  return best;
+  return { failed: true, attempts: maxAttempts, level };
 }
