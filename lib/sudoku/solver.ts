@@ -199,7 +199,14 @@ function stormSolveUnderProfile(g: Game, solution: number[], profile: SolverProf
   for (let cycle = 0; cycle < 100; cycle++) { // his maxCycles = 100
     const rated = stormFindNextStepRated(g2, profile ?? undefined);
     if (!rated) break;
+    // H-fix-e3a: no-op detection must cover cands, not just values -
+    // elimination-only steps (box-line, subsets, fish, chains) change
+    // candidates only. rateGame's values+bc discipline was dropped in
+    // the e3 port; the restricted solve halted after its first
+    // elimination step, rejecting every puzzle that needed one
+    // (harness 0/2 across Very Easy..Hard).
     const before = g2.values.slice();
+    const beforeC = g2.cands.slice();
     applyStep(g2, rated.step);
     steps.push(rated.step);
     if (rated.rating.value !== null) sum += rated.rating.value;
@@ -214,7 +221,7 @@ function stormSolveUnderProfile(g: Game, solution: number[], profile: SolverProf
       hardestTechnique = rated.step.technique;
     }
     let changed = false;
-    for (let i = 0; i < 81; i++) if (before[i] !== g2.values[i]) { changed = true; break; }
+    for (let i = 0; i < 81; i++) if (before[i] !== g2.values[i] || beforeC[i] !== g2.cands[i]) { changed = true; break; }
     if (!changed) break;
   }
   let solvedCorrect = isSolved(g2);
@@ -240,7 +247,12 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
   const t0 = Date.now();
   const timeBudget = opts?.timeBudgetMs ?? 30000; // 0 = wall-free (worker)
   const maxAttempts = 1000; // his maxRatingAttempts (index.html:13355)
+  // H-fix-e3d: rejection diagnostics - why attempts fail. Reported on
+  // the failure return; UI ignores it, harness prints it.
+  const diag = { stall: 0, stage2Reject: 0, byCategory: {} as Record<string, number> };
+  let attemptsMade = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    attemptsMade = attempt;
     if (timeBudget > 0 && Date.now() - t0 > timeBudget) break;
     const solution = bruteSolve(new Array(81).fill(0), true)!;
     const puzzle = solution.slice();
@@ -256,7 +268,11 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
     const stage1Ok = limited.solvedCorrect
       && (profile === null || limited.category === level)
       && (level !== 'Lulz' || limited.sum === 0);
-    if (!stage1Ok) continue;
+    if (!stage1Ok) {
+      if (!limited.solvedCorrect) diag.stall++;
+      else diag.byCategory[limited.category] = (diag.byCategory[limited.category] ?? 0) + 1;
+      continue;
+    }
     if (profile === null) {
       // his quickGeneration (Any/Unknown): accept the first unique solve.
       return { puzzle, solution, rating: {
@@ -265,12 +281,12 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
       } };
     }
     const verified = stormSolveUnderProfile(newGame(puzzle, solution), solution, verifyProfile);
-    if (!(verified.solvedCorrect && verified.category === level)) continue;
+    if (!(verified.solvedCorrect && verified.category === level)) { diag.stage2Reject++; continue; }
     if (level === 'Lulz' && verified.sum !== 0) continue;
     return { puzzle, solution, rating: {
       steps: limited.steps, score: limited.sum, hardest: limited.hardest,
       hardestTechnique: limited.hardestTechnique, solvedByLogic: true,
     } };
   }
-  return { failed: true, attempts: maxAttempts, level };
+  return { failed: true, attempts: attemptsMade, level, diag };
 }

@@ -376,6 +376,12 @@ export interface SolverProfile {
   maxFishSize: number;
   strongLinkTypes: number[];
   includeAlsRcc: boolean;
+  // cite: index.html chainSearchOptions limits (budget === 'generator')
+  caps: {
+    maxChains: number; maxResultAttempts: number; maxResultAttemptsPerStart: number;
+    maxStates: number; maxQueue: number; maxBranching: number;
+    maxStartViews: number; maxAlsLinks: number;
+  };
 }
 
 // cite: index.html:8263 (verbatim). Returns null for Any/Unknown targets.
@@ -416,6 +422,17 @@ export function generationTechniqueProfile(category: string): SolverProfile | nu
     : [];
   const maxDepth = maxRank <= 30 ? 2 : maxRank <= 50 ? 3 : maxRank <= 70 ? 4 : 8;
   const maxFishSize = maxRank < 40 ? 2 : maxRank < 60 ? 3 : 4;
+  // cite: index.html chainSearchOptions limits (budget === 'generator',
+  // thresholds on profile.maxRank: 30/50/70) - verbatim. Keeps per-move
+  // chain search bounded for the restricted solve; interactive hints
+  // (no profile) keep vendored defaults.
+  const caps = maxRank <= 30
+    ? { maxChains: 40, maxResultAttempts: 300, maxResultAttemptsPerStart: 25, maxStates: 2500, maxQueue: 2500, maxBranching: 50, maxStartViews: 100, maxAlsLinks: 250 }
+    : maxRank <= 50
+      ? { maxChains: 75, maxResultAttempts: 750, maxResultAttemptsPerStart: 50, maxStates: 8000, maxQueue: 8000, maxBranching: 100, maxStartViews: 250, maxAlsLinks: 750 }
+      : maxRank <= 70
+        ? { maxChains: 150, maxResultAttempts: 1500, maxResultAttemptsPerStart: 75, maxStates: 16000, maxQueue: 16000, maxBranching: 150, maxStartViews: 400, maxAlsLinks: 1500 }
+        : { maxChains: 250, maxResultAttempts: 3000, maxResultAttemptsPerStart: 100, maxStates: 30000, maxQueue: 30000, maxBranching: 250, maxStartViews: 600, maxAlsLinks: 3000 };
   return {
     moveTypes,
     maxRank,
@@ -423,6 +440,7 @@ export function generationTechniqueProfile(category: string): SolverProfile | nu
     maxFishSize,
     strongLinkTypes,
     includeAlsRcc: maxRank >= 100,
+    caps,
   };
 }
 // rater chunk E2B ok

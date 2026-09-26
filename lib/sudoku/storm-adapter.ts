@@ -240,6 +240,7 @@ export function stormFindNextStepRated(g: Game, profile?: SolverProfile | null):
       maxDepth: profile.maxDepth,
       strongLinkTypes: profile.strongLinkTypes,
       includeAls: profile.includeAlsRcc,
+      ...profile.caps, // cite: index.html chainSearchOptions generator budget
     } : {});
     for (const chain of report.chains ?? []) {
       const eliminations: Elimination[] = chain.eliminations.map((e: ChainElimination) => ({

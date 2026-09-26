@@ -823,3 +823,13 @@ Storm-only unconditionally - NEXT_PUBLIC_STORM_ENGINE henceforth
 gates the interactive solver only; rateBounded exported and unused
 pending H-cleanup; old generatePuzzle dead best/bestDist code
 removed with the rewrite.
+H-PARITY-E3C (v14.4-parity-e3c): generator chain-search budget + stage-1
+rejection diagnostics. His chainSearchOptions generator limits table
+(index.html:10739, thresholds maxRank 30/50/70) ported verbatim into
+SolverProfile.caps, passed to findAicChains only under profiles -
+interactive hints keep vendored defaults. Harness evidence: stage-1
+attempt cost at Tough dropped ~60s -> 0.36s. generatePuzzle failure
+return carries diag {stall, stage2Reject, byCategory}; harness prints
+it. First diag run (1000-attempt VE: 990/1000 rejects rate Extremely
+Easy; EE dominates Tough/Hard too) proves the one-pass dig bottoms out
+~30-34 givens regardless of target - the dig lever is next (e3e).
