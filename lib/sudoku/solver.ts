@@ -249,7 +249,7 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
   const maxAttempts = 1000; // his maxRatingAttempts (index.html:13355)
   // H-fix-e3d: rejection diagnostics - why attempts fail. Reported on
   // the failure return; UI ignores it, harness prints it.
-  const diag = { stall: 0, stage2Reject: 0, nonUnique: 0, clues: { min: 81, max: 0, sum: 0 }, byCategory: {} as Record<string, number> };
+  const diag = { stall: 0, stage2Reject: 0, nonUnique: 0, clues: { min: 81, max: 0, sum: 0 }, byCategory: {} as Record<string, number>, stage2ByCategory: {} as Record<string, number> };
   let attemptsMade = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     attemptsMade = attempt;
@@ -300,7 +300,17 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
       } };
     }
     const verified = stormSolveUnderProfile(newGame(puzzle, solution), solution, verifyProfile);
-    if (!(verified.solvedCorrect && verified.category === level)) { diag.stage2Reject++; continue; }
+    if (!(verified.solvedCorrect && verified.category === level)) {
+      diag.stage2Reject++;
+      // B1 instrumentation: what did the Nightmare-profile solve rate it
+      // as? "stall" if it did not complete; else the rerated category -
+      // the band-instability measurement (Moderate 18/18, Frustrating
+      // 4/4 killed so far - rerate-down vs rerate-up vs stall decides
+      // B1's dig-deeper response).
+      const key = verified.solvedCorrect ? verified.category : "stall";
+      diag.stage2ByCategory[key] = (diag.stage2ByCategory[key] ?? 0) + 1;
+      continue;
+    }
     if (level === 'Lulz' && verified.sum !== 0) continue;
     return { puzzle, solution, rating: {
       steps: limited.steps, score: limited.sum, hardest: limited.hardest,
