@@ -845,3 +845,8 @@ Easy; EE dominates Tough/Hard too) proves the one-pass dig bottoms out
 
 ### H-census-a (tag v14.4-census-a): gen-test budget flag
 - Dev harness only: GEN_BUDGET_MS env sets generatePuzzle's per-run timeBudgetMs (default 120000 unchanged, matching every run to date). Purpose: full-ladder yield census - 2x each of the 18 levels at 600s - to size the D puzzle-bank fill priorities; first-ever generation data for Irritating through Nightmare.
+
+### H-bank-a (tag v14.4-bank-a): puzzle bank, D step 1
+- lib/puzzle-bank.ts: client-side IndexedDB store (db xoku-bank, store puzzles, keyPath id), cap 20 per level. API: bankAvailable / bankCounts / bankPut(level, generatePuzzle result) / bankTake(level) (random pick, removed on serve) / bankClear. Entries persist puzzle + solution strings and the rating triple (hardest, hardestTechnique, score); steps are not stored - hints re-derive live, records stay small.
+- No engine semantics touched: the bank stores only puzzles that already passed generatePuzzle's two-stage acceptance; it never re-rates or re-labels. Every entry point no-ops without IndexedDB (SSR, private mode). scripts/bank-smoke.ts covers the absent-IDB path in node; browser paths land with D step 3.
+- Next: D step 2 background fill orchestration (one worker, lowest-stock tier first, wall-free budget, page-visibility gated), D step 3 page wiring (bank-first serve, live-gen modal with attempts/elapsed/cancel and a 2-minute honest cap, nearest-stocked-tier offer on failure - true labels only).
