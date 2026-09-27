@@ -833,3 +833,12 @@ return carries diag {stall, stage2Reject, byCategory}; harness prints
 it. First diag run (1000-attempt VE: 990/1000 rejects rate Extremely
 Easy; EE dominates Tough/Hard too) proves the one-pass dig bottoms out
 ~30-34 givens regardless of target - the dig lever is next (e3e).
+
+### H-parity-e3e (tag v14.4-parity-e3e): multi-pass dig + dig instrumentation; section-8 resolved
+
+- Multi-pass dig: repeat shuffled passes until cluesTarget or a no-progress pass; per-removal countSolutions uniqueness unchanged. His dig is one pass at flat 30 givens (generate(givens = 30), browser-core.js:324); per-level clue targets remain the documented Xoku deviation.
+- What it actually did (S4, 2x VE/Tough/Challenging/Hard): reaches diggable targets - Tough {min 26, avg 26.0, max 28} vs target 26; VE 34/34. Tier yield unchanged: Tough rejects ~86% Extremely Easy because random 26-clue unique puzzles genuinely are mostly singles-solvable. Hard floors 23-26 vs target 22; Expert 20 / Brutal 19 / Nightmare 18 likewise unreachable by greedy digging.
+- Section-8 resolution: nonUnique=0 on every run; countSolutions chain audited end-to-end (DFS frame solver.ts:44; pickCell solver.ts:18 - MRV over peers-mask with dead-cell detection; candsOf core.ts:60 - mask decode). No uniqueness bug. The EE flood is real, not a rater lie: stall + byCategory partition attempts, and every byCategory entry is a completed sound solve - itself a uniqueness proof (377 Tough rejects were certified-unique 26-clue singles-solvable puzzles). Stage-2 acceptance is a verbatim port (index.html:13339, rating.category === target under profile('Nightmare')); Challenging stage-2 rejections are his rating-stability check as designed.
+- e3f instrumentation (same commit): diag.clues {min,max,sum}, post-dig nonUnique counter, harness prints clues= on success. Load-bearing for the yield work ahead.
+- Ledger correction: e3a (no-op detection covering cands) was folded into 63511bb / v14.4-parity-e3c without mention in its message; diff verified there.
+- Decision (user, this session): mid/high tiers are a yield problem, not a correctness bug - consistent with StrmCkr's own site generating mid/high tiers intermittently from the same flat-30 dig. Plan: D (per-tier puzzle bank + honest live-gen UX: progress, cancel, nearest-tier offer, truthfully labeled), then B (difficulty-guided digging: dig toward the tier; acceptance stays his two-stage; divergence documented here when it lands). No silent tuning; no relaxed acceptance; no relabeling.

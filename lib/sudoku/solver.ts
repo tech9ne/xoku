@@ -171,7 +171,7 @@ export function rateBounded(g: Game, bandMax: number): Rating { // retained for 
 function cluesTarget(level: Level): number {
   const t: Record<Level, number> = {
     Unknown: 30, Lulz: 40, "Abyssal": 20, "Transcendent": 17,
-    "Extremely Easy": 40, "Very Easy": 36, "Modestly Easy": 33,
+    "Extremely Easy": 40, "Very Easy": 34, "Modestly Easy": 33, // VE 36->34: e3c diag 99% EE flood at 36; kites observed at 33
     "Easy": 30, "Moderate": 28, "Tough": 26, "Challenging": 25,
     "Irritating": 24, "Frustrating": 23, "Hard": 22, "Demanding": 21,
     "Expert": 20, "Brutal": 19, "Nightmare": 18,
@@ -249,21 +249,40 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
   const maxAttempts = 1000; // his maxRatingAttempts (index.html:13355)
   // H-fix-e3d: rejection diagnostics - why attempts fail. Reported on
   // the failure return; UI ignores it, harness prints it.
-  const diag = { stall: 0, stage2Reject: 0, byCategory: {} as Record<string, number> };
+  const diag = { stall: 0, stage2Reject: 0, nonUnique: 0, clues: { min: 81, max: 0, sum: 0 }, byCategory: {} as Record<string, number> };
   let attemptsMade = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     attemptsMade = attempt;
     if (timeBudget > 0 && Date.now() - t0 > timeBudget) break;
     const solution = bruteSolve(new Array(81).fill(0), true)!;
     const puzzle = solution.slice();
+    // H-fix-e3e: multi-pass dig. His dig is one shuffled pass
+    // (browser-core.js:324), which bottoms out ~30-34 givens and cannot
+    // reach low targets - e3c diag: 990/1000 VE rejects rated Extremely
+    // Easy, EE dominating Tough/Hard too. Repeat passes (skipping empty
+    // cells) until the target is reached or a full pass removes nothing.
+    // Uniqueness discipline unchanged (per-removal countSolutions).
     let clues = 81;
-    for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
-      if (clues <= cluesTarget(level)) break;
-      const v = puzzle[i];
-      puzzle[i] = 0;
-      if (countSolutions(puzzle, 2) !== 1) puzzle[i] = v;
-      else clues--;
+    let progress = true;
+    while (progress && clues > cluesTarget(level)) {
+      progress = false;
+      for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
+        if (clues <= cluesTarget(level)) break;
+        if (puzzle[i] === 0) continue;
+        const v = puzzle[i];
+        puzzle[i] = 0;
+        if (countSolutions(puzzle, 2) !== 1) puzzle[i] = v;
+        else { clues--; progress = true; }
+      }
     }
+    // H-fix-e3f instrumentation: dug-clue stats + post-dig uniqueness
+    // verification. Discriminates "dig not reaching target" from
+    // "countSolutions over-reporting uniqueness at depth".
+    const dugClues = puzzle.reduce((n, v) => n + (v === 0 ? 0 : 1), 0);
+    diag.clues.min = Math.min(diag.clues.min, dugClues);
+    diag.clues.max = Math.max(diag.clues.max, dugClues);
+    diag.clues.sum += dugClues;
+    if (countSolutions(puzzle, 2) !== 1) diag.nonUnique++;
     const limited = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
     const stage1Ok = limited.solvedCorrect
       && (profile === null || limited.category === level)

@@ -19,7 +19,7 @@ for (const level of levels) {
     } else {
       ok++;
       const puz = r.puzzle.map(v => (v === 0 ? "." : v)).join("");
-      console.log(`${level}: OK hardest=${r.rating.hardest} ${r.rating.hardestTechnique} ${dt}s`);
+      console.log(`${level}: OK hardest=${r.rating.hardest} ${r.rating.hardestTechnique} clues=${puz.replace(/\./g, "").length} ${dt}s`);
       console.log(`  P=${puz}`);
     }
   }
