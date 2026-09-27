@@ -6,6 +6,9 @@ import SudokuGrid from "@/components/SudokuGrid";
 import ColorPalette from "@/components/ColorPalette";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
 import { Level, countSolutions, generatePuzzle, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
+import { bankAvailable, bankCounts, bankPut, bankTake } from "@/lib/puzzle-bank";
+import { startBankFill, stopBankFill } from "@/lib/bank-fill";
+import { LEVELS } from "@/components/MenuBar";
 import { TECHNIQUE_NAMES, findAllSteps, findNextStep } from "@/lib/sudoku/techniques";
 import { BUILD_TAG } from "@/lib/version";
 
@@ -81,6 +84,7 @@ export default function Home() {
   const [seconds, setSeconds] = useState(0);
   const [gameId, setGameId] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const [stock, setStock] = useState<Record<string, number>>({});
   const workerRef = useRef<Worker | null>(null);
   const inited = useRef(false);
 
@@ -108,6 +112,20 @@ export default function Home() {
     setMsg("Ready — pick a difficulty, then click the New Game tile.");
   }, [startGame]);
 
+  // D3: puzzle bank - stock badges + background fill (lowest-stock first).
+  useEffect(() => {
+    if (!bankAvailable()) return;
+    let alive = true;
+    const poll = () => { void bankCounts().then(c2 => { if (alive) setStock(c2); }); };
+    poll();
+    const t = setInterval(poll, 10000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+  useEffect(() => {
+    startBankFill(LEVELS);
+    return () => stopBankFill();
+  }, []);
+
   const solved = !!game && isSolved(game);
   useEffect(() => {
     if (solved) return;
@@ -128,52 +146,94 @@ export default function Home() {
     setPathSteps(p => [...p, s]);
   };
 
-  const newPuzzle = (lvl: Level) => {
-    setLevel(lvl);
+  // D3: honest failure - offer the nearest tier that actually has stock
+  // (true labels only; the player picks it from the menu themselves).
+  const offerNearest = (lvl: Level, attempts: number) => {
+    void bankCounts().then(counts => {
+      const i = LEVELS.indexOf(lvl);
+      let best: Level | null = null;
+      let bestDist = LEVELS.length;
+      LEVELS.forEach((l, j) => {
+        if ((counts[l] ?? 0) > 0 && Math.abs(j - i) < bestDist) {
+          bestDist = Math.abs(j - i);
+          best = l;
+        }
+      });
+      setMsg(best
+        ? `No ${lvl} puzzle in 2 minutes (${attempts} attempts). Nearest ready: ${best} - pick it from the menu.`
+        : `Could not generate a ${lvl} puzzle after ${attempts} attempts. Current puzzle unchanged.`);
+    });
+  };
+  const cancelGenerate = () => {
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    setGenerating(false);
+    setMsg("Generation stopped - current puzzle unchanged.");
+  };
+  // Worker-construction failure fallback (pre-existing behavior, kept).
+  const mainThreadFallback = (lvl: Level) => {
+    setTimeout(() => {
+      setGenerating(false);
+      const res = generatePuzzle(lvl);
+      if ('failed' in res) {
+        setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
+      } else {
+        startGame(res.puzzle, res.solution, `${lvl} puzzle - main thread`, res.rating);
+      }
+    }, 30);
+  };
+  // D3: live generation over worker protocol v2 - real attempt/elapsed
+  // counts in the status line, 2-minute honest cap, Stop cancels, and
+  // a success also stocks the bank for next time.
+  const liveGenerate = (lvl: Level) => {
     setGenerating(true);
-    setMsg(`Generating ${lvl} puzzle…`);
+    setMsg(`Generating ${lvl} puzzle...`);
     workerRef.current?.terminate();
     try {
       const w = new Worker(new URL("../lib/sudoku/generate.worker.ts", import.meta.url));
       workerRef.current = w;
       w.onmessage = (e: MessageEvent) => {
+        const m = e.data as { type?: string; attempts?: number; elapsedMs?: number; result?: { puzzle: number[]; solution: number[]; rating: ReturnType<typeof rateGame> } };
+        if (m && m.type === "progress") {
+          setMsg(`Generating ${lvl} puzzle... attempt ${m.attempts ?? 0} - ${mmss((m.elapsedMs ?? 0) / 1000)}`);
+          return;
+        }
         workerRef.current = null;
         w.terminate();
         setGenerating(false);
-        const data = e.data;
-        if ('failed' in data) {
-          setMsg(`Could not generate a ${lvl} puzzle after ${data.attempts} attempts. Current puzzle unchanged.`);
-        } else {
-          startGame(data.puzzle, data.solution, `${lvl} puzzle`, data.rating);
+        if (m && m.type === "result" && m.result) {
+          startGame(m.result.puzzle, m.result.solution, `${lvl} puzzle`, m.result.rating);
+          void bankPut(lvl, m.result);
+          return;
         }
+        offerNearest(lvl, m && m.type === "failed" ? m.attempts ?? 0 : 0);
       };
       w.onerror = () => {
         workerRef.current = null;
         w.terminate();
-        setTimeout(() => {
-          setGenerating(false);
-          const res = generatePuzzle(lvl);
-          if ('failed' in res) {
-            setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
-          } else {
-            startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
-          }
-        }, 30);
+        mainThreadFallback(lvl);
       };
-      w.postMessage({ level: lvl });
+      w.postMessage({ type: "generate", level: lvl, budgetMs: 120000, sliceMs: 4000 });
     } catch {
-      setTimeout(() => {
-        setGenerating(false);
-        const res = generatePuzzle(lvl);
-        if ('failed' in res) {
-          setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
-        } else {
-          startGame(res.puzzle, res.solution, `${lvl} puzzle · main thread`, res.rating);
-        }
-      }, 30);
+      mainThreadFallback(lvl);
     }
   };
-
+  // D3: bank-first serve - a stocked tier is instant; a miss goes live.
+  const newPuzzle = (lvl: Level) => {
+    setLevel(lvl);
+    void bankTake(lvl).then(entry => {
+      if (entry) {
+        startGame(
+          entry.puzzle.split("").map(Number),
+          entry.solution.split("").map(Number),
+          `${lvl} puzzle - bank`,
+          { steps: [], score: entry.score, hardest: entry.hardest, hardestTechnique: entry.hardestTechnique, solvedByLogic: true },
+        );
+        return;
+      }
+      liveGenerate(lvl);
+    });
+  };
   const setValue = (cell: number, value: number) => {
     if (!game || cell < 0 || game.given[cell] || game.values[cell] !== 0) return;
     withUndo(g => placeValue(g, cell, value));
@@ -416,7 +476,7 @@ export default function Home() {
         digitRemaining={remaining} currentLevel={level} filterMode={filterMode} onToggleFilterMode={toggleFilterMode}
         onHintVague={() => getHint("vague")} onHintConcrete={() => getHint("concrete")}
         onHintNext={() => getHint()} onHintExecute={applyHint} onHintAbort={cancelHint}
-        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} wingFilter={wingFilter} onWing={setWingFilter} onResetCands={resetCands} onSavepoint={createSavepoint} onRestoreSavepoint={restoreSavepoint} onSolutionCount={solutionCount} hintMode={hintMode} hasHint={!!hint} />
+        showHintBtns={showHintBtns} onToggleHintBtns={() => setShowHintBtns(v => !v)} showReadout={showReadout} onToggleReadout={() => setShowReadout(v => !v)} onCopy729={copy729} wingFilter={wingFilter} onWing={setWingFilter} onResetCands={resetCands} onSavepoint={createSavepoint} onRestoreSavepoint={restoreSavepoint} onSolutionCount={solutionCount} hintMode={hintMode} hasHint={!!hint} generating={generating} stock={stock} onCancelGenerate={cancelGenerate} />
 
       <div className="flex flex-1 flex-row gap-4 p-4 lg:p-6 overflow-x-auto lg:overflow-hidden min-h-0">
         {/* GRID — generous, centered */}
