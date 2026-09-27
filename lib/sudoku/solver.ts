@@ -168,6 +168,11 @@ export function rateBounded(g: Game, bandMax: number): Rating { // retained for 
 // with per-removal uniqueness is retained (his core.generate does the
 // same, browser-core.js:324). Deviations in STATE.md: per-level clue
 // targets kept; worker runs wall-free, main thread defaults 30s.
+// B1 scope (user-approved): the empty fish-middle tiers. Everything
+// else keeps the blind dig - no tuning without evidence.
+const B1_TIERS = new Set<Level>(["Easy", "Moderate", "Tough"]);
+const B1_PROBE_FROM = 40; // probe once below this clue count
+
 function cluesTarget(level: Level): number {
   const t: Record<Level, number> = {
     Unknown: 30, Lulz: 40, "Abyssal": 20, "Transcendent": 17,
@@ -249,7 +254,7 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
   const maxAttempts = 1000; // his maxRatingAttempts (index.html:13355)
   // H-fix-e3d: rejection diagnostics - why attempts fail. Reported on
   // the failure return; UI ignores it, harness prints it.
-  const diag = { stall: 0, stage2Reject: 0, nonUnique: 0, clues: { min: 81, max: 0, sum: 0 }, byCategory: {} as Record<string, number>, stage2ByCategory: {} as Record<string, number> };
+  const diag = { stall: 0, stage2Reject: 0, nonUnique: 0, noEntry: 0, clues: { min: 81, max: 0, sum: 0 }, byCategory: {} as Record<string, number>, stage2ByCategory: {} as Record<string, number> };
   let attemptsMade = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     attemptsMade = attempt;
@@ -263,6 +268,28 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
     // cells) until the target is reached or a full pass removes nothing.
     // Uniqueness discipline unchanged (per-removal countSolutions).
     let clues = 81;
+    if (B1_TIERS.has(level)) {
+      // B1 first-entry dig: walk the difficulty curve down from the full
+      // grid; below B1_PROBE_FROM clues, probe each removal with the
+      // target-profile restricted solve; stop at the FIRST in-band
+      // rating. Measured amendment (stage2ByCategory: Moderate 40/40 and
+      // Frustrating 4/4 rerate UP): stage-2 kills take a fresh attempt -
+      // digging deeper moves away from the band.
+      let entered = false;
+      for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
+        if (clues <= cluesTarget(level)) break;
+        const v = puzzle[i];
+        puzzle[i] = 0;
+        if (countSolutions(puzzle, 2) !== 1) { puzzle[i] = v; continue; }
+        clues--;
+        if (clues < B1_PROBE_FROM) {
+          const probe = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
+          if (probe.solvedCorrect && probe.category === level) { entered = true; break; }
+        }
+      }
+      if (!entered) { diag.noEntry++; continue; }
+    } else {
+    // (existing blind multi-pass dig, verbatim)
     let progress = true;
     while (progress && clues > cluesTarget(level)) {
       progress = false;
@@ -274,6 +301,7 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
         if (countSolutions(puzzle, 2) !== 1) puzzle[i] = v;
         else { clues--; progress = true; }
       }
+    }
     }
     // H-fix-e3f instrumentation: dug-clue stats + post-dig uniqueness
     // verification. Discriminates "dig not reaching target" from
