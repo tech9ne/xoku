@@ -39,6 +39,12 @@ export function startBankFill(levels: Level[]): void {
   void fillLoop(seq);
 }
 
+export function stopBankFill(): void {
+  running = false;
+  seq++;
+  abandonBurst();
+}
+
 function abandonBurst(): void {
   worker?.terminate();
   worker = null;
