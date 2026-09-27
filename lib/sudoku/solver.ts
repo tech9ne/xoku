@@ -268,26 +268,30 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
     // cells) until the target is reached or a full pass removes nothing.
     // Uniqueness discipline unchanged (per-removal countSolutions).
     let clues = 81;
+    let b1Entered = false;
     if (B1_TIERS.has(level)) {
-      // B1 first-entry dig: walk the difficulty curve down from the full
-      // grid; below B1_PROBE_FROM clues, probe each removal with the
-      // target-profile restricted solve; stop at the FIRST in-band
-      // rating. Measured amendment (stage2ByCategory: Moderate 40/40 and
-      // Frustrating 4/4 rerate UP): stage-2 kills take a fresh attempt -
-      // digging deeper moves away from the band.
-      let entered = false;
-      for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
-        if (clues <= cluesTarget(level)) break;
-        const v = puzzle[i];
-        puzzle[i] = 0;
-        if (countSolutions(puzzle, 2) !== 1) { puzzle[i] = v; continue; }
-        clues--;
-        if (clues < B1_PROBE_FROM) {
-          const probe = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
-          if (probe.solvedCorrect && probe.category === level) { entered = true; break; }
+      // B1 v2 first-entry dig: multi-pass walk to the uniqueness floor.
+      // v1 measured 1000/1000 noEntry for Easy - a single pass floors at
+      // ~30-31 clues and never samples the 26-29 zone where the 3.0/4.0
+      // mass actually lives (Tough-run byCategory at 26 clues: Easy-rated
+      // 2-5, Moderate-rated 7-13 per 1000). Probe each removal below
+      // B1_PROBE_FROM; stop at the FIRST in-band rating. Stage-2 kills
+      // take a fresh attempt (measured: rejects rerate UP).
+      let progress = true;
+      while (progress && !b1Entered) {
+        progress = false;
+        for (const i of shuffle(Array.from({ length: 81 }, (_, k) => k))) {
+          if (puzzle[i] === 0) continue;
+          const v = puzzle[i];
+          puzzle[i] = 0;
+          if (countSolutions(puzzle, 2) !== 1) { puzzle[i] = v; continue; }
+          clues--; progress = true;
+          if (clues < B1_PROBE_FROM) {
+            const probe = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
+            if (probe.solvedCorrect && probe.category === level) { b1Entered = true; break; }
+          }
         }
       }
-      if (!entered) { diag.noEntry++; continue; }
     } else {
     // (existing blind multi-pass dig, verbatim)
     let progress = true;
@@ -311,6 +315,7 @@ export function generatePuzzle(level: Level = "Easy", opts?: { timeBudgetMs?: nu
     diag.clues.max = Math.max(diag.clues.max, dugClues);
     diag.clues.sum += dugClues;
     if (countSolutions(puzzle, 2) !== 1) diag.nonUnique++;
+    if (B1_TIERS.has(level) && !b1Entered) { diag.noEntry++; continue; }
     const limited = stormSolveUnderProfile(newGame(puzzle, solution), solution, profile);
     const stage1Ok = limited.solvedCorrect
       && (profile === null || limited.category === level)
