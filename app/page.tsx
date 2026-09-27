@@ -5,7 +5,7 @@ import ProjectionPanel from "@/components/ProjectionPanel";
 import SudokuGrid from "@/components/SudokuGrid";
 import ColorPalette from "@/components/ColorPalette";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
-import { Level, countSolutions, generatePuzzle, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
+import { Level, countSolutions, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
 import { bankAvailable, bankCounts, bankPut, bankTake } from "@/lib/puzzle-bank";
 import { startBankFill, stopBankFill, bankFillPrioritize } from "@/lib/bank-fill";
 import { LEVELS } from "@/components/MenuBar";
@@ -170,17 +170,14 @@ export default function Home() {
     setGenerating(false);
     setMsg("Generation stopped - current puzzle unchanged.");
   };
-  // Worker-construction failure fallback (pre-existing behavior, kept).
-  const mainThreadFallback = (lvl: Level) => {
-    setTimeout(() => {
-      setGenerating(false);
-      const res = generatePuzzle(lvl);
-      if ('failed' in res) {
-        setMsg(`Could not generate a ${lvl} puzzle after ${res.attempts} attempts. Current puzzle unchanged.`);
-      } else {
-        startGame(res.puzzle, res.solution, `${lvl} puzzle - main thread`, res.rating);
-      }
-    }, 30);
+  // H-fix-freeze: the pre-D3 main-thread fallback ran generatePuzzle
+  // synchronously on the main thread (30s default budget) and froze the
+  // page - observed as "This page isn't responding" on the Pages
+  // deployment. A failed worker is now an honest message; the main
+  // thread never generates.
+  const workerFailed = (lvl: Level) => {
+    setGenerating(false);
+    setMsg(`Generation worker failed for ${lvl}. Try again or reload. Current puzzle unchanged.`);
   };
   // D3: live generation over worker protocol v2 - real attempt/elapsed
   // counts in the status line, 2-minute honest cap, Stop cancels, and
@@ -211,11 +208,11 @@ export default function Home() {
       w.onerror = () => {
         workerRef.current = null;
         w.terminate();
-        mainThreadFallback(lvl);
+        workerFailed(lvl);
       };
       w.postMessage({ type: "generate", level: lvl, budgetMs: 180000, sliceMs: 4000 });
     } catch {
-      mainThreadFallback(lvl);
+      workerFailed(lvl);
     }
   };
   // D3: bank-first serve - a stocked tier is instant; a miss goes live.
