@@ -8,11 +8,14 @@ const levels = (process.argv.slice(3).length
   ? process.argv.slice(3)
   : ["Very Easy", "Modestly Easy", "Tough", "Challenging", "Hard"]) as Level[];
 
+const budgetMs = Number(process.env.GEN_BUDGET_MS ?? 120000);
+console.log(`budget_ms=${budgetMs}`);
+
 for (const level of levels) {
   let ok = 0;
   for (let i = 0; i < count; i++) {
     const s = Date.now();
-    const r = generatePuzzle(level, { timeBudgetMs: 120000 });
+    const r = generatePuzzle(level, { timeBudgetMs: budgetMs });
     const dt = ((Date.now() - s) / 1000).toFixed(1);
     if ("failed" in r) {
       console.log(`${level}: FAIL (attempts=${r.attempts}${"reason" in r ? " " + r.reason : ""}) ${dt}s diag=${JSON.stringify((r as Record<string, unknown>).diag ?? {})}`);
