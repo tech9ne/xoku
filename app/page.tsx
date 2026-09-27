@@ -7,7 +7,7 @@ import ColorPalette from "@/components/ColorPalette";
 import { ALL_DIGITS, Game, Step, applyStep, candMask, candsOf, cellName, cloneGame, computeCands, countCands, isSolved, placeValue } from "@/lib/sudoku/core";
 import { Level, countSolutions, generatePuzzle, levelOfRating, newGame, rateGame } from "@/lib/sudoku/solver";
 import { bankAvailable, bankCounts, bankPut, bankTake } from "@/lib/puzzle-bank";
-import { startBankFill, stopBankFill } from "@/lib/bank-fill";
+import { startBankFill, stopBankFill, bankFillPrioritize } from "@/lib/bank-fill";
 import { LEVELS } from "@/components/MenuBar";
 import { TECHNIQUE_NAMES, findAllSteps, findNextStep } from "@/lib/sudoku/techniques";
 import { BUILD_TAG } from "@/lib/version";
@@ -160,7 +160,7 @@ export default function Home() {
         }
       });
       setMsg(best
-        ? `No ${lvl} puzzle in 2 minutes (${attempts} attempts). Nearest ready: ${best} - pick it from the menu.`
+        ? `No ${lvl} puzzle in 3 minutes (${attempts} attempts). Nearest ready: ${best} - pick it from the menu.`
         : `Could not generate a ${lvl} puzzle after ${attempts} attempts. Current puzzle unchanged.`);
     });
   };
@@ -213,7 +213,7 @@ export default function Home() {
         w.terminate();
         mainThreadFallback(lvl);
       };
-      w.postMessage({ type: "generate", level: lvl, budgetMs: 120000, sliceMs: 4000 });
+      w.postMessage({ type: "generate", level: lvl, budgetMs: 180000, sliceMs: 4000 });
     } catch {
       mainThreadFallback(lvl);
     }
@@ -229,6 +229,7 @@ export default function Home() {
           `${lvl} puzzle - bank`,
           { steps: [], score: entry.score, hardest: entry.hardest, hardestTechnique: entry.hardestTechnique, solvedByLogic: true },
         );
+        bankFillPrioritize(lvl);
         return;
       }
       liveGenerate(lvl);

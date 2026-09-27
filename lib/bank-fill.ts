@@ -8,7 +8,7 @@ import { bankAvailable, bankCounts, bankPut, BANK_CAP_PER_LEVEL } from "./puzzle
 import type { BankResult } from "./puzzle-bank";
 import type { Level } from "./sudoku/solver";
 
-const FILL_BUDGET_MS = 30000; // one burst per tier turn
+const FILL_BUDGET_MS = 180000; // one burst per tier turn (~one hit of attempts for mid/deep tiers)
 const BREATH_MS = 750; // CPU breather between bursts
 const ALL_CAPPED_POLL_MS = 10000; // every tier at cap - coast
 const HIDDEN_POLL_MS = 2000; // page hidden - wait quietly
@@ -19,6 +19,8 @@ let seq = 0;
 let cursor = 0; // round-robin among equal-stock tiers
 let worker: Worker | null = null;
 let listening = false;
+let priority: Level | null = null; // player-intent refill focus
+let prioritySince = 0;
 
 export function startBankFill(levels: Level[]): void {
   if (typeof document === "undefined" || !bankAvailable()) return;
@@ -39,6 +41,13 @@ export function startBankFill(levels: Level[]): void {
   void fillLoop(seq);
 }
 
+// Player intent: the tier just served from the bank gets focused
+// refilling (up to 10 minutes) before rotation resumes.
+export function bankFillPrioritize(level: Level): void {
+  priority = level;
+  prioritySince = Date.now();
+}
+
 export function stopBankFill(): void {
   running = false;
   seq++;
@@ -57,7 +66,16 @@ async function fillLoop(s: number): Promise<void> {
       continue;
     }
     const counts = await bankCounts();
-    const target = pickTier(counts);
+    let target: Level | null;
+    if (priority && (counts[priority] ?? 0) > 0) {
+      priority = null; // already stocked - back to rotation
+      target = pickTier(counts);
+    } else if (priority && Date.now() - prioritySince < 600000) {
+      target = priority; // focused refill, 10-minute cap
+    } else {
+      priority = null;
+      target = pickTier(counts);
+    }
     if (!target) {
       await sleep(ALL_CAPPED_POLL_MS);
       continue;
